@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import shutil
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,9 @@ from .service import TrendService
 
 log = logging.getLogger(__name__)
 WEB = Path(__file__).parent / "web"
+# Search Trend quota (NAVER API HUB ~50k calls/month): ~36 calls per region per refresh, so segments
+# are recomputed at most every 3h per region even though the site deploys hourly.
+SEGMENT_REFRESH = timedelta(hours=3)
 
 
 def _write(path: Path, data: Any) -> None:
@@ -46,10 +50,16 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], brief_re
 
         if meta["features"]["segments"]:
             try:
-                _write(api / f"segments-{code}.json", await svc.report_segments(code))
-                lines.append(f"segments {code}: ok")
+                seg = svc.store.cache_get(f"segments-latest:{code}", SEGMENT_REFRESH)
+                if seg is None:
+                    seg = await svc.report_segments(code)
+                    svc.store.cache_set(f"segments-latest:{code}", seg)
+                    lines.append(f"segments {code}: refreshed")
+                else:
+                    lines.append(f"segments {code}: reused (<3h)")
+                _write(api / f"segments-{code}.json", seg)
             except Exception as e:  # noqa: BLE001 — a failed extra must not fail the deploy
-                _write(api / f"segments-{code}.json", {"error": str(e)})
+                _write(api / f"segments-{code}.json", {"error": f"연령·성별 데이터 오류: {e}"})
                 lines.append(f"segments {code}: FAIL {e}")
 
         if code in brief_regions and meta["features"]["ai"]:
