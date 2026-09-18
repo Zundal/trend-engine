@@ -31,7 +31,7 @@ jobs:
       TREND_ENGINE_DB: data/trends.db
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.1.0
       - run: uv sync --all-extras --frozen
 
       # 스냅샷 DB 를 실행 간에 이어받아 NEW / ▲▼ 추이와 순위 그래프를 만든다.
