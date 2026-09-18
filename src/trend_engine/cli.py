@@ -127,8 +127,8 @@ def main(argv: list[str] | None = None) -> int:
 
     ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
     ex.add_argument("--out", default="site")
-    ex.add_argument("--regions", default="KR,KR-11,US,JP,GB,TW,VN")
-    ex.add_argument("--brief-regions", default="KR,KR-11", help="AI 브리핑을 만들 지역 (비용 절감)")
+    ex.add_argument("--regions", default="KR,US,JP,GB,TW,VN")
+    ex.add_argument("--brief-regions", default="", help="AI 브리핑을 만들 지역 (기본: 없음)")
 
     args = p.parse_args(argv)
     if args.offline:
