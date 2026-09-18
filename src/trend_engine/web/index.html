@@ -38,6 +38,11 @@ button:disabled { opacity: .5; cursor: progress; }
 .banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-size: 13px; }
 main { max-width: 1320px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
 @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  main { padding: 12px; }
+  ol.rank li { grid-template-columns: 22px minmax(0, 1fr) 40px 36px; gap: 6px; }
+  .label .srcs { display: none; }
+}
 section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
 section.card h2 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
 section.card h2 small { color: var(--muted); font-weight: 400; font-size: 12px; }
