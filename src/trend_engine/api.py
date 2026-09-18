@@ -52,6 +52,10 @@ def create_app(service: TrendService | None = None) -> FastAPI:
             raise HTTPException(400, "q is required (comma separated)")
         return await guard(svc.keyword_segments(kws[:20], _split(segments)))
 
+    @app.get("/api/shopping")
+    async def shopping(segments: str | None = None, categories: str | None = None):
+        return await svc.shopping(_split(segments), _split(categories))
+
     @app.get("/api/seoul")
     async def seoul(places: str | None = None):
         return await svc.seoul(_split(places))

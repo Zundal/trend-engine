@@ -8,7 +8,8 @@ Google·네이버·YouTube·포털 실시간 이슈·위키백과·뉴스를 모
 Google Trends(국가·서울) ─┐
 시그널·네이트 실시간 ─────┤                     ┌─ 통합 랭킹 (NEW / ▲▼ 추이)
 위키백과 조회수 ──────────┼─► 정규화·클러스터링 ─┼─ 연령·성별 affinity (네이버 DataLab)
-YouTube 인기 · 뉴스 ──────┘     교차 점수         ├─ 서울 핫스팟 연령 분포 (서울 도시데이터)
+YouTube 인기 · 뉴스 ──────┘     교차 점수         ├─ 그룹별 쇼핑 인기 검색어 (네이버 쇼핑인사이트)
+                                                  ├─ 서울 핫스팟 연령 분포 (서울 도시데이터)
                                                   └─ AI 브리핑 (Claude, 근거 검증)
 ```
 
@@ -29,7 +30,8 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 |---|---|---|
 | Google 트렌드(국가·서울), 시그널/네이트 실시간, 위키백과, Google 뉴스 | 불필요 | — |
 | YouTube 국가별 인기 영상 | `YOUTUBE_API_KEY` | YouTube 패널 비활성 |
-| **연령·성별** 관심도 | `NAVER_CLIENT_ID` / `SECRET` (DataLab) | 세그먼트 비활성 |
+| **연령·성별** 관심도 (네이버 검색어 트렌드) | 불필요 — 키 없으면 데이터랩 웹 사용, 키(`NAVER_CLIENT_ID/SECRET`) 있으면 공식 API | — |
+| **연령·성별 쇼핑 인기 검색어** (네이버 쇼핑인사이트) | 불필요 | — |
 | 서울 핫스팟 실시간 인구·연령 | `SEOUL_API_KEY` | 공개 sample 키로 1곳만 |
 | AI 브리핑 | `ANTHROPIC_API_KEY` | 브리핑 비활성 |
 
@@ -52,6 +54,7 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 | `collect -r KR [-s google_trends]` | 수집 → 통합 랭킹 (스냅샷 저장, 이전 대비 NEW/▲▼) |
 | `segments -r KR --top 16 --segments "20대,30대,20대 여성"` | 상위 트렌드의 연령·성별 affinity |
 | `keyword 아이폰 갤럭시 --segments "10대,20대,50대"` | 임의 키워드 그룹 비교 |
+| `shopping [--segments "20대 여성,60대+"]` | 그룹별 쇼핑 인기 검색어 (★ = 그 그룹만의 관심) |
 | `seoul [--places "강남역,성수카페거리"]` | 서울 핫스팟 혼잡도·연령 분포 |
 | `brief -r KR` | Claude 트렌드 브리핑 |
 | `doctor` | 모든 업스트림 라이브 점검 |

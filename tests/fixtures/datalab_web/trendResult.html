@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=1200">
+    <title>검색어트렌드 : 네이버 데이터랩</title>
+    
+    <link rel="stylesheet" type="text/css" href="https://ssl.pstatic.net/static.datalab/202504080910/css/datalab.css">
+    <link rel="stylesheet" type="text/css" href="https://ssl.pstatic.net/static.datalab/202504080910/css/graph.css">
+
+    <link rel="icon" sizes="192x192" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/android_legacy_xxxhpdi_192x192.png" >
+    <link rel="icon" sizes="144x144" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/android_legacy_xxhpdi_144x144.png" >
+    <link rel="icon" sizes="96x96" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/android_legacy_xhdpi_96x96.png" >
+    <link rel="icon" sizes="72x72" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/android_legacy_hdpi_72X72.png" >
+
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/iOS_iPhone@3x_180X180.png">
+    <link rel="apple-touch-icon-precomposed" sizes="167x167" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/iOS_iPadPro@2x_167X167.png">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/iOS_iPad@2x_152X152.png">
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="https://ssl.pstatic.net/static.datalab/202504080910/img/favicon/iOS_iPhone@2x_120X120.png">
+    
+        
+    <meta property="og:title" content="네이버 데이터랩 : 검색어트렌드"/>
+    <meta property="og:url" content="https://datalab.naver.com/keyword/trendResult.naver"/>
+    <meta property="og:image" content="https://ssl.pstatic.net/static.datalab/img2019/datalab_og_244x244.jpg"/>
+    <meta property="og:description" content="네이버 통합검색에서 검색된 검색어와 검색횟수를 기간별/연령별/성별로 조회할 수 있습니다."/>
+    <meta name="description" content="네이버 통합검색에서 검색된 검색어와 검색횟수를 기간별/연령별/성별로 조회할 수 있습니다.">
+
+</head>
+
+<!--[if lte IE 9]>
+<body class="pop_opened">
+<![endif]-->
+
+<![if !IE]>
+<body>
+<![endif]>
+
+<div id="u_skip">
+    <a href="#content"><span>본문으로 바로가기</span></a>
+</div>
+<div id="wrap" class="wrap">
+    <div id="header" class="header">
+        <div class="inner">
+            <div class="srch_wrap">
+                <a href="https://www.naver.com" target="_blank" class="logo_area">
+                    <span class="sp_header_logo"><span class="blind">NAVER</span></span>
+                </a>
+                <h1 class="sta_area">
+                    <a href="/" class="sp_sta"><span class="blind">DataLab</span></a>
+                </h1>
+            </div>
+            <div class="gnb_wrap">
+                <div id="gnb"></div>
+            </div>
+        </div>
+        <div id="lnb" class="lnb">
+            <div class="lnb_innner">
+                <ul class="lnb_list">
+                    <li class="list _home ">
+                        <a href="/" class="list_area">
+                        <span class="sp_lnb_list nav1">
+                            <span class="blind">데이터랩 홈</span>
+                        </span>
+                        </a>
+                    </li>
+                    <li class="list _keyword active">
+                        <a href="/keyword/trendSearch.naver" class="list_area">
+                        <span class="sp_lnb_list nav3">
+                            <span class="blind">검색어트렌드</span>
+                        </span>
+                        </a>
+                    </li>
+                    <li class="list _shopping ">
+                        <a href="/shoppingInsight/sCategory.naver" class="list_area">
+							<span class="sp_lnb_list nav4">
+								<span class="blind">쇼핑인사이트</span>
+							</span>
+                        </a>
+                    </li>
+                    <li class="list _local ">
+                        <a href="/local/trend.naver" class="list_area">
+                        <span class="sp_lnb_list nav5">
+                            <span class="blind">지역통계</span>
+                        </span>
+                        </a>
+                    </li>
+                    <li class="list _commentStat ">
+                        <a href="/commentStat/news.naver" class="list_area">
+                        <span class="sp_lnb_list nav6">
+                            <span class="blind">뉴스댓글통계</span>
+                        </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+<div id="container" class="container" role="main">
+    <div id="content" class="content">
+        <div class="section_keyword">
+<div class="keyword_trend">
+    <div class="section_ca_board w_space">
+        <div class="com_box_inner">
+            <div class="board_view_area">
+                <div class="view_cont">
+                    <div class="section_graph w_space">
+                        <div class="graph_board_inner">
+                            <div class="graph_area">
+                                <div class="inner_graph_area _trend_graph" style="height:510px;">
+                                    <div id="graph_data" style="display:none" data-timedimension="date">[{"title":"날씨","data":[{"period":"20260911","value":69.26626},{"period":"20260912","value":77.83644},{"period":"20260913","value":100.0},{"period":"20260914","value":83.30272},{"period":"20260915","value":64.57137},{"period":"20260916","value":59.25203},{"period":"20260917","value":80.26424}]},{"title":"등산","data":[{"period":"20260911","value":0.15037},{"period":"20260912","value":0.15037},{"period":"20260913","value":0.18136},{"period":"20260914","value":0.15955},{"period":"20260915","value":0.17907},{"period":"20260916","value":0.14004},{"period":"20260917","value":0.13774}]}]</div>
+                                </div>
+                                <div class="graph_cate board" style="margin-top:30px;"></div>
+                                <div class="com_loading">
+                                    <div class="loading_area">
+                                        <img src="https://ssl.pstatic.net/static.datalab/202504080910/img/com_loading_fff.gif" width="32" height="8" alt="로딩 중" class="loading_img">
+                                        <p class="loading_desc">정보를 가져오는 중입니다.</p>
+                                    </div>
+                                </div>
+                                <div class="cont_file_down">
+                                    <span class="down_name">
+                                        <span class="sp_file_xls"></span>
+                                    </span>
+                                    <a href="/qcExcel.naver?hashKey=N_90ef8ea7a6453bc6f3752684500a920d" class="sp_btn_file_down">다운로드</a>
+                                </div>
+                            </div>
+                            <div class="graph_desc_area">
+                                <ul class="desc_list">
+                                    <li class="list">일별 데이터는 익일 8~10시간 후 결과에 반영됩니다.</li>
+                                    <li class="list">그래프는 네이버에서 해당 검색어가 검색된 횟수를 일별/주별/월별 각각 합산하여 조회기간 내 최다 검색량을 100으로 설정하여 상대적인 변화를 나타냅니다.</li>
+                                    <li class="list"><strong>데이터랩의 통계데이터는 쇼핑 랭킹과 무관합니다. 쇼핑 랭킹은 별도의 데이터 수집 및 집계 로직에 따라 산정됩니다.</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_step">
+        <div class="com_title">
+            <h3 class="title">다시 조회 하기</h3>
+        </div>
+<div class="com_box_inner">
+    <form>
+        <fieldset>
+            <legend class="blind">검색어 트렌드 조회</legend>
+            <p class="guide_desc">궁금한 주제어를 설정하고, 하위 주제어에 해당하는 검색어를 콤마(,)로 구분입력해 주세요. 입력한 단어의 추이를 하나로 합산하여 해당 주제가 네이버에서 얼마나 검색되는지 조회할 수 있습니다. <span>예) 주제어 캠핑 : 캠핑, Camping, 캠핑용품, 겨울캠핑, 캠핑장, 글램핑, 오토캠핑, 캠핑카, 텐트, 캠핑요리</span></p>
+            <div class="step_form">
+            
+
+<input type="hidden" id="qcType" value="N" />
+<input type="hidden" id="device" value="" />
+<input type="hidden" id="queryGroups" value="날씨__SZLIG__날씨__OUML__등산__SZLIG__등산,캠핑"/>
+<input type="hidden" id="graphData" />
+<input type="hidden" id="startDate"  value="2026-09-11"/>
+<input type="hidden" id="endDate"  value="2026-09-17"/>
+<input type="hidden" id="vTimeDimension"  value="date"/>
+<input type="hidden" id="gender"  value="f"/>
+<input type="hidden" id="age"  value="3,4"/>
+<input type="hidden" id="maxYear" value="2026"/>
+<input type="hidden" id="maxMonth" value="09"/>
+
+<div class="form_row keyword">
+    <strong class="title">
+        <label for="item_keyword1">주제어1</label>
+    </strong>
+    <div class="set_keyword">
+        <input type="text" value="" id="item_keyword1" class="input_text w1" placeholder="주제어 1 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+    <div class="set_keyword">
+        <label for="item_keyword1_1" class="blind">주제어1 하위 주제어</label>
+        <input type="text" value="" id="item_sub_keyword1_1" class="input_text w2"
+               placeholder="주제어 1에 해당하는 모든 검색어를 컴마(,)로 구분하여 최대 20개까지 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+</div>
+<div class="form_row keyword">
+    <strong class="title">
+        <label for="item_keyword2">주제어2</label>
+    </strong>
+    <div class="set_keyword">
+        <input type="text" value="" id="item_keyword2" class="input_text w1" placeholder="주제어 2 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+    <div class="set_keyword">
+        <label for="item_keyword2_1" class="blind">주제어2 하위 주제어</label>
+        <input type="text" value="" id="item_sub_keyword2_1" class="input_text w2"
+               placeholder="주제어 2에 해당하는 모든 검색어를 컴마(,)로 구분하여 최대 20개까지 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+</div>
+<div class="form_row keyword">
+    <strong class="title">
+        <label for="item_keyword3">주제어3</label>
+    </strong>
+    <div class="set_keyword">
+        <input type="text" value="" id="item_keyword3" class="input_text w1" placeholder="주제어 3 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+    <div class="set_keyword">
+        <label for="item_keyword2_1" class="blind">주제어3 하위 주제어</label>
+        <input type="text" value="" id="item_sub_keyword3_1" class="input_text w2"
+               placeholder="주제어 3에 해당하는 모든 검색어를 컴마(,)로 구분하여 최대 20개까지 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+</div>
+<div class="form_row keyword">
+    <strong class="title">
+        <label for="item_keyword4">주제어4</label>
+    </strong>
+    <div class="set_keyword">
+        <input type="text" value="" id="item_keyword4" class="input_text w1" placeholder="주제어 4 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+    <div class="set_keyword">
+        <label for="item_keyword2_1" class="blind">주제어4 하위 주제어</label>
+        <input type="text" value="" id="item_sub_keyword4_1" class="input_text w2"
+               placeholder="주제어 4에 해당하는 모든 검색어를 컴마(,)로 구분하여 최대 20개까지 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+</div>
+<div class="form_row keyword">
+    <strong class="title">
+        <label for="item_keyword5">주제어5</label>
+    </strong>
+    <div class="set_keyword">
+        <input type="text" value="" id="item_keyword5" class="input_text w1" placeholder="주제어 5 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+    <div class="set_keyword">
+        <label for="item_keyword2_1" class="blind">주제어5 하위 주제어</label>
+        <input type="text" value="" id="item_sub_keyword5_1" class="input_text w2"
+               placeholder="주제어 5에 해당하는 모든 검색어를 컴마(,)로 구분하여 최대 20개까지 입력" data-text="">
+<button type="button" class="btn_keyword_del"><span class="sp_btn_keyword_del"><span class="blind">입력 내용 삭제</span></span></button>
+    </div>
+</div>
+<div class="form_row hr">
+	<strong class="title">기간</strong>
+    <div class="set_period">
+        <input type="radio" name="item_period" id="set_period1" class="blind">
+        <label for="set_period1" class="period ">전체</label>
+        <input type="radio" name="item_period" id="set_period2" class="blind">
+        <label for="set_period2" class="period">1개월</label>
+        <input type="radio" name="item_period" id="set_period3" class="blind">
+        <label for="set_period3" class="period">3개월</label>
+        <input type="radio" name="item_period" id="set_period4" class="blind">
+        <label for="set_period4" class="period">1년</label>
+        <input type="radio" name="item_period" id="set_period5" class="blind">
+        <label for="set_period5" class="period input active">직접입력</label>
+
+<div id="timeDimensionDiv" class="select w4">
+    <input type="hidden" id="timeDimension" name="timeDimension" class="_select_input" value="date"/>
+    <a href="#" id="timeDimensionTitle" class="select_btn">일간</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_date active" value="date"><a href="#" class="option">일간</a></li>
+        <li class="select_item _item_week" value="week"><a href="#" class="option">주간</a></li>
+        <li class="select_item _item_month" value="month"><a href="#" class="option">월간</a></li>
+    </ul>
+</div>
+    </div>
+    <div class="set_period_target">
+<div id="startYearDiv" class="select w2" >
+    <input type="hidden" id="startYearInput" name="startYearInput" class="_select_input" value="2016"/>
+    <a href="#" id="startYear" class="select_btn">2016</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_2016"><a href="#" class="option">2016</a></li>
+        <li class="select_item _item_2017"><a href="#" class="option">2017</a></li>
+        <li class="select_item _item_2018"><a href="#" class="option">2018</a></li>
+        <li class="select_item _item_2019"><a href="#" class="option">2019</a></li>
+        <li class="select_item _item_2020"><a href="#" class="option">2020</a></li>
+        <li class="select_item _item_2021"><a href="#" class="option">2021</a></li>
+        <li class="select_item _item_2022"><a href="#" class="option">2022</a></li>
+        <li class="select_item _item_2023"><a href="#" class="option">2023</a></li>
+        <li class="select_item _item_2024"><a href="#" class="option">2024</a></li>
+        <li class="select_item _item_2025"><a href="#" class="option">2025</a></li>
+        <li class="select_item _item_2026"><a href="#" class="option">2026</a></li>
+    </ul>
+</div>
+<div id="startMonthDiv" class="select w3" >
+    <input type="hidden" id="startMonthInput" name="startMonthInput" class="_select_input" value="09"/>
+    <a href="#" id="startMonth" class="select_btn">09</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_01"><a href="#" class="option">01</a></li>
+        <li class="select_item _item_02"><a href="#" class="option">02</a></li>
+        <li class="select_item _item_03"><a href="#" class="option">03</a></li>
+        <li class="select_item _item_04"><a href="#" class="option">04</a></li>
+        <li class="select_item _item_05"><a href="#" class="option">05</a></li>
+        <li class="select_item _item_06"><a href="#" class="option">06</a></li>
+        <li class="select_item _item_07"><a href="#" class="option">07</a></li>
+        <li class="select_item _item_08"><a href="#" class="option">08</a></li>
+        <li class="select_item _item_09"><a href="#" class="option">09</a></li>
+        <li class="select_item _item_10"><a href="#" class="option">10</a></li>
+        <li class="select_item _item_11"><a href="#" class="option">11</a></li>
+        <li class="select_item _item_12"><a href="#" class="option">12</a></li>
+    </ul>
+</div>
+<div id="startDayDiv" class="select w3" >
+    <input type="hidden" id="startDayInput" name="startDayInput" class="_select_input" value="18"/>
+    <a href="#" id="startDay" class="select_btn">18</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_01"><a href="#" class="option">01</a></li>
+        <li class="select_item _item_02"><a href="#" class="option">02</a></li>
+        <li class="select_item _item_03"><a href="#" class="option">03</a></li>
+        <li class="select_item _item_04"><a href="#" class="option">04</a></li>
+        <li class="select_item _item_05"><a href="#" class="option">05</a></li>
+        <li class="select_item _item_06"><a href="#" class="option">06</a></li>
+        <li class="select_item _item_07"><a href="#" class="option">07</a></li>
+        <li class="select_item _item_08"><a href="#" class="option">08</a></li>
+        <li class="select_item _item_09"><a href="#" class="option">09</a></li>
+        <li class="select_item _item_10"><a href="#" class="option">10</a></li>
+        <li class="select_item _item_11"><a href="#" class="option">11</a></li>
+        <li class="select_item _item_12"><a href="#" class="option">12</a></li>
+        <li class="select_item _item_13"><a href="#" class="option">13</a></li>
+        <li class="select_item _item_14"><a href="#" class="option">14</a></li>
+        <li class="select_item _item_15"><a href="#" class="option">15</a></li>
+        <li class="select_item _item_16"><a href="#" class="option">16</a></li>
+        <li class="select_item _item_17"><a href="#" class="option">17</a></li>
+        <li class="select_item _item_18"><a href="#" class="option">18</a></li>
+        <li class="select_item _item_19"><a href="#" class="option">19</a></li>
+        <li class="select_item _item_20"><a href="#" class="option">20</a></li>
+        <li class="select_item _item_21"><a href="#" class="option">21</a></li>
+        <li class="select_item _item_22"><a href="#" class="option">22</a></li>
+        <li class="select_item _item_23"><a href="#" class="option">23</a></li>
+        <li class="select_item _item_24"><a href="#" class="option">24</a></li>
+        <li class="select_item _item_25"><a href="#" class="option">25</a></li>
+        <li class="select_item _item_26"><a href="#" class="option">26</a></li>
+        <li class="select_item _item_27"><a href="#" class="option">27</a></li>
+        <li class="select_item _item_28"><a href="#" class="option">28</a></li>
+        <li class="select_item _item_29"><a href="#" class="option">29</a></li>
+        <li class="select_item _item_30"><a href="#" class="option">30</a></li>
+        <li class="select_item _item_31"><a href="#" class="option">31</a></li>
+    </ul>
+</div>
+        <span class="bar">
+            <span class="blind">부터</span>
+        </span>
+<div id="endYearDiv" class="select w2" >
+    <input type="hidden" id="endYearInput" name="endYearInput" class="_select_input" value="2026"/>
+    <a href="#" id="endYear" class="select_btn">2026</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_2016"><a href="#" class="option">2016</a></li>
+        <li class="select_item _item_2017"><a href="#" class="option">2017</a></li>
+        <li class="select_item _item_2018"><a href="#" class="option">2018</a></li>
+        <li class="select_item _item_2019"><a href="#" class="option">2019</a></li>
+        <li class="select_item _item_2020"><a href="#" class="option">2020</a></li>
+        <li class="select_item _item_2021"><a href="#" class="option">2021</a></li>
+        <li class="select_item _item_2022"><a href="#" class="option">2022</a></li>
+        <li class="select_item _item_2023"><a href="#" class="option">2023</a></li>
+        <li class="select_item _item_2024"><a href="#" class="option">2024</a></li>
+        <li class="select_item _item_2025"><a href="#" class="option">2025</a></li>
+        <li class="select_item _item_2026"><a href="#" class="option">2026</a></li>
+    </ul>
+</div>
+<div id="endMonthDiv" class="select w3" >
+    <input type="hidden" id="endMonthInput" name="endMonthInput" class="_select_input" value="09"/>
+    <a href="#" id="endMonth" class="select_btn">09</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_01"><a href="#" class="option">01</a></li>
+        <li class="select_item _item_02"><a href="#" class="option">02</a></li>
+        <li class="select_item _item_03"><a href="#" class="option">03</a></li>
+        <li class="select_item _item_04"><a href="#" class="option">04</a></li>
+        <li class="select_item _item_05"><a href="#" class="option">05</a></li>
+        <li class="select_item _item_06"><a href="#" class="option">06</a></li>
+        <li class="select_item _item_07"><a href="#" class="option">07</a></li>
+        <li class="select_item _item_08"><a href="#" class="option">08</a></li>
+        <li class="select_item _item_09"><a href="#" class="option">09</a></li>
+    </ul>
+</div>
+<div id="endDayDiv" class="select w3" >
+    <input type="hidden" id="endDayInput" name="endDayInput" class="_select_input" value="18"/>
+    <a href="#" id="endDay" class="select_btn">18</a>
+    <ul class="select_list scroll_cst">
+        <li class="select_item _item_01"><a href="#" class="option">01</a></li>
+        <li class="select_item _item_02"><a href="#" class="option">02</a></li>
+        <li class="select_item _item_03"><a href="#" class="option">03</a></li>
+        <li class="select_item _item_04"><a href="#" class="option">04</a></li>
+        <li class="select_item _item_05"><a href="#" class="option">05</a></li>
+        <li class="select_item _item_06"><a href="#" class="option">06</a></li>
+        <li class="select_item _item_07"><a href="#" class="option">07</a></li>
+        <li class="select_item _item_08"><a href="#" class="option">08</a></li>
+        <li class="select_item _item_09"><a href="#" class="option">09</a></li>
+        <li class="select_item _item_10"><a href="#" class="option">10</a></li>
+        <li class="select_item _item_11"><a href="#" class="option">11</a></li>
+        <li class="select_item _item_12"><a href="#" class="option">12</a></li>
+        <li class="select_item _item_13"><a href="#" class="option">13</a></li>
+        <li class="select_item _item_14"><a href="#" class="option">14</a></li>
+        <li class="select_item _item_15"><a href="#" class="option">15</a></li>
+        <li class="select_item _item_16"><a href="#" class="option">16</a></li>
+        <li class="select_item _item_17"><a href="#" class="option">17</a></li>
+        <li class="select_item _item_18"><a href="#" class="option">18</a></li>
+    </ul>
+</div>
+    </div>
+    <p class="form_row_desc dot_ver">2016년 1월 이후 조회할 수 있습니다.</p>
+</div>
+<div class="form_row mb4">
+    <strong class="title">범위</strong>
+    <div class="set_col set_target_chk _checkbox_ui">
+        <div class="set_chk">
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_device_0" class="chk _check_all">
+                <label class="lbl" for="item_device_0">전체</label>
+            </span>
+            <span class="_item_check_div _device_div" style="margin-left:11px;">
+                <span class="select_chk v1">
+                    <input type="checkbox" id="item_device_1" value="mo" class="chk" >
+                    <label class="lbl" for="item_device_1">모바일</label>
+                </span>
+                <span class="select_chk v1">
+                    <input type="checkbox" id="item_device_2" value="pc" class="chk" >
+                    <label class="lbl" for="item_device_2">PC</label>
+                </span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="form_row mb4">
+    <strong class="title">성별</strong>
+    <div class="set_col set_target_chk _checkbox_ui">
+        <div class="set_chk">
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_gender_0" class="chk _check_all">
+                <label class="lbl" for="item_gender_0">전체</label>
+            </span>
+            <span class="_item_check_div _gender_div" style="margin-left:11px;">
+                <span class="select_chk v1">
+                    <input type="checkbox" id="item_gender_1" class="chk" value="f"  checked>
+                    <label class="lbl" for="item_gender_1">여성</label>
+                </span>
+                <span class="select_chk v1">
+                    <input type="checkbox" id="item_gender_2" class="chk" value="m" >
+                    <label class="lbl" for="item_gender_2">남성</label>
+                </span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="form_row">
+    <strong class="title v2">연령선택</strong>
+    <div class="set_col set_target_chk _checkbox_ui">
+        <div class="set_chk">
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_0" class="chk _check_all">
+                <!-- [D] 텍스트 활성화 active 추가 -->
+                <label class="lbl " for="item_age_0">전체</label>
+            </span>
+        </div>
+        <div class="set_chk _item_check_div _age_div">
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_1" value="1"  class="chk">
+                <label class="lbl " for="item_age_1">~12</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_2" value="2"  class="chk">
+                <label class="lbl " for="item_age_2">13~18</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_3" value="3" checked class="chk">
+                <label class="lbl active" for="item_age_3">19~24</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_4" value="4" checked class="chk">
+                <label class="lbl active" for="item_age_4">25~29</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_5" value="5"  class="chk">
+                <label class="lbl " for="item_age_5">30~34</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_6" value="6"  class="chk">
+                <label class="lbl " for="item_age_6">35~39</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_7" value="7"  class="chk">
+                <label class="lbl " for="item_age_7">40~44</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_8" value="8"  class="chk">
+                <label class="lbl " for="item_age_8">45~49</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_9" value="9"  class="chk">
+                <label class="lbl " for="item_age_9">50~54</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_10" value="10"  class="chk">
+                <label class="lbl " for="item_age_10">55~59</label>
+            </span>
+            <span class="select_chk v1">
+                <input type="checkbox" id="item_age_11" value="11"  class="chk">
+                <label class="lbl " for="item_age_11">60~</label>
+            </span>
+        </div>
+    </div>
+</div>
+            </div>
+            <a href="#" class="ca_btn_go _trend_search_detail_query">
+                <span class="text">네이버 검색 데이터 조회</span>
+            </a>
+        </fieldset>
+    </form>
+</div>    </div>
+</div>
+
+    <div id="footer" class="footer">
+        <div class="footer_inner">
+            <div class="footer_info">
+                <a href="https://policy.naver.com/rules/service.html" target="_blank">이용약관</a>
+                <a href="https://policy.naver.com/rules/privacy.html" target="_blank"><strong>개인정보처리방침</strong></a>
+                <a href="https://policy.naver.com/rules/disclaimer.html" target="_blank">책임의 한계와 법적고지</a>
+                <a href="https://help.naver.com/alias/datalab/main.naver" target="_blank">고객센터</a>
+            </div>
+            <div class="footer_copyright">
+                <a href="https://www.naver.com/" target="_blank" class="sp_footer_logo"><span class="blind">NAVER</span></a>
+                <em class="copyright">Copyright ©</em>
+                <strong><a href="https://www.navercorp.com/ko/index.nhn" target="_blank">NAVER Corp.</a></strong> All Rights Reserved.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="com_browser_pop" style="display:none">
+    <div class="pop_dimmed"></div>
+    <div class="pop_inner type_browser" style="z-index:100">
+        <strong class="browser_title">권장 브라우저 안내</strong>
+        <p class="browser_desc">
+            데이터랩 서비스에 최적화된 브라우저는 Internet Explorer11이상입니다.<br>
+            최신 브라우저로 업그레이드를 해야 서비스 이용이 가능합니다.
+        </p>
+        <div class="browser_list">
+			<span class="list ie">
+				<span class="title">Internet Explore</span>
+			</span>
+            <span class="list firefox">
+				<span class="title">Firefox</span>
+			</span>
+            <span class="list chrome">
+				<span class="title">Google Chrome</span>
+			</span>
+            <span class="list safari">
+				<span class="title">Safari</span>
+			</span>
+        </div>
+        
+			
+				
+				
+			
+        
+        <a href="#" class="sp_btn_pop_close">
+            <span class="blind">권장 브라우저 안내 팝업 닫기</span>
+        </a>
+    </div>
+</div>
+
+<script type="text/javascript">
+(function() {
+    window.$DATALAB = (typeof $DATALAB != "undefined") ? $DATALAB : {};
+    window.$DATALAB.CONFIG = (typeof $DATALAB.CONFIG != "undefined") ? $DATALAB.CONFIG : {};
+
+    $DATALAB.CONFIG.request_url = "'http://datalab.naver.com/keyword/trendResult.naver?hashKey=N_90ef8ea7a6453bc6f3752684500a920d";
+    $DATALAB.CONFIG.realTimeOpenDate = "";
+
+    if(location.href.indexOf("dev") > 0) {
+        window.lcs_SerName = "alpha-lcs.naver.com";
+    }
+})();
+</script>
+<script type="text/javascript" src="https://ssl.pstatic.net/static.datalab/202504080910/js/vendor.202504080910.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <script type="text/javascript" src="https://ssl.pstatic.net/static.datalab/202504080910/js/trendsearch.202504080910.js"></script>
+
+</body>
+</html>

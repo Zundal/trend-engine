@@ -59,7 +59,7 @@ def get_region(code: str) -> Region:
 class Settings:
     naver_client_id: str = ""
     naver_client_secret: str = ""
-    naver_api: str = "hub"  # "hub" = NAVER API HUB (new keys), "legacy" = developers.naver.com keys
+    naver_api: str = ""  # "hub" (NAVER API HUB key), "legacy" (developers.naver.com key), "web" (no key); "" = auto
     youtube_api_key: str = ""
     seoul_api_key: str = ""
     anthropic_api_key: str = ""
@@ -70,6 +70,13 @@ class Settings:
     user_agent: str = "trend-engine/0.1 (+https://github.com/; research use)"
     timeout: float = 15.0
 
+    @property
+    def naver_mode(self) -> str:
+        """Explicit NAVER_API wins; otherwise use the key if present, else the keyless web form."""
+        if self.naver_api in ("hub", "legacy", "web"):
+            return self.naver_api
+        return "hub" if (self.naver_client_id and self.naver_client_secret) else "web"
+
     @classmethod
     def from_env(cls, dotenv: bool = True) -> "Settings":
         if dotenv:
@@ -78,7 +85,7 @@ class Settings:
         return cls(
             naver_client_id=env("NAVER_CLIENT_ID", ""),
             naver_client_secret=env("NAVER_CLIENT_SECRET", ""),
-            naver_api=env("NAVER_API", "hub").strip().lower() or "hub",
+            naver_api=env("NAVER_API", "").strip().lower(),
             youtube_api_key=env("YOUTUBE_API_KEY", ""),
             seoul_api_key=env("SEOUL_API_KEY", ""),
             anthropic_api_key=env("ANTHROPIC_API_KEY", ""),

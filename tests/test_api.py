@@ -30,6 +30,9 @@ def test_end_to_end_offline(service):
     assert kw["segments"] == ["20대 여성", "50대"]
     assert client.get("/api/keyword", params={"q": "x", "segments": "MZ"}).status_code == 400
 
+    shop = client.get("/api/shopping").json()
+    assert shop["by_segment"] and shop["offline"] is True
+
     hot = client.get("/api/seoul").json()
     assert hot["places"] and hot["sample"] is True
 

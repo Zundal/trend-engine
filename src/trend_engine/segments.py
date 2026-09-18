@@ -16,8 +16,11 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import logging
+import html
 import json
 import random
+import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Any, Awaitable, Callable
@@ -27,13 +30,24 @@ import httpx
 from .config import Settings
 from .store import Store
 
+log = logging.getLogger(__name__)
+
 # Naver moved new Search Trend keys to NAVER API HUB (NCP) on 2026-07-31. Same request/response body,
 # different host + auth headers. Keys issued by the old developer center keep working until 2027-06-30.
+# "web" = no key: the same public form datalab.naver.com uses (qcHash -> trendResult). Unofficial,
+# so it is paced (one request at a time) and cached; switch to "hub" once you have a key.
+WEB_BASE = "https://datalab.naver.com"
+WEB_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128 Safari/537.36"
+WEB_PACE_SECONDS = 2.5  # gap between calls; Naver answers bursts with HTTP 429
+WEB_RETRIES = 4  # on 429: wait Retry-After or 20s, 40s, 80s
 ENDPOINTS = {
     "hub": ("https://naverapihub.apigw.ntruss.com/search-trend/v1/search", "X-NCP-APIGW-API-KEY-ID", "X-NCP-APIGW-API-KEY"),
     "legacy": ("https://openapi.naver.com/v1/datalab/search", "X-Naver-Client-Id", "X-Naver-Client-Secret"),
 }
 BATCH = 4  # + 1 anchor = DataLab's max of 5 groups
+# Drop keywords under 0.01% of the anchor's volume: too little data for stable age ratios.
+# ('날씨' is huge — '등산' is ~0.05% of it, so this must stay low.)
+MIN_RELATIVE = 0.0001
 
 
 @dataclass(frozen=True)
@@ -90,6 +104,7 @@ class SegmentResult:
     anchor: str
     period: tuple[str, str]
     synthetic: bool = False  # True in offline mode: numbers are NOT real
+    mode: str = ""  # hub / legacy / web / offline
     errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -112,18 +127,68 @@ def synthetic_response(body: dict[str, Any]) -> dict[str, Any]:
     return {"results": results}
 
 
+def parse_web_result(page: str) -> dict[str, Any]:
+    """Pull the chart JSON out of trendResult.naver: <div class="graph_data" ...>[{title, data:[{period, value}]}]</div>."""
+    m = re.search(r'graph_data"[^>]*>(.*?)</', page, re.S)
+    if not m:
+        raise RuntimeError("DataLab web: graph_data not found (page format changed?)")
+    rows = json.loads(html.unescape(m.group(1)))
+    return {"results": [{"title": r["title"], "data": [{"period": d["period"], "ratio": d.get("value", 0)} for d in r.get("data", [])]}
+                        for r in rows]}
+
+
 class SegmentProfiler:
     def __init__(self, settings: Settings, store: Store | None = None, anchor: str = "날씨", days: int = 7,
                  poster: Poster | None = None, concurrency: int = 4):
         self.settings, self.store, self.anchor, self.days = settings, store, anchor, days
         self.synthetic = poster is None and settings.offline
         self._poster = poster
-        self._sem = asyncio.Semaphore(concurrency)
+        self._sem = asyncio.Semaphore(1 if settings.naver_mode == "web" else concurrency)
         self._client: httpx.AsyncClient | None = None
+        self._web_primed = False
+
+    @property
+    def mode(self) -> str:
+        return self.settings.naver_mode
 
     @property
     def available(self) -> bool:
-        return bool(self._poster or self.settings.offline or (self.settings.naver_client_id and self.settings.naver_client_secret))
+        return True  # "web" mode needs no key
+
+    async def _post_web(self, body: dict[str, Any]) -> dict[str, Any]:
+        """Keyless path via the public DataLab web form. Returns the API-shaped response."""
+        assert self._client is not None
+        form = {
+            "qcType": "",
+            "queryGroups": "__OUML__".join(f"{g['groupName']}__SZLIG__{','.join(g['keywords'])}" for g in body["keywordGroups"]),
+            "startDate": body["startDate"].replace("-", ""),
+            "endDate": body["endDate"].replace("-", ""),
+            "timeUnit": body.get("timeUnit", "date"),
+            "gender": body.get("gender", ""),
+            "age": ",".join(body.get("ages", [])),
+            "device": "",
+        }
+        headers = {"User-Agent": WEB_UA, "Referer": f"{WEB_BASE}/keyword/trendSearch.naver", "X-Requested-With": "XMLHttpRequest"}
+        async with self._sem:
+            if not self._web_primed:  # visit the form once per session, like a browser would
+                await self._client.get(f"{WEB_BASE}/keyword/trendSearch.naver", headers={"User-Agent": WEB_UA})
+                self._web_primed = True
+            for attempt in range(WEB_RETRIES + 1):
+                r = await self._client.post(f"{WEB_BASE}/qcHash.naver", data=form, headers=headers)
+                if r.status_code != 429 or attempt == WEB_RETRIES:
+                    break
+                wait = float(r.headers.get("Retry-After") or 20 * 2**attempt)
+                log.info("DataLab web 429, retrying in %.0fs", wait)
+                await asyncio.sleep(wait)
+            if r.status_code != 200:
+                raise RuntimeError(f"DataLab web qcHash HTTP {r.status_code}")
+            info = json.loads(r.text or "{}")
+            if not info.get("success"):
+                raise RuntimeError(f"DataLab web qcHash failed: {info.get('message') or r.status_code}")
+            page = await self._client.get(f"{WEB_BASE}/keyword/trendResult.naver", params={"hashKey": info["hashKey"]},
+                                          headers={"User-Agent": WEB_UA})
+            await asyncio.sleep(WEB_PACE_SECONDS)
+        return parse_web_result(page.text)
 
     async def _post(self, body: dict[str, Any]) -> dict[str, Any]:
         if self._poster:
@@ -134,7 +199,12 @@ class SegmentProfiler:
         if self.store and (hit := self.store.cache_get(cache_key, timedelta(hours=6))):
             return hit
         assert self._client is not None
-        url, id_header, secret_header = ENDPOINTS.get(self.settings.naver_api, ENDPOINTS["hub"])
+        if self.mode == "web":
+            data = await self._post_web(body)
+            if self.store:
+                self.store.cache_set(cache_key, data)
+            return data
+        url, id_header, secret_header = ENDPOINTS.get(self.mode, ENDPOINTS["hub"])
         async with self._sem:
             resp = await self._client.post(
                 url,
@@ -207,7 +277,7 @@ class SegmentProfiler:
                 relative[k][seg.name] = round(r * 100, 2) if r is not None else None
                 affinity[k][seg.name] = round(sh[k] / base[k] * 100, 1) if k in sh and base.get(k) else None
             ranked = sorted(
-                (k for k in keywords if affinity[k].get(seg.name) is not None and (rel[ALL.name].get(k) or 0) >= 0.005),
+                (k for k in keywords if affinity[k].get(seg.name) is not None and (rel[ALL.name].get(k) or 0) >= MIN_RELATIVE),
                 key=lambda k: -(affinity[k][seg.name] or 0),
             )
             top[seg.name] = [{"keyword": k, "affinity": affinity[k][seg.name], "relative": relative[k][seg.name]} for k in ranked[:10]]
@@ -224,5 +294,6 @@ class SegmentProfiler:
             anchor=self.anchor,
             period=(s, e),
             synthetic=self.synthetic,
+            mode="offline" if self.synthetic else ("test" if self._poster else self.mode),
             errors=errors,
         )

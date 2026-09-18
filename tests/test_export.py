@@ -19,5 +19,7 @@ async def test_export_offline(service, tmp_path):
         assert json.loads((api / f"segments-{code}.json").read_text())["synthetic"] is True  # offline
     assert not (api / "brief-KR.json").exists()  # no ANTHROPIC_API_KEY -> no brief, no failure
     assert json.loads((api / "seoul.json").read_text())["places"]
-    assert (tmp_path / "index.html").exists() and (tmp_path / ".nojekyll").exists()
+    assert json.loads((api / "shopping.json").read_text())["by_segment"]
+    assert "let STATIC = true;" in (tmp_path / "index.html").read_text()
+    assert (tmp_path / ".nojekyll").exists()
     assert any("report KR" in line for line in lines)

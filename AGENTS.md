@@ -27,6 +27,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/engine.py` | 소스 병렬 수집 → scoring → store |
 | `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
 | `src/trend_engine/seoul.py` | 서울 실시간 도시데이터 핫스팟 |
+| `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
 | `src/trend_engine/ai.py` | Claude 브리핑 + 근거 검증(`validate_brief`) |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
 | `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (의존성 없는 단일 HTML) |
@@ -56,5 +57,5 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 
 ## 하지 말 것
 - 키/토큰을 코드·fixture·로그에 남기기 (`record` 전 fixture 에 키가 들어가는지 확인 — YouTube 응답엔 키가 없다).
-- 비공식 엔드포인트(signal.bz, nate)에 고빈도 폴링. 캐시(`Store.cache_*`)와 최소 수 분 간격 유지.
+- 비공식 엔드포인트(signal.bz, nate, datalab.naver.com 웹)에 고빈도 폴링. 캐시(`Store.cache_*`)와 페이싱(`WEB_PACE_SECONDS`, `PACE_SECONDS`)을 줄이지 말 것 — 429 로 막힌다.
 - DataLab affinity 를 "해당 연령 검색자 비율"로 설명하기 (틀림 — docs/SEGMENTS.md).

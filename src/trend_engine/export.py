@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import logging
-import shutil
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
@@ -31,7 +30,10 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], brief_re
     api = out / "api"
     lines: list[str] = []
     out.mkdir(parents=True, exist_ok=True)
-    shutil.copy(WEB / "index.html", out / "index.html")
+    page = (WEB / "index.html").read_text(encoding="utf-8")
+    marker = "let STATIC = false;"
+    assert marker in page, "index.html static-mode marker missing"
+    (out / "index.html").write_text(page.replace(marker, "let STATIC = true;", 1), encoding="utf-8")
     (out / ".nojekyll").write_text("")
 
     meta = svc.meta() | {"static": True}
@@ -74,6 +76,12 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], brief_re
             meta["briefs"].append(code)
 
     _write(api / "seoul.json", await svc.seoul())
+    try:
+        shop = await svc.shopping()  # cached 3h inside ShoppingInsight
+        _write(api / "shopping.json", shop)
+        lines.append(f"shopping: {len(shop['by_segment'])} segments, {len(shop['errors'])} errors")
+    except Exception as e:  # noqa: BLE001
+        lines.append(f"shopping: FAIL {e}")
     _write(api / "meta.json", meta)
     lines.append(f"wrote {out}")
     return lines

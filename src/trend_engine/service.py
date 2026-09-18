@@ -9,6 +9,7 @@ from . import ai
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .seoul import SeoulCity
+from .shopping import ShoppingInsight
 from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, SegmentProfiler, parse_segment
 from .store import Store
 
@@ -19,6 +20,7 @@ class TrendService:
         self.store = store if store is not None else Store(self.settings.db_path)
         self.engine = TrendEngine(self.settings, self.store)
         self.seoul_city = SeoulCity(self.settings, self.store)
+        self.shopping_insight = ShoppingInsight(self.settings, self.store)
 
     def meta(self) -> dict[str, Any]:
         s = self.settings
@@ -28,9 +30,11 @@ class TrendService:
             "sources": self.engine.source_overview(),
             "segments": {"default": [x.name for x in DEFAULT_SEGMENTS], "ages": list(AGE_GROUPS), "genders": list(GENDERS)},
             "features": {
-                "segments": bool(s.offline or (s.naver_client_id and s.naver_client_secret)),
+                "segments": True,
+                "segments_mode": "offline" if s.offline else s.naver_mode,
                 "youtube": bool(s.offline or s.youtube_api_key),
                 "seoul": True,
+                "shopping": True,
                 "seoul_full": bool(s.seoul_api_key),
                 "ai": bool(s.anthropic_api_key),
             },
@@ -61,6 +65,9 @@ class TrendService:
         result["labels"] = {c["query"]: c["label"] for c in report["clusters"][:top]}
         self.store.cache_set(key, result)
         return result
+
+    async def shopping(self, segments: list[str] | None = None, categories: list[str] | None = None) -> dict[str, Any]:
+        return await self.shopping_insight.top(segments, categories)
 
     async def seoul(self, places: list[str] | None = None) -> dict[str, Any]:
         return await self.seoul_city.hotspots(places)

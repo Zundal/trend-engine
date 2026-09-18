@@ -12,8 +12,18 @@
 ## 세그먼트/지역 전용 (랭킹 소스 아님)
 | 모듈 | 키 | 내용 |
 |---|---|---|
-| `segments.py` 네이버 검색어 트렌드 | `NAVER_CLIENT_ID/SECRET` (+`NAVER_API`) | 연령(11구간)·성별·기기별 상대 검색량. 요청당 5그룹 |
+| `segments.py` 네이버 검색어 트렌드 | 선택 (`NAVER_CLIENT_ID/SECRET`, `NAVER_API`) | 연령(11구간)·성별 상대 검색량. 요청당 5그룹. 키 없으면 **web 모드** |
+| `shopping.py` 네이버 쇼핑인사이트 | 불필요 | 11개 쇼핑 분야 × 연령(10대~60대)·성별 인기 검색어 top N. **비공식 웹 엔드포인트** |
 | `seoul.py` 서울 실시간 도시데이터(인구) | `SEOUL_API_KEY` | 핫스팟 120여 곳의 혼잡도, 성별·10세 단위 연령 비율, 거주/비거주, 예측 |
+
+## 네이버 키 없는 모드 (web)
+- 검색어 트렌드: `datalab.naver.com` 의 공개 웹 폼과 같은 흐름 (`POST /qcHash.naver` → `GET /keyword/trendResult.naver?hashKey=` 의 `graph_data`).
+  응답 수치는 공식 API 와 동일(요청 내 최대=100).
+- 쇼핑인사이트: `POST /shoppingInsight/getCategoryKeywordRank.naver` (cid, age=10..60, gender=f/m).
+- **요청 간격을 지켜야 한다.** 폼 페이지를 매번 다시 열거나 몰아서 보내면 HTTP 429 → 이후 요청이 느려진다.
+  구현: 세션당 폼 1회 방문, 순차 호출, 검색어 트렌드 2.5초 / 쇼핑 1초 간격, 429 시 Retry-After 또는 20·40·80초 대기.
+- 비공식 경로라 예고 없이 막히거나 바뀔 수 있다 → `doctor` 로 감시, 막히면 키(API HUB)로 전환.
+- 네이버 이용약관상 자동화된 수집이 제한될 수 있다. 개인·연구용 저빈도 사용을 전제로 하며, 상업적 사용이면 공식 API 를 쓸 것.
 
 ## 네이버에 대해
 - **2026-07-31 부터 검색어 트렌드 신규 키는 NAVER API HUB(네이버 클라우드 플랫폼)에서만 발급.**

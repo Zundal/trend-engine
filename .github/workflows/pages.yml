@@ -21,11 +21,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30  # 키 없는 네이버 웹 모드는 페이싱 때문에 3시간마다 ~6분 걸림
     env:
       NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
       NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
-      NAVER_API: ${{ vars.NAVER_API || 'hub' }}  # 개발자센터 구 키면 저장소 Variable NAVER_API=legacy
+      NAVER_API: ${{ vars.NAVER_API }}  # 비우면 자동: 키 있으면 hub, 없으면 web(키 없는 데이터랩 웹). 구 키면 legacy
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
