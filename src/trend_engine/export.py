@@ -48,7 +48,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], brief_re
                    for c in report["clusters"]}
         _write(api / f"history-{code}.json", history)
 
-        if meta["features"]["segments"]:
+        # Naver search data only describes Korean users — skip foreign regions (saves quota).
+        if meta["features"]["segments"] and code.startswith("KR"):
             try:
                 seg = svc.store.cache_get(f"segments-latest:{code}", SEGMENT_REFRESH)
                 if seg is None:

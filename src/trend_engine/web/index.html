@@ -253,6 +253,10 @@ function renderHeat(s) {
 }
 
 async function loadSegments(custom) {
+  if (STATIC && META.features.segments && !region.startsWith("KR") && !custom) {
+    $("#heat").innerHTML = `<div class="empty">연령·성별 관심도는 네이버 검색 기반이라 한국·서울에서만 제공합니다</div>`;
+    return;
+  }
   if (STATIC && !META.features.segments) {
     $("#heat").innerHTML = `<div class="empty">저장소 Secret 에 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 을 설정하면 연령·성별 관심도가 표시됩니다</div>`;
     return;
