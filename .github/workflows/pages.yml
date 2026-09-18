@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write  # 일별 기록을 data 브랜치에 커밋
   pages: write
   id-token: write
 
@@ -31,8 +31,14 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TREND_ENGINE_DATA_KEY: ${{ secrets.TREND_ENGINE_DATA_KEY }}  # 공개 데이터 암호화 키 (64 hex)
       TREND_ENGINE_DB: data/trends.db
+      TREND_ENGINE_ARCHIVE: archive
     steps:
       - uses: actions/checkout@v7
+      # 영구 기록: 끝난 날(KST)의 요약이 쌓이는 data 브랜치
+      - uses: actions/checkout@v7
+        with:
+          ref: data
+          path: archive
       - uses: astral-sh/setup-uv@v10.1.0
       - run: uv sync --all-extras --frozen
 
@@ -46,6 +52,15 @@ jobs:
 
       - name: Collect & export static site
         run: uv run trend-engine export --out site --regions KR,US,JP,GB,TW,VN
+
+      - name: Commit finished days to data branch
+        working-directory: archive
+        run: |
+          git add -A
+          if git diff --cached --quiet; then echo "no new days"; exit 0; fi
+          git -c user.name="trend-engine-bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "archive $(git diff --cached --name-only | cut -d/ -f1 | sort -u | tr '\n' ' ')"
+          git push -q origin HEAD:data
 
       - name: Save snapshot DB
         if: always()

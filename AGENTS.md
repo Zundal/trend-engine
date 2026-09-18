@@ -27,6 +27,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/engine.py` | 소스 병렬 수집 → scoring → store |
 | `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
 | `src/trend_engine/seoul.py` | 서울 실시간 도시데이터 핫스팟 |
+| `src/trend_engine/archive.py` | 일별 요약(KST) · data 브랜치 기록 · 7일/30일 기간 뷰 |
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
 | `src/trend_engine/ai.py` | Claude 브리핑 + 근거 검증(`validate_brief`) |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |

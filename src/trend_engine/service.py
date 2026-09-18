@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import Any
 
-from . import ai
+from pathlib import Path
+
+from . import ai, archive
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .seoul import SeoulCity
@@ -66,8 +68,21 @@ class TrendService:
         self.store.cache_set(key, result)
         return result
 
-    async def shopping(self, segments: list[str] | None = None, categories: list[str] | None = None) -> dict[str, Any]:
-        return await self.shopping_insight.top(segments, categories)
+    async def shopping(self, segments: list[str] | None = None, categories: list[str] | None = None,
+                       days: int = 7) -> dict[str, Any]:
+        max_age = timedelta(hours=3) if days <= 7 else timedelta(hours=24)
+        return await self.shopping_insight.top(segments, categories, max_age=max_age, days=days)
+
+    @property
+    def archive_root(self) -> Path:
+        return Path(self.settings.archive_dir)
+
+    def period(self, region: str) -> dict[str, Any]:
+        code = get_region(region).code
+        return {name: archive.period_trends(self.store, self.archive_root, code, n) for name, n in archive.PERIODS.items()}
+
+    def age_period(self) -> dict[str, Any]:
+        return {name: archive.period_segments(self.store, self.archive_root, n) for name, n in archive.PERIODS.items()}
 
     async def seoul(self, places: list[str] | None = None) -> dict[str, Any]:
         return await self.seoul_city.hotspots(places)

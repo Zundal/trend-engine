@@ -90,12 +90,43 @@ class Store:
         ).fetchall()
         return [dict(r) for r in reversed(rows)]
 
+    def cluster_rows(self, region: str, start: datetime, end: datetime) -> list[dict[str, Any]]:
+        """Every (snapshot, cluster) row in [start, end) — input for daily aggregation (archive.py)."""
+        rows = self.db.execute(
+            """SELECT r.generated_at, c.rank, c.key, c.label, c.score FROM clusters c
+               JOIN reports r ON r.id=c.report_id
+               WHERE r.region=? AND r.generated_at>=? AND r.generated_at<? ORDER BY r.generated_at""",
+            # timestamps are stored as UTC ISO strings; compare in the same form
+            (region, start.astimezone(timezone.utc).isoformat(timespec="seconds"),
+             end.astimezone(timezone.utc).isoformat(timespec="seconds")),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def snapshot_times(self, region: str) -> list[str]:
+        return [r[0] for r in self.db.execute(
+            "SELECT generated_at FROM reports WHERE region=? ORDER BY generated_at", (region,)).fetchall()]
+
+    def prune(self, payload_days: int = 3, keep_days: int = 45) -> None:
+        """Keep the cache DB small: drop full report payloads after `payload_days` (ranks stay for
+        aggregation) and everything after `keep_days` (by then it is in the archive)."""
+        now = utcnow()
+        self.db.execute("UPDATE reports SET payload='null' WHERE generated_at<? AND payload!='null'",
+                        ((now - timedelta(days=payload_days)).isoformat(),))
+        old = (now - timedelta(days=keep_days)).isoformat()
+        self.db.execute("DELETE FROM clusters WHERE report_id IN (SELECT id FROM reports WHERE generated_at<?)", (old,))
+        self.db.execute("DELETE FROM reports WHERE generated_at<?", (old,))
+        self.db.execute("DELETE FROM cache WHERE created_at<?", (old,))
+        self.db.commit()
+
     # --- generic cache (Naver DataLab quota, Seoul API, AI briefs) ------------
     def cache_get(self, key: str, max_age: timedelta) -> Any | None:
         row = self.db.execute("SELECT created_at, payload FROM cache WHERE key=?", (key,)).fetchone()
         if not row or datetime.fromisoformat(row["created_at"]) < utcnow() - max_age:
             return None
         return json.loads(row["payload"])
+
+    def cache_keys(self, prefix: str) -> list[str]:
+        return [r[0] for r in self.db.execute("SELECT key FROM cache WHERE key LIKE ? ORDER BY key", (prefix + "%",))]
 
     def cache_set(self, key: str, value: Any) -> None:
         self.db.execute(

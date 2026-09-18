@@ -128,6 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
     ex.add_argument("--out", default="site")
     ex.add_argument("--regions", default="KR,US,JP,GB,TW,VN")
+    ex.add_argument("--archive", help="일별 요약 저장 위치 (기본: TREND_ENGINE_ARCHIVE 또는 data/archive)")
 
     args = p.parse_args(argv)
     if args.offline:
@@ -161,7 +162,8 @@ def main(argv: list[str] | None = None) -> int:
 
         from .export import export_site
 
-        for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"])):
+        for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"],
+                                                  Path(args.archive) if args.archive else None)):
             print(line)
         return 0
     try:

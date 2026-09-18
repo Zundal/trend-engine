@@ -22,13 +22,15 @@ def fixed_key(monkeypatch):
 
 
 async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
-    lines = await export_site(service, tmp_path, ["KR", "US"])
+    lines = await export_site(service, tmp_path / "site", ["KR", "US"], archive_dir=tmp_path / "archive")
+    tmp_path = tmp_path / "site"
     api = tmp_path / "api"
     key = bytes.fromhex(KEY_HEX)
     assert not list(api.glob("*.json")), "no plaintext JSON may be published"
 
     files = {p.stem: p.read_text() for p in api.glob("*.dat")}
-    assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping"}
+    assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping",
+                          "shopping-month", "period-KR", "period-US", "age-period"}
     assert "segments-US" not in files  # Korean search data isn't published for foreign regions
     for name, blob in files.items():
         assert not PROVIDERS.search(blob) and "{" not in blob, f"{name} not encrypted"
@@ -43,6 +45,10 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     hist = publish.decrypt(files["history-KR"], key)
     assert set(hist) == {c["key"] for c in rep["clusters"]}
     assert publish.decrypt(files["shopping"], key)["by_segment"]
+    period = publish.decrypt(files["period-KR"], key)
+    assert set(period) == {"week", "month"} and period["week"]["days_available"] >= 1 and period["week"]["items"]
+    ages = publish.decrypt(files["age-period"], key)
+    assert ages["week"]["days_available"] == 1 and ages["week"]["by_segment"]
 
     page = (tmp_path / "index.html").read_text()
     assert "let STATIC = true;" in page and f'const DATA_KEY = "{KEY_HEX}";' in page

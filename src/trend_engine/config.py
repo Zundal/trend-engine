@@ -66,6 +66,7 @@ class Settings:
     ai_model: str = "claude-opus-5"
     offline: bool = False
     db_path: str = "data/trends.db"
+    archive_dir: str = "data/archive"  # daily summaries (committed to the `data` branch in CI)
     fixtures_dir: Path = field(default_factory=lambda: Path(__file__).resolve().parents[2] / "tests" / "fixtures")
     user_agent: str = "trend-engine/0.1 (+https://github.com/; research use)"
     timeout: float = 15.0
@@ -92,4 +93,5 @@ class Settings:
             ai_model=env("TREND_ENGINE_AI_MODEL", "claude-opus-5"),
             offline=env("TREND_ENGINE_OFFLINE", "0") in ("1", "true", "yes"),
             db_path=env("TREND_ENGINE_DB", "data/trends.db"),
+            archive_dir=env("TREND_ENGINE_ARCHIVE", "data/archive"),
         )

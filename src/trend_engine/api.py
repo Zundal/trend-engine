@@ -56,8 +56,16 @@ def create_app(service: TrendService | None = None) -> FastAPI:
         return publish.public_segments(await guard(svc.keyword_segments(kws[:20], _split(segments))))
 
     @app.get("/api/shopping")
-    async def shopping(segments: str | None = None, categories: str | None = None):
-        return publish.public_shopping(await svc.shopping(_split(segments), _split(categories)))
+    async def shopping(segments: str | None = None, categories: str | None = None, days: int = Query(7, ge=1, le=31)):
+        return publish.public_shopping(await svc.shopping(_split(segments), _split(categories), days))
+
+    @app.get("/api/period")
+    def period(region: str = "KR"):
+        return svc.period(region)
+
+    @app.get("/api/age-period")
+    def age_period():
+        return svc.age_period()
 
     @app.get("/api/seoul")
     async def seoul(places: str | None = None):

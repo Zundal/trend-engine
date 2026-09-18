@@ -46,6 +46,15 @@ score           = (Σ family_score + content_boost) × consensus × 100
 - 같은 관심사 판정: 키 동일 / 짧은 쪽이 긴 쪽에 포함(길이비 ≥0.4, 최소 길이) / 2-gram Dice ≥0.8 / 단어 2개 이상·60% 이상 겹침.
 - 너무 짧은 키(ASCII 3자 미만, 한글 2자 미만)는 포함 매칭 금지 — `m`, `ai` 가 모든 제목에 걸리는 것 방지.
 
+## 기록 (archive.py)
+- 하루 = KST 자정 기준. `archive.daily_trends` 가 그날 스냅샷을 키워드별 {label, hours, best_rank, avg_score} 로 요약.
+- `archive.finalize` 가 끝난 날만 파일로 씀 (멱등). CI 에서는 `data` 브랜치 체크아웃(`archive/`)에 쓰고 커밋.
+- 기간 뷰: `period_trends` (exposure = Σ hours × avg_score 로 정렬, 날짜별 최고 순위 series, 기간 중 처음 등장 = NEW),
+  `period_segments` (그룹별로 평균 초과(>100)로 top5 에 든 날 수 → 평균 배수).
+- 연령·쇼핑 스냅샷은 `record_daily_extras` 로 하루 마지막 값을 보관 → finalize 때 파일로.
+- 쇼핑 30일은 네이버 쇼핑인사이트 30일 창을 직접 조회(하루 1회 캐시) → 기록 없이도 바로 제공.
+- 캐시 DB 는 `Store.prune()` 으로 원본 payload 3일, 순위 45일만 유지.
+
 ## 공개 데이터 (publish.py)
 - 대시보드용 API 와 정적 사이트는 `publish.public_*` 뷰만 내보낸다: 소스 이름·언론사·소스 상태를 뺀 중립 형태
   (`clusters[].mentions` 는 평탄화된 제목 목록, `videos` / `news` 로 이름 변경). 원본은 CLI `--json` 으로만.

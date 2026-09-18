@@ -68,10 +68,11 @@ class ShoppingInsight:
         raise RuntimeError(f"shopping insight HTTP {r.status_code}")
 
     async def top(self, segments: list[str] | None = None, categories: list[str] | None = None,
-                  count: int = 10, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
+                  count: int = 10, max_age: timedelta = timedelta(hours=3), days: int = 7) -> dict[str, Any]:
+        """Top shopping searches over the last `days` days (7 = 이번 주, 30 = 이번 달)."""
         segments = segments or list(SEGMENTS)
         categories = categories or list(CATEGORIES)
-        cache_key = f"shopping:{','.join(segments)}:{','.join(categories)}:{count}"
+        cache_key = f"shopping:{days}d:{','.join(segments)}:{','.join(categories)}:{count}"
         if self.store and (hit := self.store.cache_get(cache_key, max_age)):
             return hit
         if self.settings.offline:
@@ -79,7 +80,7 @@ class ShoppingInsight:
             return json.loads(raw) | {"synthetic": False, "offline": True}
 
         end = date.today() - timedelta(days=1)
-        start = end - timedelta(days=6)
+        start = end - timedelta(days=days - 1)
         s, e = start.isoformat(), end.isoformat()
         overall: dict[str, list[str]] = {}
         by_seg: dict[str, dict[str, dict[str, list[str]]]] = {}

@@ -40,6 +40,12 @@ h1 span { color: var(--accent); }
 .chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px;
   padding: 5px 13px; cursor: pointer; font: inherit; font-size: 13px; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-left: auto; }
+.seg button { background: var(--panel); color: var(--muted); border: 0; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.pmeta { font-size: 11px; color: var(--muted); white-space: nowrap; text-align: right; }
+.note { font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
 button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
 button:disabled { opacity: .5; cursor: progress; }
 .banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); font-size: 13px; }
@@ -55,6 +61,7 @@ ol.rank { list-style: none; margin: 0; padding: 0; }
 ol.rank li { display: grid; grid-template-columns: 28px minmax(0, 1fr) 54px 110px; gap: 8px; align-items: center;
   padding: 7px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
 ol.rank li:hover, ol.rank li.sel { background: var(--accent-soft); }
+ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
 .n { font-family: var(--mono); color: var(--muted); text-align: right; }
 .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .st { font-size: 11px; font-family: var(--mono); text-align: center; }
@@ -94,6 +101,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 .kwrow input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: inherit; }
 @media (max-width: 520px) {
   main { padding: 12px; }
+  ol.rank.period li { grid-template-columns: 22px minmax(0, 1fr) auto 32px; }
   ol.rank li { grid-template-columns: 22px minmax(0, 1fr) 40px 36px; gap: 6px; }
   .bars li { grid-template-columns: 20px minmax(0, 1fr) 70px 50px; }
 }
@@ -113,10 +121,16 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
   </div>
   <div class="sub" id="sub-country">
     <div class="chips" id="regions" role="group" aria-label="나라"></div>
+    <div class="seg" id="cperiod" role="group" aria-label="기간">
+      <button data-p="live" aria-pressed="true">실시간</button><button data-p="week" aria-pressed="false">7일</button><button data-p="month" aria-pressed="false">30일</button>
+    </div>
   </div>
   <div class="sub" id="sub-age" hidden>
     <div class="chips" id="groups" role="group" aria-label="연령·성별 그룹"></div>
-    <span class="hint">한국 · 최근 7일</span>
+    <span class="hint">한국</span>
+    <div class="seg" id="aperiod" role="group" aria-label="기간">
+      <button data-p="week" aria-pressed="true">7일</button><button data-p="month" aria-pressed="false">30일</button>
+    </div>
   </div>
 </header>
 <div id="banner"></div>
@@ -125,7 +139,8 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 <main id="view-country">
   <div class="col">
     <section class="card">
-      <h2>지금 관심 랭킹 <small>행을 누르면 상세</small></h2>
+      <h2 id="rank-title">지금 관심 랭킹 <small>행을 누르면 상세</small></h2>
+      <div class="note" id="rank-note" hidden></div>
       <ol class="rank" id="rank"></ol>
       <button class="ghost" id="more" style="margin-top:8px" hidden></button>
       <div id="detail"></div>
@@ -147,7 +162,8 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 <main id="view-age" hidden>
   <div class="col">
     <section class="card" id="card-issues">
-      <h2><span id="g-title">20대가 특히 관심 있는 이슈</span> <small>전체 평균 대비 몇 배 더 검색하는지</small></h2>
+      <h2><span id="g-title">20대가 특히 관심 있는 이슈</span> <small id="issues-sub">평균보다 더 관심을 보인 날 수 · 평균 대비 배수</small></h2>
+      <div class="note" id="issues-note" hidden></div>
       <ol class="bars" id="issues"></ol>
     </section>
   </div>
@@ -158,7 +174,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
     </section>
   </div>
   <section class="card wide">
-    <h2>그룹 비교표 <small>오늘의 이슈 × 연령·성별 (100 = 평균)</small></h2>
+    <h2>그룹 비교표 <small>오늘의 이슈 × 연령·성별 (100 = 평균, 최근 7일 검색 기준)</small></h2>
     <div class="kwrow" id="kwrow">
       <input id="kwinput" placeholder="직접 비교할 키워드 (쉼표 구분)" aria-label="키워드">
       <button class="ghost" id="kwgo">비교</button>
@@ -174,8 +190,12 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const GROUPS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성", "20대 여성", "20대 남성"];
 const HIDDEN_REGIONS = new Set(["KR-11", "KR-26"]); // 서울·부산은 나라 탭에서 제외
-let META = null, REPORT = null, SEG = null, SHOP = null;
+let META = null, REPORT = null, SEG = null;
 let view = "country", region = "KR", group = "20대", selected = null, showAll = false;
+let cperiod = "live", aperiod = "week";
+const PERIOD = {}, SHOPS = {};
+let AGEP = null;
+const PLABEL = { week: "7일", month: "30일" };
 
 // Static mode (published site): data is pre-built into encrypted api/*.dat files by `trend-engine export`.
 let STATIC = false; // export.py rewrites this to true
@@ -201,7 +221,8 @@ async function api(path, opts) {
     const r = u.searchParams.get("region") || region;
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
-    return staticGet(["meta", "shopping"].includes(name) ? name : `${name}-${r}`);
+    if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
+    return staticGet(["meta", "age-period"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -212,12 +233,12 @@ async function api(path, opts) {
 
 // ---- routing: #country/KR, #age/20대 -------------------------------------------------
 function readHash() {
-  const [v, arg] = decodeURIComponent(location.hash.slice(1)).split("/");
-  if (v === "age") { view = "age"; if (GROUPS.includes(arg)) group = arg; }
-  else if (v === "country") { view = "country"; if (arg) region = arg; }
+  const [v, arg, p] = decodeURIComponent(location.hash.slice(1)).split("/");
+  if (v === "age") { view = "age"; if (GROUPS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
+  else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; }
 }
 function writeHash() {
-  const h = view === "age" ? `#age/${group}` : `#country/${region}`;
+  const h = view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
   if (location.hash !== h) history.replaceState(null, "", h);
 }
 function setView(v) {
@@ -239,7 +260,15 @@ function statusCell(c) {
   const txt = { new: "NEW", rising: "▲" + (c.rank_change || ""), falling: "▼" + Math.abs(c.rank_change || 0), steady: "–" }[c.status];
   return `<span class="st ${c.status}">${txt}</span>`;
 }
+function periodData() { return cperiod === "live" ? null : PERIOD[region]?.[cperiod]; }
 function renderRank() {
+  const pd = periodData();
+  $("#rank-title").firstChild.textContent = cperiod === "live" ? "지금 관심 랭킹 " : `최근 ${PLABEL[cperiod]} 관심 랭킹 `;
+  const note = $("#rank-note");
+  note.hidden = !(pd && pd.days_available < pd.days);
+  if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
+  $("#rank").classList.toggle("period", !!pd);
+  if (pd) return renderPeriodRank(pd);
   const cs = REPORT.clusters.slice(0, showAll ? 50 : 20);
   const max = Math.max(...cs.map((c) => c.score), 1);
   $("#rank").innerHTML = cs.map((c, i) => `
@@ -251,6 +280,42 @@ function renderRank() {
     </li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
   $("#more").hidden = REPORT.clusters.length <= 20;
   $("#more").textContent = showAll ? "접기" : `더보기 (${REPORT.clusters.length}개)`;
+}
+function renderPeriodRank(pd) {
+  const items = pd.items.slice(0, showAll ? 40 : 20);
+  const max = Math.max(...items.map((c) => c.exposure), 1);
+  $("#rank").innerHTML = items.map((c, i) => `
+    <li data-i="${i}" class="${selected === i ? "sel" : ""}">
+      <span class="n">${i + 1}</span>
+      <span class="label" title="${esc(c.label)}">${esc(c.label)}</span>
+      <span class="pmeta">${c.new_in_period ? `<b class="st new">NEW</b> ` : ""}${c.days}일 · ${c.best_rank}위</span>
+      <span class="score"><i style="width:${(c.exposure / max * 100).toFixed(1)}%"></i></span>
+    </li>`).join("") || `<li class="empty">아직 기록이 없습니다</li>`;
+  $("#more").hidden = pd.items.length <= 20;
+  $("#more").textContent = showAll ? "접기" : `더보기 (${pd.items.length}개)`;
+}
+function renderPeriodDetail(c, pd) {
+  const fmt = (d) => d.slice(5).replace("-", "/");
+  $("#detail").innerHTML = `<div class="detail">
+    <h3>${esc(c.label)}</h3>
+    <div class="muted">최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권 · 최고 ${c.best_rank}위 · 누적 ${c.hours}시간 · 처음 ${fmt(c.since)}</div>
+    <b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
+}
+function sparkDays(dates, series) {
+  if (dates.length < 2) return `<div class="muted">기록이 2일 이상 쌓이면 표시됩니다</div>`;
+  const ranks = Object.values(series);
+  const w = 300, hgt = 46, maxR = Math.max(10, ...ranks);
+  const x = (i) => (i / (dates.length - 1) * w).toFixed(1);
+  const y = (rk) => ((Math.min(rk, maxR) - 1) / (maxR - 1) * (hgt - 8) + 4).toFixed(1);
+  const pts = dates.map((d, i) => series[d] ? `${x(i)},${y(series[d])}` : null);
+  const segs = []; let cur = [];
+  for (const p of pts) { if (p) cur.push(p); else if (cur.length) { segs.push(cur); cur = []; } }
+  if (cur.length) segs.push(cur);
+  const dots = "";
+  return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="날짜별 순위 (위쪽이 상위)">
+    ${segs.map((sg) => `<polyline points="${sg.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join("")}${dots}</svg>
+    <div class="legend"><span>${dates[0].slice(5)}</span><span style="margin-left:auto">${dates.at(-1).slice(5)}</span></div>
+    <div class="muted" style="font-size:11px">위쪽이 1위 · 아래 끝 ${maxR}위 · 끊긴 날 = 순위권 밖</div>`;
 }
 async function renderDetail(c) {
   const mentions = c.mentions || [];
@@ -283,7 +348,9 @@ function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 
 async function loadCountry(refresh = false) {
   selected = null; $("#detail").innerHTML = "";
   $("#rank").innerHTML = `<li class="empty">불러오는 중…</li>`;
+  for (const b of $$("#cperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === cperiod));
   try {
+    if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
     $("#gen").textContent = `${new Date(REPORT.generated_at).toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" })} 기준 · 매시간 갱신`;
     renderRank(); renderContent();
@@ -302,25 +369,29 @@ function josa(word) {  // 이/가: '여성이', '20대가'
 }
 function renderIssues() {
   const card = $("#card-issues");
-  if (!SEG) { $("#issues").innerHTML = `<li class="empty">불러오는 중…</li>`; return; }
-  const rows = SEG.top_by_segment?.[group];
-  card.hidden = !rows;  // 조합 그룹(20대 여성 등)은 쇼핑만 제공 → 쇼핑 카드를 넓게
-  card.parentElement.hidden = !rows;
-  $("#shopcol").classList.toggle("wide", !rows);
-  if (!rows) return;
-  const labels = SEG.labels || {};
-  const top = rows.filter((r) => r.affinity > 100).slice(0, 10);
-  const list = top.length ? top : rows.slice(0, 5);
-  const max = Math.max(...list.map((r) => r.affinity), 100);
-  $("#issues").innerHTML = list.map((r, i) => `<li>
+  const ap = AGEP?.[aperiod];
+  const hasGroup = SEG ? !!SEG.top_by_segment?.[group] : true;
+  card.hidden = !hasGroup;  // 조합 그룹(20대 여성 등)은 쇼핑만 제공 → 쇼핑 카드를 넓게
+  card.parentElement.hidden = !hasGroup;
+  $("#shopcol").classList.toggle("wide", !hasGroup);
+  if (!hasGroup) return;
+  if (!ap) { $("#issues").innerHTML = `<li class="empty">불러오는 중…</li>`; return; }
+  const note = $("#issues-note");
+  note.hidden = ap.days_available >= ap.days;
+  note.textContent = `최근 ${PLABEL[aperiod]} 중 기록 ${ap.days_available}일 — 매일 쌓이는 중`;
+  const rows = ap.by_segment?.[group] || [];
+  const max = Math.max(...rows.map((r) => r.avg_affinity), 100);
+  $("#issues").innerHTML = rows.map((r, i) => `<li>
       <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(labels[r.keyword] || r.keyword)}">${esc(labels[r.keyword] || r.keyword)}</span>
-      <span class="bar-bg"><i style="width:${(r.affinity / max * 100).toFixed(1)}%"></i></span>
-      <span class="x">${(r.affinity / 100).toFixed(1)}배</span></li>`).join("")
-    || `<li class="empty">오늘 이슈 중 이 그룹이 두드러진 키워드가 없습니다</li>`;
+      <span class="label" title="${esc(r.keyword)}">${esc(r.keyword)}</span>
+      <span class="bar-bg"><i style="width:${(r.avg_affinity / max * 100).toFixed(1)}%"></i></span>
+      <span class="x">${r.days}일·${(r.avg_affinity / 100).toFixed(1)}배</span></li>`).join("")
+    || `<li class="empty">이 기간에 이 그룹이 두드러진 이슈가 없습니다</li>`;
 }
 function renderShopping() {
+  const SHOP = SHOPS[aperiod];
   if (!SHOP) return;
+  $("#g-title2").textContent = `${group} 쇼핑 관심 (${PLABEL[aperiod]})`;
   const cats = SHOP.by_segment[group];
   if (!cats) { $("#shop").innerHTML = `<div class="empty">이 그룹의 쇼핑 데이터가 없습니다</div>`; return; }
   $("#shop").innerHTML = `<div class="shopgrid">${Object.entries(cats).map(([cat, v]) => {
@@ -358,10 +429,17 @@ async function loadAge(custom) {
       renderHeat(s);
     } catch (e) { $("#heat").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
   } else renderHeat(SEG);
+  for (const b of $$("#aperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === aperiod));
+  if (!AGEP) { try { AGEP = await api("api/age-period"); } catch (e) { $("#issues").innerHTML = `<li class="empty">${esc(e.message)}</li>`; } }
   renderIssues();
-  if (!SHOP) { try { SHOP = await api("api/shopping"); } catch (e) { $("#shop").innerHTML = `<div class="empty">${esc(e.message)}</div>`; } }
+  if (!SHOPS[aperiod]) {
+    $("#shop").innerHTML = `<div class="empty">불러오는 중…</div>`;
+    try { SHOPS[aperiod] = await api(`api/shopping?days=${aperiod === "month" ? 30 : 7}`); }
+    catch (e) { $("#shop").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  }
   renderShopping();
-  if (SHOP?.period) $("#gen").textContent = `${SHOP.period[0]} ~ ${SHOP.period[1]}`;
+  const sp = SHOPS[aperiod]?.period;
+  if (sp) $("#gen").textContent = `${sp[0]} ~ ${sp[1]}`;
 }
 
 // ---- init ---------------------------------------------------------------------------
@@ -388,7 +466,17 @@ async function loadAge(custom) {
   $$(".tab").forEach((t) => t.onclick = () => setView(t.dataset.view));
   $("#rank").onclick = (e) => {
     const li = e.target.closest("[data-i]"); if (!li) return;
-    selected = +li.dataset.i; renderRank(); renderDetail(REPORT.clusters[selected]);
+    selected = +li.dataset.i; renderRank();
+    const pd = periodData();
+    if (pd) renderPeriodDetail(pd.items[selected], pd); else renderDetail(REPORT.clusters[selected]);
+  };
+  $("#cperiod").onclick = (e) => {
+    const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === cperiod) return;
+    cperiod = b.dataset.p; showAll = false; writeHash(); loadCountry();
+  };
+  $("#aperiod").onclick = (e) => {
+    const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === aperiod) return;
+    aperiod = b.dataset.p; writeHash(); loadAge();
   };
   $("#more").onclick = () => { showAll = !showAll; renderRank(); };
   const openItem = (list, attr) => (e) => {
