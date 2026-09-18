@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trend Engine</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<style>
+:root {
+  --bg: #f6f5f2; --panel: #ffffff; --ink: #1c1b19; --muted: #6b6860; --line: #e4e1da;
+  --accent: #d9480f; --accent-soft: #fff0e6; --up: #c92a2a; --down: #1c7ed6; --new: #d9480f;
+  --hot: 217, 72, 15; --cold: 28, 126, 214;
+  --radius: 10px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131312; --panel: #1c1c1a; --ink: #eceae4; --muted: #9a978f; --line: #2e2d2a;
+    --accent: #ff8a4c; --accent-soft: #3a2518; --up: #ff6b6b; --down: #4dabf7; --new: #ff8a4c;
+    --hot: 255, 138, 76; --cold: 77, 171, 247;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1320px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+h1 { font-size: 17px; margin: 0 8px 0 0; letter-spacing: -.02em; }
+h1 span { color: var(--accent); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px;
+  padding: 4px 12px; cursor: pointer; font: inherit; font-size: 13px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.spacer { flex: 1; }
+.meta { color: var(--muted); font-size: 12px; }
+button.primary { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+button:disabled { opacity: .5; cursor: progress; }
+.banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-size: 13px; }
+main { max-width: 1320px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
+section.card h2 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+section.card h2 small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+ol.rank { list-style: none; margin: 0; padding: 0; }
+ol.rank li { display: grid; grid-template-columns: 28px minmax(0, 1fr) 54px 110px; gap: 8px; align-items: center;
+  padding: 7px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+ol.rank li:hover, ol.rank li.sel { background: var(--accent-soft); }
+.n { font-family: var(--mono); color: var(--muted); text-align: right; }
+.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.label .srcs { font-weight: 400; margin-left: 6px; }
+.dot { display: inline-block; font-size: 10px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); margin-right: 3px; font-weight: 500; }
+.st { font-size: 11px; font-family: var(--mono); text-align: center; }
+.st.new { color: var(--new); font-weight: 700; } .st.rising { color: var(--up); } .st.falling { color: var(--down); } .st.steady { color: var(--muted); }
+.score { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.score i { display: block; height: 100%; background: var(--accent); }
+.detail { margin-top: 12px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; font-size: 13px; }
+.detail h3 { margin: 0 0 6px; font-size: 15px; }
+.detail ul { margin: 4px 0 8px; padding-left: 18px; }
+.muted { color: var(--muted); }
+table.heat { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 12px; table-layout: fixed; }
+table.heat th { font-weight: 500; color: var(--muted); font-size: 11px; padding: 2px; }
+table.heat th.kw { text-align: left; width: 34%; }
+table.heat td { text-align: center; padding: 5px 0; border-radius: 4px; font-family: var(--mono); font-size: 11px; }
+table.heat td.kw { text-align: left; font-family: inherit; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 4px; }
+.legend { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend .sw { display: inline-block; width: 22px; height: 10px; border-radius: 3px; vertical-align: middle; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { padding: 6px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.list li a { color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.list li a:hover { text-decoration: underline; }
+.tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.hot { display: grid; grid-template-columns: 120px minmax(0, 1fr) 64px; gap: 8px; align-items: center; padding: 5px 0; font-size: 12px; }
+.stack { display: flex; height: 14px; border-radius: 3px; overflow: hidden; }
+.stack i { display: block; height: 100%; }
+.brief h3 { margin: 0 0 8px; font-size: 15px; }
+.theme { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.theme b { font-size: 13px; } .theme p { margin: 2px 0; font-size: 13px; }
+.kwrow { display: flex; gap: 6px; margin-bottom: 8px; }
+.kwrow input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: inherit; }
+.status { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.ok { color: #2b8a3e; } .fail { color: var(--up); }
+.empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
+svg.spark { width: 100%; height: 40px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Trend <span>Engine</span></h1>
+    <div class="chips" id="regions" role="group" aria-label="지역"></div>
+    <div class="spacer"></div>
+    <span class="meta" id="gen"></span>
+    <button class="ghost" id="refresh">새로 수집</button>
+  </div>
+</header>
+<div id="banner"></div>
+<main>
+  <div class="col">
+    <section class="card">
+      <h2>지금 관심 랭킹 <small>여러 소스 교차 검증 점수 · 행을 누르면 상세</small></h2>
+      <ol class="rank" id="rank"></ol>
+      <button class="ghost" id="more" style="margin-top:8px" hidden></button>
+      <div id="detail"></div>
+    </section>
+    <section class="card">
+      <h2>연령·성별 관심도 <small id="segnote">네이버 DataLab affinity (100 = 전체 평균)</small></h2>
+      <div class="kwrow">
+        <input id="kwinput" placeholder="직접 분석할 키워드 (쉼표 구분, 최대 20개)" aria-label="키워드">
+        <button class="ghost" id="kwgo">분석</button>
+        <button class="ghost" id="kwreset" title="현재 랭킹 상위로 되돌리기">랭킹</button>
+      </div>
+      <div id="heat"><div class="empty">불러오는 중…</div></div>
+    </section>
+  </div>
+  <div class="col">
+    <section class="card brief">
+      <h2>AI 브리핑 <small>Claude · 수집 데이터 근거만 사용</small></h2>
+      <div id="brief"><button class="primary" id="briefgo">브리핑 생성</button></div>
+    </section>
+    <section class="card">
+      <h2>서울 핫스팟 <small>실시간 인구 연령 분포</small></h2>
+      <div id="seoul"><div class="empty">불러오는 중…</div></div>
+    </section>
+    <section class="card">
+      <h2>YouTube 인기 <small id="ytnote"></small></h2>
+      <ul class="list" id="yt"></ul>
+    </section>
+    <section class="card">
+      <h2>뉴스 헤드라인</h2>
+      <ul class="list" id="news"></ul>
+    </section>
+    <section class="card">
+      <h2>소스 상태</h2>
+      <div class="status" id="status"></div>
+    </section>
+  </div>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const SRC = { google_trends: "G", signal_bz: "시그널", nate: "네이트", wikipedia: "위키", youtube: "YT", google_news: "뉴스" };
+const AGE_COLORS = ["#adb5bd", "#ffd8a8", "#ff922b", "#e8590c", "#a61e4d", "#5f3dc4", "#1c7ed6", "#0b7285"];
+let META = null, REPORT = null, region = "KR", selected = null, showAll = false;
+try { region = localStorage.getItem("te.region") || "KR"; } catch (_) {}
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.detail || r.statusText);
+  return body;
+}
+
+function renderRegions() {
+  $("#regions").innerHTML = META.regions.map((r) =>
+    `<button class="chip" aria-pressed="${r.code === region}" data-code="${r.code}">${esc(r.name)}</button>`).join("");
+  $("#regions").onclick = (e) => {
+    const b = e.target.closest("[data-code]"); if (!b) return;
+    region = b.dataset.code; try { localStorage.setItem("te.region", region); } catch (_) {}
+    renderRegions(); load();
+  };
+}
+
+function statusCell(c) {
+  if (!c.status) return `<span class="st"></span>`;
+  const txt = { new: "NEW", rising: "▲" + (c.rank_change || ""), falling: "▼" + Math.abs(c.rank_change || 0), steady: "–" }[c.status];
+  return `<span class="st ${c.status}">${txt}</span>`;
+}
+
+function renderRank() {
+  const cs = REPORT.clusters.slice(0, showAll ? 50 : 20);
+  const max = Math.max(...cs.map((c) => c.score), 1);
+  $("#rank").innerHTML = cs.map((c, i) => `
+    <li data-i="${i}" class="${selected === i ? "sel" : ""}">
+      <span class="n">${i + 1}</span>
+      <span class="label" title="${esc(c.variants.join(" / "))}">${esc(c.label)}<span class="srcs">${
+        Object.keys(c.sources).map((s) => `<span class="dot">${SRC[s] || s}</span>`).join("")}${
+        Object.entries(c.mentions || {}).map(([s, v]) => `<span class="dot">+${SRC[s] || s} ${v.length}</span>`).join("")}</span></span>
+      ${statusCell(c)}
+      <span class="score" title="${c.score}"><i style="width:${(c.score / max * 100).toFixed(1)}%"></i></span>
+    </li>`).join("") || `<li class="empty">수집된 키워드가 없습니다</li>`;
+  $("#more").hidden = REPORT.clusters.length <= 20;
+  $("#more").textContent = showAll ? "접기" : `더보기 (${REPORT.clusters.length}개)`;
+  $("#rank").onclick = (e) => {
+    const li = e.target.closest("[data-i]"); if (!li) return;
+    selected = +li.dataset.i; renderRank(); renderDetail(REPORT.clusters[selected]);
+  };
+}
+
+async function renderDetail(c) {
+  const mentions = Object.entries(c.mentions || {}).flatMap(([s, v]) => v.map((t) => `<li><span class="tag">${SRC[s] || s}</span> ${esc(t)}</li>`));
+  $("#detail").innerHTML = `<div class="detail">
+    <h3>${esc(c.label)}</h3>
+    <div class="muted">검색어: ${esc(c.query)} · 점수 ${c.score} · ${Object.entries(c.sources).map(([s, r]) => `${SRC[s] || s} #${r}`).join(", ")}${c.volume ? ` · Google ${c.volume.toLocaleString()}+ 검색` : ""}</div>
+    ${c.related.length ? `<b>관련 뉴스</b><ul>${c.related.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+    ${mentions.length ? `<b>콘텐츠 언급</b><ul>${mentions.join("")}</ul>` : ""}
+    <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
+  try {
+    const h = await api(`/api/history?region=${region}&key=${encodeURIComponent(c.key)}`);
+    $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다 (수집할 때마다 스냅샷 저장)" : spark(h.map((x) => x.rank));
+  } catch (e) { $("#spark").textContent = e.message; }
+}
+
+function spark(ranks) {
+  const w = 300, hgt = 40, maxR = Math.max(...ranks, 10);
+  const pts = ranks.map((r, i) => `${(i / (ranks.length - 1) * w).toFixed(1)},${((r - 1) / (maxR - 1 || 1) * (hgt - 6) + 3).toFixed(1)}`).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="순위 추이 (위쪽이 상위)">
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="muted" style="font-size:11px">최근 ${ranks.length}회 · 현재 ${ranks.at(-1)}위 (위쪽이 상위)</div>`;
+}
+
+function heatColor(v) {
+  if (v == null) return "transparent";
+  const d = Math.max(-1, Math.min(1, Math.log2(v / 100) / 1.5));
+  return `rgba(${getComputedStyle(document.documentElement).getPropertyValue(d >= 0 ? "--hot" : "--cold")}, ${(Math.abs(d) * 0.75 + 0.05).toFixed(2)})`;
+}
+
+function renderHeat(s) {
+  const labels = s.labels || {};
+  const rows = s.keywords.filter((k) => Object.values(s.affinity[k]).some((v) => v != null));
+  const warn = s.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 오프라인 합성 데이터 — 실제 연령 분포가 아닙니다</div>` : "";
+  if (!rows.length) { $("#heat").innerHTML = warn + `<div class="empty">검색량이 충분한 키워드가 없습니다 (DataLab 은 긴 문장형 이슈를 잘 잡지 못합니다)</div>`; return; }
+  $("#heat").innerHTML = warn + `<table class="heat"><thead><tr><th class="kw">키워드</th>${s.segments.map((g) => `<th>${esc(g)}</th>`).join("")}</tr></thead><tbody>${
+    rows.map((k) => `<tr><td class="kw" title="${esc(k)}">${esc(labels[k] || k)}</td>${s.segments.map((g) => {
+      const v = s.affinity[k][g];
+      return `<td style="background:${heatColor(v)}" title="${esc(g)}: ${v ?? "데이터 없음"} (날씨 대비 ${s.relative[k][g] ?? "-"}%)">${v == null ? "·" : Math.round(v)}</td>`;
+    }).join("")}</tr>`).join("")}</tbody></table>
+    <div class="legend"><span><span class="sw" style="background:${heatColor(40)}"></span> 덜 관심</span>
+    <span><span class="sw" style="background:${heatColor(100)}"></span> 평균(100)</span>
+    <span><span class="sw" style="background:${heatColor(250)}"></span> 훨씬 관심</span>
+    <span>기간 ${s.period[0]}~${s.period[1]} · 기준어 '${esc(s.anchor)}'</span></div>
+    ${s.errors?.length ? `<div class="muted">${s.errors.map(esc).join("<br>")}</div>` : ""}`;
+}
+
+async function loadSegments(custom) {
+  $("#heat").innerHTML = `<div class="empty">분석 중… (네이버 DataLab)</div>`;
+  try {
+    const s = custom ? await api(`/api/keyword?q=${encodeURIComponent(custom)}`) : await api(`/api/segments?region=${region}&top=14`);
+    renderHeat(s);
+  } catch (e) {
+    $("#heat").innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+
+function renderContent() {
+  const yt = REPORT.content.youtube || [];
+  const ytStatus = REPORT.source_status.youtube;
+  $("#ytnote").textContent = ytStatus && !ytStatus.ok ? ytStatus.error : "";
+  $("#yt").innerHTML = yt.slice(0, 12).map((v) => `<li><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.keyword)}</a>
+    <span class="tag">${esc(v.category || "")} ${v.volume ? (v.volume / 10000).toFixed(0) + "만회" : ""}</span></li>`).join("")
+    || `<li class="empty">YOUTUBE_API_KEY 를 설정하면 국가별 인기 동영상이 표시됩니다</li>`;
+  const news = REPORT.content.google_news || [];
+  $("#news").innerHTML = news.slice(0, 12).map((n) => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.keyword)}</a>
+    <span class="tag">${esc(n.meta.publisher || "")}</span></li>`).join("") || `<li class="empty">뉴스 없음</li>`;
+  $("#status").innerHTML = Object.entries(REPORT.source_status).map(([k, v]) =>
+    `<span title="${esc(v.error || "")}"><span class="${v.ok ? "ok" : "fail"}">${v.ok ? "●" : "○"}</span> ${SRC[k] || k} ${v.ok ? v.count : "—"}</span>`).join("");
+}
+
+async function loadSeoul() {
+  try {
+    const d = await api("/api/seoul");
+    const ages = d.places[0] ? Object.keys(d.places[0].ages) : [];
+    $("#seoul").innerHTML = (d.sample ? `<div class="muted" style="margin-bottom:6px">SEOUL_API_KEY 없음 — 공개 sample 키로 1곳만 표시</div>` : "") +
+      d.places.map((p) => `<div class="hot"><span title="${esc(p.message)}"><b>${esc(p.name)}</b><br><span class="muted">${esc(p.congestion)}${p.dominant_group ? " · " + esc(p.dominant_group) + "↑" : ""}</span></span>
+        <span class="stack" title="${ages.map((a) => `${a} ${p.ages[a]}%`).join(" / ")}">${ages.map((a, i) => `<i style="width:${p.ages[a]}%;background:${AGE_COLORS[i]}"></i>`).join("")}</span>
+        <span class="muted" style="text-align:right">${(p.population_max / 1000).toFixed(0)}k명</span></div>`).join("") +
+      `<div class="legend">${ages.map((a, i) => `<span><span class="sw" style="background:${AGE_COLORS[i]}"></span> ${esc(a)}</span>`).join("")}</div>` +
+      (d.errors?.length && !d.sample ? `<div class="muted">${d.errors.slice(0, 3).map(esc).join("<br>")}</div>` : "");
+  } catch (e) { $("#seoul").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+function renderBrief(b) {
+  $("#brief").innerHTML = `<h3>${esc(b.headline)}</h3>${b.themes.map((t) => `<div class="theme"><b>[${esc(t.category)}] ${esc(t.title)}</b>
+    <p>${esc(t.summary)}</p><div class="muted">${t.keywords.map(esc).join(" · ")}</div></div>`).join("")}
+    ${b.segment_insights.map((s) => `<p><b>${esc(s.segment)}</b> ${esc(s.insight)}</p>`).join("")}
+    ${b.seoul ? `<p><b>서울</b> ${esc(b.seoul)}</p>` : ""}
+    ${[...(b.caveats || []), ...(b.warnings || [])].map((c) => `<div class="muted">※ ${esc(c)}</div>`).join("")}
+    <button class="ghost" id="briefgo" style="margin-top:8px">다시 생성</button>`;
+  $("#briefgo").onclick = brief;
+}
+
+async function brief() {
+  const btn = $("#briefgo"); btn.disabled = true; btn.textContent = "생성 중…";
+  try { renderBrief(await api(`/api/brief?region=${region}`, { method: "POST" })); }
+  catch (e) { $("#brief").innerHTML = `<div class="empty">${esc(e.message)}</div><button class="primary" id="briefgo">브리핑 생성</button>`; $("#briefgo").onclick = brief; }
+}
+
+async function load(refresh = false) {
+  selected = null; $("#detail").innerHTML = "";
+  $("#rank").innerHTML = `<li class="empty">수집 중…</li>`;
+  $("#refresh").disabled = true;
+  try {
+    REPORT = await api(`/api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
+    $("#gen").textContent = `${REPORT.region_name} · ${new Date(REPORT.generated_at).toLocaleString("ko-KR")}`;
+    renderRank(); renderContent();
+    $("#brief").innerHTML = `<button class="primary" id="briefgo">브리핑 생성</button>`; $("#briefgo").onclick = brief;
+    loadSegments();
+  } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
+  $("#refresh").disabled = false;
+}
+
+(async function init() {
+  META = await api("/api/meta");
+  if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모 모드 — 녹화된 응답(tests/fixtures)과 합성 샘플(YouTube·DataLab)로 동작 중입니다.</div>`;
+  const missing = META.sources.filter((s) => s.missing_keys.length).map((s) => s.label);
+  if (!META.offline && missing.length) $("#banner").innerHTML = `<div class="banner">키 미설정으로 비활성: ${missing.map(esc).join(", ")}${META.features.segments ? "" : ", 네이버 DataLab(연령·성별)"} — .env.example 참고</div>`;
+  renderRegions();
+  $("#refresh").onclick = () => load(true);
+  $("#more").onclick = () => { showAll = !showAll; renderRank(); };
+  $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadSegments(v); };
+  $("#kwinput").onkeydown = (e) => { if (e.key === "Enter") $("#kwgo").click(); };
+  $("#kwreset").onclick = () => loadSegments();
+  load(); loadSeoul();
+})();
+</script>
+</body>
+</html>

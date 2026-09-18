@@ -1,0 +1,59 @@
+# AGENTS.md — AI 코딩 에이전트 작업 가이드
+
+이 파일은 이 저장소에서 일하는 모든 AI 에이전트(Claude Code, Codex 등)의 기준 문서다.
+사람용 개요는 README.md, 설계 근거는 docs/.
+
+## 한 줄 요약
+여러 트렌드 소스 → `TrendItem` → 정규화·클러스터링·점수(`scoring.py`) → `TrendCluster` 랭킹 → SQLite 스냅샷.
+세그먼트(연령·성별)는 네이버 DataLab, 서울은 Google `KR-11` + 서울 도시데이터, 요약은 Claude.
+
+## 명령 (모두 저장소 루트에서)
+```bash
+uv sync --all-extras                 # 설치
+uv run pytest -q                     # 전체 테스트 (네트워크 사용 안 함, <1초)
+uv run trend-engine --offline collect --json   # 네트워크 없이 엔진 전체 실행
+uv run trend-engine doctor           # 라이브 업스트림 점검 (네트워크 사용)
+uv run trend-engine record           # fixture 갱신 (네트워크) → git diff 검토
+uv run trend-engine --offline serve --port 8765  # UI 확인
+```
+
+## 코드 지도
+| 파일 | 책임 |
+|---|---|
+| `src/trend_engine/models.py` | `TrendItem`(소스 출력), `TrendCluster`(병합 결과), `TrendReport` |
+| `src/trend_engine/sources/*.py` | 소스별 `fetch()`(I/O) + `parse()`(순수 함수). 등록은 `sources/__init__.py` |
+| `src/trend_engine/normalize.py` | 한국어 키워드 키/유사도/언급 판정 |
+| `src/trend_engine/scoring.py` | 병합 + 점수 공식 (docstring 이 명세) |
+| `src/trend_engine/engine.py` | 소스 병렬 수집 → scoring → store |
+| `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
+| `src/trend_engine/seoul.py` | 서울 실시간 도시데이터 핫스팟 |
+| `src/trend_engine/ai.py` | Claude 브리핑 + 근거 검증(`validate_brief`) |
+| `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
+| `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (의존성 없는 단일 HTML) |
+| `src/trend_engine/harness.py` | `doctor`, `record` |
+
+## 반드시 지킬 불변식
+1. **`Source.parse()` 는 순수 함수.** 네트워크·시간·난수 금지. fixture 로 테스트 가능해야 한다 (`tests/test_contract.py` 가 검사).
+2. **테스트는 네트워크를 쓰지 않는다.** `Settings(offline=True)` 또는 가짜 poster/LLM 주입. 라이브 확인은 `doctor`.
+3. **소스 하나가 죽어도 리포트는 나온다.** 예외는 `source_status` 로만 보고한다.
+4. **합성 데이터는 반드시 표시한다.** 오프라인 DataLab 결과는 `synthetic: true`, 합성 fixture 는 `_synthetic` 필드. UI·AI 프롬프트 모두 이를 드러낸다.
+5. **AI 는 수집 데이터 밖의 키워드를 말할 수 없다.** `validate_brief` 가 근거 없는 키워드를 제거한다. 이 검증을 약화시키지 말 것.
+6. **API 와 CLI 는 `TrendService` 만 호출한다.** 로직을 인터페이스 레이어에 복제하지 말 것.
+7. 점수 공식을 바꾸면 `scoring.py` docstring, `docs/ARCHITECTURE.md`, `tests/test_scoring.py` 골든 값을 함께 갱신.
+
+## 자주 하는 작업
+- **새 소스 추가**: `docs/ADDING_A_SOURCE.md` (Claude Code 는 `.claude/skills/add-trend-source` 스킬).
+- **업스트림 포맷 변경 대응**: `doctor` 로 확인 → `record` → 실패하는 contract 테스트를 보고 `parse()` 수정.
+- **새 지역**: Google geo 코드면 `config.REGIONS` 에 추가만 하면 된다 (없어도 `-r` 로 동작).
+- **새 세그먼트**: `segments.AGE_GROUPS`/`GENDERS` 조합. `"20대 여성"` 같은 조합은 코드 변경 없이 `parse_segment` 가 처리.
+
+## 완료 기준 (Definition of Done)
+- `uv run pytest -q` 통과, 새 동작에는 테스트 추가.
+- `uv run trend-engine --offline collect` 정상 출력.
+- UI 를 건드렸다면 `--offline serve` 로 띄워 콘솔 에러 없음 확인.
+- 사용자에게 보이는 문구는 한국어.
+
+## 하지 말 것
+- 키/토큰을 코드·fixture·로그에 남기기 (`record` 전 fixture 에 키가 들어가는지 확인 — YouTube 응답엔 키가 없다).
+- 비공식 엔드포인트(signal.bz, nate)에 고빈도 폴링. 캐시(`Store.cache_*`)와 최소 수 분 간격 유지.
+- DataLab affinity 를 "해당 연령 검색자 비율"로 설명하기 (틀림 — docs/SEGMENTS.md).

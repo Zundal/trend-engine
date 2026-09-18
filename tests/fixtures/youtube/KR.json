@@ -1,0 +1,174 @@
+{
+ "kind": "youtube#videoListResponse",
+ "_synthetic": "Hand-written sample in YouTube Data API v3 shape. Replace with `trend-engine record` once YOUTUBE_API_KEY is set.",
+ "items": [
+  {
+   "kind": "youtube#video",
+   "id": "synthetic00",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "KT 로건 7이닝 무실점 하이라이트 | KBO 리그",
+    "channelTitle": "KBO",
+    "categoryId": "17",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "1850000",
+    "likeCount": "37000",
+    "commentCount": "4625"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic01",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "청하 (CHUNG HA) 'Live Stage' 직캠",
+    "channelTitle": "STUDIO CHOOM",
+    "categoryId": "10",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "920000",
+    "likeCount": "18400",
+    "commentCount": "2300"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic02",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "[스캔들] 1화 예고편 | 넷플릭스",
+    "channelTitle": "Netflix Korea 넷플릭스 코리아",
+    "categoryId": "24",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "760000",
+    "likeCount": "15200",
+    "commentCount": "1900"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic03",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "배그 신규 맵 첫 플레이 ㅋㅋㅋ",
+    "channelTitle": "게임유튜버",
+    "categoryId": "20",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "540000",
+    "likeCount": "10800",
+    "commentCount": "1350"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic04",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "여의도역 에스컬레이터 화재 현장 영상",
+    "channelTitle": "SBS 뉴스",
+    "categoryId": "25",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "480000",
+    "likeCount": "9600",
+    "commentCount": "1200"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic05",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "두산에너빌리티 지금 사도 될까? 원전주 총정리",
+    "channelTitle": "경제채널",
+    "categoryId": "27",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "310000",
+    "likeCount": "6200",
+    "commentCount": "775"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic06",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "가을 데일리룩 코디 10가지",
+    "channelTitle": "패션유튜버",
+    "categoryId": "26",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "270000",
+    "likeCount": "5400",
+    "commentCount": "675"
+   }
+  },
+  {
+   "kind": "youtube#video",
+   "id": "synthetic07",
+   "snippet": {
+    "publishedAt": "2026-09-17T09:00:00Z",
+    "title": "버핏 은퇴가 시장에 주는 의미",
+    "channelTitle": "머니톡",
+    "categoryId": "25",
+    "tags": [],
+    "thumbnails": {
+     "medium": {
+      "url": ""
+     }
+    }
+   },
+   "statistics": {
+    "viewCount": "250000",
+    "likeCount": "5000",
+    "commentCount": "625"
+   }
+  }
+ ]
+}
