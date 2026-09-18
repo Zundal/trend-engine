@@ -25,6 +25,7 @@ jobs:
     env:
       NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
       NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+      NAVER_API: ${{ vars.NAVER_API || 'hub' }}  # 개발자센터 구 키면 저장소 Variable NAVER_API=legacy
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

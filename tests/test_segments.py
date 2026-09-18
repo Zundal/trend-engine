@@ -64,3 +64,24 @@ def test_parse_segment():
     assert parse_segment("20대+30대").ages == ("3", "4", "5", "6")
     with pytest.raises(ValueError):
         parse_segment("MZ")
+
+
+async def test_endpoint_and_headers_follow_naver_api_setting():
+    import httpx
+
+    from trend_engine.segments import ENDPOINTS
+
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        body = __import__("json").loads(request.content)
+        return httpx.Response(200, json={"results": [{"title": g["groupName"], "data": [{"ratio": 50}]} for g in body["keywordGroups"]]})
+
+    for mode in ("hub", "legacy"):
+        prof = SegmentProfiler(Settings(naver_client_id="id", naver_client_secret="sec", naver_api=mode))
+        prof._client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        await prof._post({"keywordGroups": [{"groupName": "a", "keywords": ["a"]}]})
+        url, id_h, sec_h = ENDPOINTS[mode]
+        assert str(seen[-1].url) == url
+        assert seen[-1].headers[id_h] == "id" and seen[-1].headers[sec_h] == "sec"

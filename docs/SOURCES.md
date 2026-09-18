@@ -12,10 +12,14 @@
 ## 세그먼트/지역 전용 (랭킹 소스 아님)
 | 모듈 | 키 | 내용 |
 |---|---|---|
-| `segments.py` 네이버 DataLab 검색어트렌드 | `NAVER_CLIENT_ID/SECRET` | 연령(11구간)·성별·기기별 상대 검색량. 일 1,000회. 요청당 5그룹 |
+| `segments.py` 네이버 검색어 트렌드 | `NAVER_CLIENT_ID/SECRET` (+`NAVER_API`) | 연령(11구간)·성별·기기별 상대 검색량. 요청당 5그룹 |
 | `seoul.py` 서울 실시간 도시데이터(인구) | `SEOUL_API_KEY` | 핫스팟 120여 곳의 혼잡도, 성별·10세 단위 연령 비율, 거주/비거주, 예측 |
 
 ## 네이버에 대해
+- **2026-07-31 부터 검색어 트렌드 신규 키는 NAVER API HUB(네이버 클라우드 플랫폼)에서만 발급.**
+  엔드포인트 `https://naverapihub.apigw.ntruss.com/search-trend/v1/search`,
+  헤더 `X-NCP-APIGW-API-KEY-ID` / `X-NCP-APIGW-API-KEY`. 요청·응답 본문은 기존 DataLab 과 동일.
+  기존 개발자센터 키(`openapi.naver.com`, `X-Naver-Client-*`)는 2027-06-30 까지 → `NAVER_API=legacy`.
 - 네이버 실시간 검색어는 2021년 폐지. 대체로 **포털 이슈 키워드(시그널·네이트)** + **DataLab(연령·성별)** 조합을 쓴다.
 - DataLab 은 "무엇이 뜨는지"를 발견해주지 않는다 — 다른 소스가 발견한 키워드를 **프로파일링**하는 용도.
 - 쇼핑인사이트(카테고리별 연령 클릭 추이)도 같은 키로 쓸 수 있다 → 향후 소스 후보.

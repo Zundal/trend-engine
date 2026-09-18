@@ -27,7 +27,12 @@ import httpx
 from .config import Settings
 from .store import Store
 
-DATALAB_URL = "https://openapi.naver.com/v1/datalab/search"
+# Naver moved new Search Trend keys to NAVER API HUB (NCP) on 2026-07-31. Same request/response body,
+# different host + auth headers. Keys issued by the old developer center keep working until 2027-06-30.
+ENDPOINTS = {
+    "hub": ("https://naverapihub.apigw.ntruss.com/search-trend/v1/search", "X-NCP-APIGW-API-KEY-ID", "X-NCP-APIGW-API-KEY"),
+    "legacy": ("https://openapi.naver.com/v1/datalab/search", "X-Naver-Client-Id", "X-Naver-Client-Secret"),
+}
 BATCH = 4  # + 1 anchor = DataLab's max of 5 groups
 
 
@@ -129,14 +134,12 @@ class SegmentProfiler:
         if self.store and (hit := self.store.cache_get(cache_key, timedelta(hours=6))):
             return hit
         assert self._client is not None
+        url, id_header, secret_header = ENDPOINTS.get(self.settings.naver_api, ENDPOINTS["hub"])
         async with self._sem:
             resp = await self._client.post(
-                DATALAB_URL,
+                url,
                 json=body,
-                headers={
-                    "X-Naver-Client-Id": self.settings.naver_client_id,
-                    "X-Naver-Client-Secret": self.settings.naver_client_secret,
-                },
+                headers={id_header: self.settings.naver_client_id, secret_header: self.settings.naver_client_secret},
             )
         if resp.status_code != 200:
             raise RuntimeError(f"DataLab HTTP {resp.status_code}: {resp.text[:200]}")

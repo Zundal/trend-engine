@@ -59,6 +59,7 @@ def get_region(code: str) -> Region:
 class Settings:
     naver_client_id: str = ""
     naver_client_secret: str = ""
+    naver_api: str = "hub"  # "hub" = NAVER API HUB (new keys), "legacy" = developers.naver.com keys
     youtube_api_key: str = ""
     seoul_api_key: str = ""
     anthropic_api_key: str = ""
@@ -77,6 +78,7 @@ class Settings:
         return cls(
             naver_client_id=env("NAVER_CLIENT_ID", ""),
             naver_client_secret=env("NAVER_CLIENT_SECRET", ""),
+            naver_api=env("NAVER_API", "hub").strip().lower() or "hub",
             youtube_api_key=env("YOUTUBE_API_KEY", ""),
             seoul_api_key=env("SEOUL_API_KEY", ""),
             anthropic_api_key=env("ANTHROPIC_API_KEY", ""),
