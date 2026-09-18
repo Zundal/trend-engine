@@ -110,6 +110,11 @@ def main(argv: list[str] | None = None) -> int:
     rc = sub.add_parser("record", help="라이브 응답으로 tests/fixtures 갱신 (harness)")
     rc.add_argument("--regions", default="KR,KR-11,US,JP")
 
+    ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
+    ex.add_argument("--out", default="site")
+    ex.add_argument("--regions", default="KR,KR-11,US,JP,GB,TW,VN")
+    ex.add_argument("--brief-regions", default="KR,KR-11", help="AI 브리핑을 만들 지역 (비용 절감)")
+
     args = p.parse_args(argv)
     if args.offline:
         os.environ["TREND_ENGINE_OFFLINE"] = "1"
@@ -137,6 +142,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     svc = TrendService(settings)
+    if args.cmd == "export":
+        from pathlib import Path
+
+        from .export import export_site
+
+        for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"], split(args.brief_regions) or [])):
+            print(line)
+        return 0
     try:
         if args.cmd == "collect":
             r = asyncio.run(svc.engine.collect(args.region, args.source)).to_dict()

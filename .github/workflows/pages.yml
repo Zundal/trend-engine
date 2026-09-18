@@ -1,0 +1,68 @@
+# 매시간 트렌드를 수집해 정적 대시보드를 GitHub Pages 에 배포한다.
+# 키는 저장소 Settings → Secrets and variables → Actions 에 추가 (없으면 해당 기능만 비활성).
+name: Deploy dashboard
+
+on:
+  schedule:
+    - cron: "7 * * * *"  # 매시 7분 (UTC)
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+      NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TREND_ENGINE_DB: data/trends.db
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --all-extras --frozen
+
+      # 스냅샷 DB 를 실행 간에 이어받아 NEW / ▲▼ 추이와 순위 그래프를 만든다.
+      - name: Restore snapshot DB
+        uses: actions/cache/restore@v6
+        with:
+          path: data
+          key: trend-db-${{ github.run_id }}
+          restore-keys: trend-db-
+
+      - name: Collect & export static site
+        run: uv run trend-engine export --out site --regions KR,KR-11,US,JP,GB,TW,VN --brief-regions KR,KR-11
+
+      - name: Save snapshot DB
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: data
+          key: trend-db-${{ github.run_id }}
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

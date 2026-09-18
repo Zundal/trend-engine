@@ -144,10 +144,30 @@ const AGE_COLORS = ["#adb5bd", "#ffd8a8", "#ff922b", "#e8590c", "#a61e4d", "#5f3
 let META = null, REPORT = null, region = "KR", selected = null, showAll = false;
 try { region = localStorage.getItem("te.region") || "KR"; } catch (_) {}
 
+// Static mode (GitHub Pages): responses are pre-baked into api/*.json by `trend-engine export`.
+let STATIC = false;
+const HISTORY = {};
+function staticPath(path) {
+  const u = new URL(path, location.href);
+  const r = u.searchParams.get("region") || region;
+  const name = u.pathname.split("/").pop();
+  if (name === "keyword") throw new Error("정적 배포에서는 직접 키워드 분석을 지원하지 않습니다 (로컬 serve 사용)");
+  return name === "meta" || name === "seoul" ? `api/${name}.json` : `api/${name}-${r}.json`;
+}
 async function api(path, opts) {
-  const r = await fetch(path, opts);
+  if (STATIC) {
+    const u = new URL(path, location.href);
+    if (u.pathname.endsWith("/history")) {
+      const r = u.searchParams.get("region") || region;
+      HISTORY[r] ??= await api(`api/history-${r}.json`);
+      return HISTORY[r][u.searchParams.get("key")] || [];
+    }
+    if (!path.endsWith(".json")) { path = staticPath(path); opts = undefined; }
+  }
+  const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(body.detail || r.statusText);
+  if (!r.ok) throw new Error(body.detail || (STATIC && r.status === 404 ? "이 배포에는 해당 데이터가 없습니다 (키 미설정)" : r.statusText));
+  if (body && body.error) throw new Error(body.error);
   return body;
 }
 
@@ -196,7 +216,7 @@ async function renderDetail(c) {
     ${mentions.length ? `<b>콘텐츠 언급</b><ul>${mentions.join("")}</ul>` : ""}
     <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
   try {
-    const h = await api(`/api/history?region=${region}&key=${encodeURIComponent(c.key)}`);
+    const h = await api(`api/history?region=${region}&key=${encodeURIComponent(c.key)}`);
     $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다 (수집할 때마다 스냅샷 저장)" : spark(h.map((x) => x.rank));
   } catch (e) { $("#spark").textContent = e.message; }
 }
@@ -233,9 +253,13 @@ function renderHeat(s) {
 }
 
 async function loadSegments(custom) {
+  if (STATIC && !META.features.segments) {
+    $("#heat").innerHTML = `<div class="empty">저장소 Secret 에 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 을 설정하면 연령·성별 관심도가 표시됩니다</div>`;
+    return;
+  }
   $("#heat").innerHTML = `<div class="empty">분석 중… (네이버 DataLab)</div>`;
   try {
-    const s = custom ? await api(`/api/keyword?q=${encodeURIComponent(custom)}`) : await api(`/api/segments?region=${region}&top=14`);
+    const s = custom ? await api(`api/keyword?q=${encodeURIComponent(custom)}`) : await api(`api/segments?region=${region}&top=14`);
     renderHeat(s);
   } catch (e) {
     $("#heat").innerHTML = `<div class="empty">${esc(e.message)}</div>`;
@@ -258,7 +282,7 @@ function renderContent() {
 
 async function loadSeoul() {
   try {
-    const d = await api("/api/seoul");
+    const d = await api("api/seoul");
     const ages = d.places[0] ? Object.keys(d.places[0].ages) : [];
     $("#seoul").innerHTML = (d.sample ? `<div class="muted" style="margin-bottom:6px">SEOUL_API_KEY 없음 — 공개 sample 키로 1곳만 표시</div>` : "") +
       d.places.map((p) => `<div class="hot"><span title="${esc(p.message)}"><b>${esc(p.name)}</b><br><span class="muted">${esc(p.congestion)}${p.dominant_group ? " · " + esc(p.dominant_group) + "↑" : ""}</span></span>
@@ -275,13 +299,13 @@ function renderBrief(b) {
     ${b.segment_insights.map((s) => `<p><b>${esc(s.segment)}</b> ${esc(s.insight)}</p>`).join("")}
     ${b.seoul ? `<p><b>서울</b> ${esc(b.seoul)}</p>` : ""}
     ${[...(b.caveats || []), ...(b.warnings || [])].map((c) => `<div class="muted">※ ${esc(c)}</div>`).join("")}
-    <button class="ghost" id="briefgo" style="margin-top:8px">다시 생성</button>`;
-  $("#briefgo").onclick = brief;
+    ${STATIC ? "" : `<button class="ghost" id="briefgo" style="margin-top:8px">다시 생성</button>`}`;
+  if (!STATIC) $("#briefgo").onclick = brief;
 }
 
 async function brief() {
-  const btn = $("#briefgo"); btn.disabled = true; btn.textContent = "생성 중…";
-  try { renderBrief(await api(`/api/brief?region=${region}`, { method: "POST" })); }
+  const btn = $("#briefgo"); if (btn) { btn.disabled = true; btn.textContent = "생성 중…"; }
+  try { renderBrief(await api(`api/brief?region=${region}`, { method: "POST" })); }
   catch (e) { $("#brief").innerHTML = `<div class="empty">${esc(e.message)}</div><button class="primary" id="briefgo">브리핑 생성</button>`; $("#briefgo").onclick = brief; }
 }
 
@@ -290,20 +314,28 @@ async function load(refresh = false) {
   $("#rank").innerHTML = `<li class="empty">수집 중…</li>`;
   $("#refresh").disabled = true;
   try {
-    REPORT = await api(`/api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
-    $("#gen").textContent = `${REPORT.region_name} · ${new Date(REPORT.generated_at).toLocaleString("ko-KR")}`;
+    REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
+    $("#gen").textContent = `${REPORT.region_name} · ${new Date(REPORT.generated_at).toLocaleString("ko-KR")}${STATIC ? " · 매시간 자동 갱신" : ""}`;
     renderRank(); renderContent();
-    $("#brief").innerHTML = `<button class="primary" id="briefgo">브리핑 생성</button>`; $("#briefgo").onclick = brief;
+    if (STATIC && !(META.briefs || []).includes(region)) {
+      $("#brief").innerHTML = `<div class="empty">${META.features.ai ? "이 지역은 AI 브리핑 대상이 아닙니다" : "저장소 Secret 에 ANTHROPIC_API_KEY 를 설정하면 매시간 브리핑이 생성됩니다"}</div>`;
+    } else if (STATIC) { brief(); }
+    else { $("#brief").innerHTML = `<button class="primary" id="briefgo">브리핑 생성</button>`; $("#briefgo").onclick = brief; }
     loadSegments();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
   $("#refresh").disabled = false;
 }
 
 (async function init() {
-  META = await api("/api/meta");
+  try { META = await api("api/meta.json"); STATIC = !!META.static; } catch (_) { META = await api("api/meta"); }
+  if (STATIC) {
+    $("#refresh").hidden = true;
+    document.querySelector(".kwrow").hidden = true;
+  }
   if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모 모드 — 녹화된 응답(tests/fixtures)과 합성 샘플(YouTube·DataLab)로 동작 중입니다.</div>`;
   const missing = META.sources.filter((s) => s.missing_keys.length).map((s) => s.label);
-  if (!META.offline && missing.length) $("#banner").innerHTML = `<div class="banner">키 미설정으로 비활성: ${missing.map(esc).join(", ")}${META.features.segments ? "" : ", 네이버 DataLab(연령·성별)"} — .env.example 참고</div>`;
+  if (STATIC && missing.length) $("#banner").innerHTML = `<div class="banner">키 미설정으로 비활성: ${missing.map(esc).join(", ")}${META.features.segments ? "" : ", 연령·성별(네이버 DataLab)"} — 저장소 Settings → Secrets 에 추가하면 다음 갱신부터 반영됩니다</div>`;
+  else if (!META.offline && missing.length) $("#banner").innerHTML = `<div class="banner">키 미설정으로 비활성: ${missing.map(esc).join(", ")}${META.features.segments ? "" : ", 네이버 DataLab(연령·성별)"} — .env.example 참고</div>`;
   renderRegions();
   $("#refresh").onclick = () => load(true);
   $("#more").onclick = () => { showAll = !showAll; renderRank(); };

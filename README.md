@@ -33,6 +33,18 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 | 서울 핫스팟 실시간 인구·연령 | `SEOUL_API_KEY` | 공개 sample 키로 1곳만 |
 | AI 브리핑 | `ANTHROPIC_API_KEY` | 브리핑 비활성 |
 
+## 배포 (GitHub Pages)
+
+`.github/workflows/pages.yml` 이 **매시간** 수집 → `trend-engine export` 로 정적 JSON 생성 → Pages 배포.
+스냅샷 DB 는 Actions 캐시로 이어받아 추이(NEW/▲▼)가 누적됩니다.
+
+1. 저장소 Settings → Pages → Source: **GitHub Actions**
+2. (선택) Settings → Secrets and variables → Actions 에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`,
+   `YOUTUBE_API_KEY`, `SEOUL_API_KEY`, `ANTHROPIC_API_KEY` 추가 → 다음 실행부터 반영
+3. Actions → Deploy dashboard → Run workflow (즉시 1회 실행)
+
+정적 배포에서는 "직접 키워드 분석"과 "새로 수집" 버튼이 숨겨집니다 (서버가 필요하므로 `trend-engine serve` 사용).
+
 ## 명령어
 
 | 명령 | 설명 |
@@ -44,6 +56,7 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 | `brief -r KR` | Claude 트렌드 브리핑 |
 | `doctor` | 모든 업스트림 라이브 점검 |
 | `record --regions KR,KR-11,US,JP` | 라이브 응답으로 테스트 fixture 갱신 |
+| `export --out site --regions KR,KR-11,US` | GitHub Pages 용 정적 사이트 생성 |
 
 모든 명령은 `--json` 지원(에이전트/스크립트용), `--offline` 지원(데모/테스트용).
 
