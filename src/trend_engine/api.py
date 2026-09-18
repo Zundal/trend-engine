@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 
+from . import publish
 from .service import TrendService
 
 WEB = Path(__file__).parent / "web"
@@ -33,28 +34,30 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     def index():
         return FileResponse(WEB / "index.html")
 
+    # Dashboard endpoints return source-neutral public views (publish.py); raw data stays
+    # available via the CLI (`trend-engine collect --json`).
     @app.get("/api/meta")
     def meta():
-        return svc.meta()
+        return publish.public_meta(svc.meta())
 
     @app.get("/api/report")
     async def report(region: str = "KR", refresh: bool = False):
-        return await svc.report(region, refresh)
+        return publish.public_report(await svc.report(region, refresh))
 
     @app.get("/api/segments")
     async def segments(region: str = "KR", top: int = Query(16, ge=1, le=40), segments: str | None = None):
-        return await guard(svc.report_segments(region, top, _split(segments)))
+        return publish.public_segments(await guard(svc.report_segments(region, top, _split(segments))))
 
     @app.get("/api/keyword")
     async def keyword(q: str, segments: str | None = None):
         kws = _split(q) or []
         if not kws:
             raise HTTPException(400, "q is required (comma separated)")
-        return await guard(svc.keyword_segments(kws[:20], _split(segments)))
+        return publish.public_segments(await guard(svc.keyword_segments(kws[:20], _split(segments))))
 
     @app.get("/api/shopping")
     async def shopping(segments: str | None = None, categories: str | None = None):
-        return await svc.shopping(_split(segments), _split(categories))
+        return publish.public_shopping(await svc.shopping(_split(segments), _split(categories)))
 
     @app.get("/api/seoul")
     async def seoul(places: str | None = None):

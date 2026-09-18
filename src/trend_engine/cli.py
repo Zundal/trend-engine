@@ -128,7 +128,6 @@ def main(argv: list[str] | None = None) -> int:
     ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
     ex.add_argument("--out", default="site")
     ex.add_argument("--regions", default="KR,US,JP,GB,TW,VN")
-    ex.add_argument("--brief-regions", default="", help="AI 브리핑을 만들 지역 (기본: 없음)")
 
     args = p.parse_args(argv)
     if args.offline:
@@ -162,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
 
         from .export import export_site
 
-        for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"], split(args.brief_regions) or [])):
+        for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"])):
             print(line)
         return 0
     try:

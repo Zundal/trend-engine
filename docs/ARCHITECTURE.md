@@ -46,6 +46,14 @@ score           = (Σ family_score + content_boost) × consensus × 100
 - 같은 관심사 판정: 키 동일 / 짧은 쪽이 긴 쪽에 포함(길이비 ≥0.4, 최소 길이) / 2-gram Dice ≥0.8 / 단어 2개 이상·60% 이상 겹침.
 - 너무 짧은 키(ASCII 3자 미만, 한글 2자 미만)는 포함 매칭 금지 — `m`, `ai` 가 모든 제목에 걸리는 것 방지.
 
+## 공개 데이터 (publish.py)
+- 대시보드용 API 와 정적 사이트는 `publish.public_*` 뷰만 내보낸다: 소스 이름·언론사·소스 상태를 뺀 중립 형태
+  (`clusters[].mentions` 는 평탄화된 제목 목록, `videos` / `news` 로 이름 변경). 원본은 CLI `--json` 으로만.
+- 정적 사이트 파일은 `api/<name>.dat` = base64(IV‖AES-256-GCM 암호문). 키는 `TREND_ENGINE_DATA_KEY`
+  (GitHub Secret, 64 hex) 이며 빌드된 index.html 에 주입되어 브라우저(WebCrypto)가 복호화한다 → **https 필수**.
+- 키가 페이지에 들어가므로 "캐주얼한 열람 방지"이지 접근 제어가 아니다.
+- 영상·뉴스 링크 주소는 DOM 에 넣지 않고 클릭 시 메모리에서 연다 (hover 시 주소 비노출).
+
 ## 저장소
 - `reports`: 리포트 JSON 전체 (재현·디버깅용).
 - `clusters`: (report_id, rank, key) — `/api/history` 순위 추이.

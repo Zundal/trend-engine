@@ -1,25 +1,74 @@
-"""Static export (GitHub Pages) produces every file the dashboard's static mode reads."""
+"""Static export: every published file is encrypted, decryptable with the page's key, and source-neutral."""
 
 import json
+import re
 
+import pytest
+
+from trend_engine import publish
 from trend_engine.export import export_site
+from trend_engine.sources import REGISTRY
+
+KEY_HEX = "11" * 32
+# Anything that would reveal where the data came from. Page source: any mention at all.
+PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|source_status|publisher", re.I)
+# Data files: source identifiers as JSON keys/values (headline text may legitimately say "네이버페이").
+SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|sources|source_status|publisher|channel|mode|anchor|errors)"')
 
 
-async def test_export_offline(service, tmp_path):
-    lines = await export_site(service, tmp_path, ["KR", "KR-11"], brief_regions=["KR"])
+@pytest.fixture(autouse=True)
+def fixed_key(monkeypatch):
+    monkeypatch.setenv("TREND_ENGINE_DATA_KEY", KEY_HEX)
+
+
+async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
+    lines = await export_site(service, tmp_path, ["KR", "US"])
     api = tmp_path / "api"
-    meta = json.loads((api / "meta.json").read_text())
-    assert meta["static"] is True
-    assert [r["code"] for r in meta["regions"]] == ["KR", "KR-11"]
-    for code in ("KR", "KR-11"):
-        rep = json.loads((api / f"report-{code}.json").read_text())
-        assert rep["region"] == code and rep["clusters"]
-        hist = json.loads((api / f"history-{code}.json").read_text())
-        assert set(hist) == {c["key"] for c in rep["clusters"]}
-        assert json.loads((api / f"segments-{code}.json").read_text())["synthetic"] is True  # offline
-    assert not (api / "brief-KR.json").exists()  # no ANTHROPIC_API_KEY -> no brief, no failure
-    assert json.loads((api / "seoul.json").read_text())["places"]
-    assert json.loads((api / "shopping.json").read_text())["by_segment"]
-    assert "let STATIC = true;" in (tmp_path / "index.html").read_text()
+    key = bytes.fromhex(KEY_HEX)
+    assert not list(api.glob("*.json")), "no plaintext JSON may be published"
+
+    files = {p.stem: p.read_text() for p in api.glob("*.dat")}
+    assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping"}
+    assert "segments-US" not in files  # Korean search data isn't published for foreign regions
+    for name, blob in files.items():
+        assert not PROVIDERS.search(blob) and "{" not in blob, f"{name} not encrypted"
+        plain = json.dumps(publish.decrypt(blob, key), ensure_ascii=False)
+        leak = SOURCE_TOKENS.search(plain)
+        assert not leak, f"{name} leaks a source identifier: {leak and leak.group(0)}"
+
+    meta = publish.decrypt(files["meta"], key)
+    assert meta["static"] is True and [r["code"] for r in meta["regions"]] == ["KR", "US"]
+    rep = publish.decrypt(files["report-KR"], key)
+    assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
+    hist = publish.decrypt(files["history-KR"], key)
+    assert set(hist) == {c["key"] for c in rep["clusters"]}
+    assert publish.decrypt(files["shopping"], key)["by_segment"]
+
+    page = (tmp_path / "index.html").read_text()
+    assert "let STATIC = true;" in page and f'const DATA_KEY = "{KEY_HEX}";' in page
+    assert not PROVIDERS.search(page), PROVIDERS.search(page)
     assert (tmp_path / ".nojekyll").exists()
     assert any("report KR" in line for line in lines)
+
+
+def test_encrypt_roundtrip_and_tamper_detection():
+    key = bytes.fromhex(KEY_HEX)
+    blob = publish.encrypt({"a": "한글"}, key)
+    assert publish.decrypt(blob, key) == {"a": "한글"}
+    assert publish.encrypt({"a": 1}, key) != publish.encrypt({"a": 1}, key)  # random IV
+    import base64
+    raw = bytearray(base64.b64decode(blob))
+    raw[-1] ^= 1
+    with pytest.raises(Exception):
+        publish.decrypt(base64.b64encode(bytes(raw)).decode(), key)
+
+
+def test_data_key_validation(monkeypatch):
+    monkeypatch.setenv("TREND_ENGINE_DATA_KEY", "abcd")
+    with pytest.raises(ValueError):
+        publish.data_key()
+
+
+def test_every_registered_source_is_covered_by_leak_check():
+    for name in REGISTRY:
+        assert PROVIDERS.search(name) and SOURCE_TOKENS.search(f'"{name}"'), f"add {name} to the leak patterns"

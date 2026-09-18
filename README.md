@@ -50,6 +50,9 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
    `YOUTUBE_API_KEY`, `SEOUL_API_KEY`, `ANTHROPIC_API_KEY` 추가 → 다음 실행부터 반영
 3. Actions → Deploy dashboard → Run workflow (즉시 1회 실행)
 
+공개 사이트의 데이터 파일은 소스 정보를 제거한 뒤 AES-256-GCM 으로 암호화되어(`api/*.dat`) 브라우저에서 복호화됩니다
+(키: 저장소 Secret `TREND_ENGINE_DATA_KEY`, 64자리 hex). https 로만 열립니다.
+
 정적 배포에서는 "직접 키워드 분석"과 "새로 수집" 버튼이 숨겨집니다 (서버가 필요하므로 `trend-engine serve` 사용).
 
 ## 명령어

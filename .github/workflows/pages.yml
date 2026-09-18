@@ -29,6 +29,7 @@ jobs:
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TREND_ENGINE_DATA_KEY: ${{ secrets.TREND_ENGINE_DATA_KEY }}  # 공개 데이터 암호화 키 (64 hex)
       TREND_ENGINE_DB: data/trends.db
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +45,7 @@ jobs:
           restore-keys: trend-db-
 
       - name: Collect & export static site
-        run: uv run trend-engine export --out site --regions KR,US,JP,GB,TW,VN --brief-regions ""
+        run: uv run trend-engine export --out site --regions KR,US,JP,GB,TW,VN
 
       - name: Save snapshot DB
         if: always()

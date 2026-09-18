@@ -177,25 +177,31 @@ const HIDDEN_REGIONS = new Set(["KR-11", "KR-26"]); // 서울·부산은 나라 
 let META = null, REPORT = null, SEG = null, SHOP = null;
 let view = "country", region = "KR", group = "20대", selected = null, showAll = false;
 
-// Static mode (GitHub Pages): responses are pre-baked into api/*.json by `trend-engine export`.
-let STATIC = false; // export.py rewrites this to true for the GitHub Pages build
+// Static mode (published site): data is pre-built into encrypted api/*.dat files by `trend-engine export`.
+let STATIC = false; // export.py rewrites this to true
+const DATA_KEY = ""; // export.py injects the AES-256-GCM key (hex)
 const HISTORY = {};
-function staticPath(path) {
-  const u = new URL(path, location.href);
-  const r = u.searchParams.get("region") || region;
-  const name = u.pathname.split("/").pop();
-  if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
-  return ["meta", "seoul", "shopping"].includes(name) ? `api/${name}.json` : `api/${name}-${r}.json`;
+let CRYPTO_KEY = null;
+async function decrypt(b64) {
+  if (!crypto.subtle) throw new Error("보안 연결(https)로 접속해 주세요");
+  CRYPTO_KEY ??= await crypto.subtle.importKey("raw", Uint8Array.from(DATA_KEY.match(/../g), (h) => parseInt(h, 16)), "AES-GCM", false, ["decrypt"]);
+  const raw = Uint8Array.from(atob(b64.trim()), (c) => c.charCodeAt(0));
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12) }, CRYPTO_KEY, raw.slice(12));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+async function staticGet(name) {
+  const r = await fetch(`api/${name}.dat`, { cache: "no-cache" });
+  if (!r.ok) throw new Error("데이터가 아직 없습니다");
+  return decrypt(await r.text());
 }
 async function api(path, opts) {
   if (STATIC) {
     const u = new URL(path, location.href);
-    if (u.pathname.endsWith("/history")) {
-      const r = u.searchParams.get("region") || region;
-      HISTORY[r] ??= await api(`api/history-${r}.json`);
-      return HISTORY[r][u.searchParams.get("key")] || [];
-    }
-    if (!path.endsWith(".json")) { path = staticPath(path); opts = undefined; }
+    const name = u.pathname.split("/").pop();
+    const r = u.searchParams.get("region") || region;
+    if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
+    if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
+    return staticGet(["meta", "shopping"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -247,7 +253,7 @@ function renderRank() {
   $("#more").textContent = showAll ? "접기" : `더보기 (${REPORT.clusters.length}개)`;
 }
 async function renderDetail(c) {
-  const mentions = Object.values(c.mentions || {}).flat();
+  const mentions = c.mentions || [];
   $("#detail").innerHTML = `<div class="detail">
     <h3>${esc(c.label)}</h3>
     ${c.volume ? `<div class="muted">검색량 ${c.volume.toLocaleString()}+</div>` : ""}
@@ -267,11 +273,10 @@ function spark(ranks) {
     <div class="muted" style="font-size:11px">최근 ${ranks.length}회 · 현재 ${ranks.at(-1)}위 (위쪽이 상위)</div>`;
 }
 function renderContent() {
-  const yt = REPORT.content.youtube || [];
-  $("#yt").innerHTML = yt.slice(0, 12).map((v) => `<li><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.keyword)}</a>
-    <span class="tag">${esc(v.category || "")} ${v.volume ? fmtViews(v.volume) : ""}</span></li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
-  const news = REPORT.content.google_news || [];
-  $("#news").innerHTML = news.slice(0, 12).map((n) => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.keyword)}</a></li>`).join("")
+  // Link targets stay in memory (opened on click) so addresses don't show on hover.
+  $("#yt").innerHTML = (REPORT.videos || []).slice(0, 12).map((v, i) => `<li><a href="#" data-v="${i}">${esc(v.title)}</a>
+    <span class="tag">${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</span></li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
+  $("#news").innerHTML = (REPORT.news || []).slice(0, 12).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
     || `<li class="empty">데이터가 없습니다</li>`;
 }
 function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 1e4 ? Math.round(v / 1e4) + "만회" : Math.round(v).toLocaleString() + "회"; }
@@ -361,7 +366,7 @@ async function loadAge(custom) {
 
 // ---- init ---------------------------------------------------------------------------
 (async function init() {
-  META = await api(STATIC ? "api/meta.json" : "api/meta");
+  META = await api("api/meta");
   if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모 모드 — 녹화된 샘플 데이터로 동작 중입니다.</div>`;
   if (STATIC) $("#kwrow").hidden = true;
   else { $("#refresh").hidden = false; $("#refresh").onclick = () => view === "country" ? loadCountry(true) : null; }
@@ -386,6 +391,14 @@ async function loadAge(custom) {
     selected = +li.dataset.i; renderRank(); renderDetail(REPORT.clusters[selected]);
   };
   $("#more").onclick = () => { showAll = !showAll; renderRank(); };
+  const openItem = (list, attr) => (e) => {
+    const a = e.target.closest(`[${attr}]`); if (!a) return;
+    e.preventDefault();
+    const url = (REPORT[list] || [])[+a.getAttribute(attr)]?.url;
+    if (url) window.open(url, "_blank", "noopener");
+  };
+  $("#yt").onclick = openItem("videos", "data-v");
+  $("#news").onclick = openItem("news", "data-n");
   $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadAge(v); };
   $("#kwinput").onkeydown = (e) => { if (e.key === "Enter") $("#kwgo").click(); };
   $("#kwreset").onclick = () => { SEG = null; loadAge(); };

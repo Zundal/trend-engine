@@ -12,12 +12,13 @@ def test_end_to_end_offline(service):
     assert client.get("/").status_code == 200
 
     meta = client.get("/api/meta").json()
-    assert meta["offline"] is True and any(r["code"] == "KR-11" for r in meta["regions"])
+    assert meta["offline"] is True and any(r["code"] == "KR" for r in meta["regions"])
+    assert set(meta) == {"regions", "offline", "static"}  # no source list exposed
 
     rep = client.get("/api/report", params={"region": "KR"}).json()
     assert rep["region"] == "KR" and len(rep["clusters"]) >= 10
-    assert all(st["ok"] for st in rep["source_status"].values()), rep["source_status"]
-    assert "youtube" in rep["content"] and "google_news" in rep["content"]
+    assert rep["videos"] and rep["news"]
+    assert "source_status" not in rep and "sources" not in rep["clusters"][0]
 
     seoul = client.get("/api/report", params={"region": "KR-11"}).json()
     assert seoul["region_name"] == "서울"
@@ -25,6 +26,7 @@ def test_end_to_end_offline(service):
 
     seg = client.get("/api/segments", params={"region": "KR", "top": 8}).json()
     assert seg["synthetic"] is True and set(seg["segments"]) >= {"20대", "여성"}
+    assert "mode" not in seg and "anchor" not in seg
 
     kw = client.get("/api/keyword", params={"q": "아이폰,갤럭시", "segments": "20대 여성,50대"}).json()
     assert kw["segments"] == ["20대 여성", "50대"]
@@ -49,5 +51,7 @@ def test_unsupported_region_still_works(service):
     """Region with only some fixtures: missing sources degrade, report still renders."""
     rep = TestClient(create_app(service)).get("/api/report", params={"region": "US"}).json()
     assert rep["clusters"]
-    assert rep["source_status"]["youtube"]["ok"] is False  # no US youtube fixture
-    assert "signal_bz" not in rep["source_status"]  # Korea-only source not attempted
+    assert rep["videos"] == []  # no US video fixture -> empty, not an error
+    raw = service.store.latest_report("US")
+    assert raw["source_status"]["youtube"]["ok"] is False
+    assert "signal_bz" not in raw["source_status"]  # Korea-only source not attempted

@@ -39,6 +39,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 2. **테스트는 네트워크를 쓰지 않는다.** `Settings(offline=True)` 또는 가짜 poster/LLM 주입. 라이브 확인은 `doctor`.
 3. **소스 하나가 죽어도 리포트는 나온다.** 예외는 `source_status` 로만 보고한다.
 4. **합성 데이터는 반드시 표시한다.** 오프라인 DataLab 결과는 `synthetic: true`, 합성 fixture 는 `_synthetic` 필드. UI·AI 프롬프트 모두 이를 드러낸다.
+5a. **공개되는 것은 `publish.py` 뷰만.** 대시보드 API·정적 파일에 소스 이름/언론사/소스 상태를 넣지 말 것 (`tests/test_export.py` 가 검사). 정적 파일은 암호화(.dat).
 5. **AI 는 수집 데이터 밖의 키워드를 말할 수 없다.** `validate_brief` 가 근거 없는 키워드를 제거한다. 이 검증을 약화시키지 말 것.
 6. **API 와 CLI 는 `TrendService` 만 호출한다.** 로직을 인터페이스 레이어에 복제하지 말 것.
 7. 점수 공식을 바꾸면 `scoring.py` docstring, `docs/ARCHITECTURE.md`, `tests/test_scoring.py` 골든 값을 함께 갱신.
