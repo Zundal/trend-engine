@@ -6,3 +6,4 @@ data/
 .env
 .playwright-mcp/
 site/
+health.json

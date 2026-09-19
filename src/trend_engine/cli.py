@@ -129,6 +129,10 @@ def main(argv: list[str] | None = None) -> int:
     ex.add_argument("--out", default="site")
     ex.add_argument("--regions", default="KR,US,JP,GB,TW,VN")
     ex.add_argument("--archive", help="일별 요약 저장 위치 (기본: TREND_ENGINE_ARCHIVE 또는 data/archive)")
+    ex.add_argument("--health", help="점검 결과 파일 (사이트 밖에 저장, 예: health.json)")
+
+    hc = sub.add_parser("health-check", help="export 가 남긴 점검 결과 확인 — 문제 있으면 종료코드 1")
+    hc.add_argument("path", nargs="?", default="health.json")
 
     args = p.parse_args(argv)
     if args.offline:
@@ -147,6 +151,14 @@ def main(argv: list[str] | None = None) -> int:
     from . import harness
     from .service import TrendService
 
+    if args.cmd == "health-check":
+        from pathlib import Path
+
+        from .health import check
+
+        ok, body = check(Path(args.path))
+        print(body if not ok else "health: OK")
+        return 0 if ok else 1
     if args.cmd == "doctor":
         rows = asyncio.run(harness.doctor(settings, args.region))
         _print(rows, args.json, _render_doctor)
@@ -163,7 +175,8 @@ def main(argv: list[str] | None = None) -> int:
         from .export import export_site
 
         for line in asyncio.run(export_site(svc, Path(args.out), split(args.regions) or ["KR"],
-                                                  Path(args.archive) if args.archive else None)):
+                                                  Path(args.archive) if args.archive else None,
+                                                  Path(args.health) if args.health else None)):
             print(line)
         return 0
     try:

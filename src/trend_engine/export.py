@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive, publish
+from .health import Health
 from .service import TrendService
 
 log = logging.getLogger(__name__)
@@ -31,8 +32,10 @@ def build_page(key: bytes) -> str:
     return page.replace(STATIC_MARKER, "let STATIC = true;", 1).replace(KEY_MARKER, f'const DATA_KEY = "{key.hex()}";', 1)
 
 
-async def export_site(svc: TrendService, out: Path, regions: list[str], archive_dir: Path | None = None) -> list[str]:
+async def export_site(svc: TrendService, out: Path, regions: list[str], archive_dir: Path | None = None,
+                      health_path: Path | None = None) -> list[str]:
     key = publish.data_key()
+    health = Health()
     root = archive_dir or svc.archive_root
     today = archive.kst_today()
     seg_today: dict | None = None
@@ -52,6 +55,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     for code in regions:
         report = (await svc.engine.collect(code)).to_dict()
         write(f"report-{code}", publish.public_report(report))
+        health.check_report(code, report)
         ok = sum(1 for s in report["source_status"].values() if s["ok"])
         lines.append(f"report {code}: {len(report['clusters'])} clusters, {ok}/{len(report['source_status'])} ok")
 
@@ -74,6 +78,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
                     seg_today = publish.public_segments(seg)
             except Exception as e:  # noqa: BLE001 — a failed extra must not fail the deploy
                 lines.append(f"segments {code}: FAIL {e}")
+                health.problem(f"[{code}] 연령·성별 분석 실패 — {str(e)[:160]}")
 
     shop_today = None
     for days, name in ((7, "shopping"), (30, "shopping-month")):
@@ -83,8 +88,14 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             if days == 7:
                 shop_today = publish.public_shopping(shop)
             lines.append(f"{name}: {len(shop['by_segment'])} segments, {len(shop.get('errors', []))} errors")
+            errs = shop.get("errors", [])
+            if errs and len(errs) >= len(shop.get("categories", [])):
+                health.problem(f"{name}: 쇼핑 수집 대부분 실패 ({len(errs)}건) — {errs[0][:120]}")
+            elif errs:
+                health.warn(f"{name}: 일부 실패 {len(errs)}건 — {errs[0][:120]}")
         except Exception as e:  # noqa: BLE001
             lines.append(f"{name}: FAIL {e}")
+            health.problem(f"{name}: 쇼핑 수집 실패 — {str(e)[:160]}")
 
     # --- 10·20대 focus (Korea)
     youth_today = None
@@ -95,8 +106,11 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             youth_today = y["discover"]
             lines.append("youth: " + ", ".join(f"{g} {len(v)}" for g, v in y["discover"]["groups"].items())
                          + f" (from {y['discover'].get('candidates')} candidates)")
+            if not any(y["discover"]["groups"].values()):
+                health.problem(f"10·20대: 후보 {y['discover'].get('candidates')}개 중 결과 0 — 연령 데이터 이상 의심")
         except Exception as e:  # noqa: BLE001
             lines.append(f"youth: FAIL {e}")
+            health.problem(f"10·20대 분석 실패 — {str(e)[:160]}")
 
     # --- 세대 확산 감지 (daily, cached 20h; past cases monthly)
     if "KR" in regions:
@@ -107,8 +121,13 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             for i in dif["tracked"]["items"]:
                 stages[i["stage"]] = stages.get(i["stage"], 0) + 1
             lines.append(f"diffusion: {len(dif['tracked']['items'])} tracked {stages}, {len(dif['cases']['items'])} cases")
+            if not dif["tracked"]["items"]:
+                health.warn("세대 확산: 추적 키워드 0개")
+            if not dif["cases"]["items"]:
+                health.problem("세대 확산: 과거 사례 계산 결과 0개")
         except Exception as e:  # noqa: BLE001
             lines.append(f"diffusion: FAIL {e}")
+            health.problem(f"세대 확산 분석 실패 — {str(e)[:160]}")
 
     # --- history: remember today's snapshots, archive finished days, build period views
     archive.record_daily_extras(svc.store, today, seg_today, shop_today, youth_today)
@@ -126,4 +145,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
 
     write("meta", publish.public_meta(meta))
     lines.append(f"wrote {out} (encrypted)")
+    if health_path:
+        health.write(health_path)
+    lines.append(f"health: {'OK' if health.ok else f'{len(health.problems)} problems'}"
+                 + (f", {len(health.warnings)} warnings" if health.warnings else ""))
     return lines

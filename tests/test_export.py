@@ -22,7 +22,11 @@ def fixed_key(monkeypatch):
 
 
 async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
-    lines = await export_site(service, tmp_path / "site", ["KR", "US"], archive_dir=tmp_path / "archive")
+    lines = await export_site(service, tmp_path / "site", ["KR", "US"], archive_dir=tmp_path / "archive",
+                              health_path=tmp_path / "health.json")
+    health = json.loads((tmp_path / "health.json").read_text())
+    assert set(health) == {"problems", "warnings", "ok"}
+    assert any("youtube" in p for p in health["problems"])  # offline US has no video fixture -> reported, not silent
     tmp_path = tmp_path / "site"
     api = tmp_path / "api"
     key = bytes.fromhex(KEY_HEX)

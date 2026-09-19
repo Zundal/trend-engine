@@ -8,9 +8,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      simulate_problem:
+        description: "경고 알림 테스트 (가짜 문제 1건 주입)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write  # 일별 기록을 data 브랜치에 커밋
+  issues: write    # 수집 문제 발생 시 경고 이슈
   pages: write
   id-token: write
 
@@ -21,7 +27,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # 키 없는 네이버 웹 모드는 페이싱 때문에 3시간마다 ~6분 걸림
+    timeout-minutes: 30
+    outputs:
+      health_count: ${{ steps.health.outputs.count }}
+      health_body: ${{ steps.health.outputs.body }}  # 키 없는 네이버 웹 모드는 페이싱 때문에 3시간마다 ~6분 걸림
     env:
       NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
       NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
@@ -51,7 +60,16 @@ jobs:
           restore-keys: trend-db-
 
       - name: Collect & export static site
-        run: uv run trend-engine export --out site --regions KR,US,JP,GB,TW,VN
+        run: uv run trend-engine export --out site --regions KR,US,JP,GB,TW,VN --health health.json
+
+      # 문제가 있어도 여기서 멈추지 않는다 (사이트는 성공한 데이터로 배포) — 판정은 alert 잡이 한다
+      - name: Health check
+        id: health
+        if: always()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          HEALTH_SIMULATE: ${{ inputs.simulate_problem && '1' || '' }}
+        run: uv run trend-engine health-check health.json || true
 
       - name: Commit finished days to data branch
         working-directory: archive
@@ -83,3 +101,39 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # 조용한 실패 방지: 문제가 있으면 실행을 빨간불로 + 경고 이슈 1개를 열고(이후엔 내용만 갱신), 복구되면 자동으로 닫는다.
+  alert:
+    needs: [build, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open, update or close the warning issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COUNT: ${{ needs.build.outputs.health_count }}
+          BODY: ${{ needs.build.outputs.health_body }}
+          BUILD: ${{ needs.build.result }}
+          DEPLOY: ${{ needs.deploy.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="⚠ 트렌드 수집 경고"
+          num=$(gh issue list -R "$REPO" --state open --search "in:title $title" --json number,title -q ".[] | select(.title==\"$title\") | .number" | head -1)
+          if [ "$BUILD" != "success" ] || [ "$DEPLOY" != "success" ]; then
+            COUNT=1
+            BODY="배포 파이프라인 실패 (build=$BUILD, deploy=$DEPLOY) — 사이트가 갱신되지 않았을 수 있습니다.
+
+          실행 로그: $RUN_URL"
+          fi
+          if [ "${COUNT:-0}" -gt 0 ]; then
+            if [ -n "$num" ]; then
+              gh issue edit "$num" -R "$REPO" --body "$BODY"
+            else
+              gh issue create -R "$REPO" --title "$title" --body "$BODY"
+            fi
+            echo "::error::$COUNT problem(s) — see issue '$title'"
+            exit 1
+          elif [ -n "$num" ]; then
+            gh issue close "$num" -R "$REPO" --comment "정상으로 복구됐습니다. ($RUN_URL)"
+          fi
