@@ -69,3 +69,10 @@ def test_every_youth_group_has_shopping_and_search_segment(group):
     from trend_engine.shopping import SEGMENTS
     assert group in SEGMENTS
     parse_segment(group)
+
+
+def test_youth_view_drops_rare_and_one_char_keywords():
+    aff = {k: {g: 500.0 for g in YOUTH_GROUPS} | {OLDER: 100.0} for k in ("발로란트 강의", "발로란트", "약")}
+    rel = {"발로란트 강의": {"전체": 0.001}, "발로란트": {"전체": 0.5}, "약": {"전체": 3.0}}
+    v = youth.youth_view({"affinity": aff, "relative": rel})
+    assert [r["keyword"] for r in v["groups"]["10대"]] == ["발로란트"]

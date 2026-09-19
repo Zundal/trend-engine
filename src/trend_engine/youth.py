@@ -26,6 +26,9 @@ from .segments import OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
 MAX_CANDIDATES = 40
 MIN_AFFINITY = 120.0
 MIN_VS_OLDER = 1.5
+# Overall volume floor, in % of the anchor keyword ('날씨'). Rare queries swing age ratios wildly
+# ("발로란트 강의 131배"); 등산 ≈ 0.05%, so 0.02% keeps real interests and drops long-tail noise.
+MIN_RELATIVE_PCT = 0.02
 _JUNK = re.compile(r"^(\d+|shorts?|쇼츠|official|mv|m/v|live|vlog|브이로그|뉴스|news|하이라이트|highlight|예고편|trailer|full|ep\.?\s?\d+|\d+화)$", re.I)
 
 
@@ -73,13 +76,17 @@ def youth_view(profile: dict[str, Any], kinds: dict[str, str] | None = None, lab
                min_affinity: float = MIN_AFFINITY, min_vs_older: float = MIN_VS_OLDER, limit: int = 15) -> dict[str, Any]:
     """Turn a segment profile (must include OLDER) into per-group youth rankings."""
     aff = profile["affinity"]
+    rel = profile.get("relative", {})
     kinds, labels = kinds or {}, labels or {}
     groups: dict[str, list[dict[str, Any]]] = {}
     for g in YOUTH_GROUPS:
         rows = []
         for k, by_seg in aff.items():
             a, older = by_seg.get(g), by_seg.get(OLDER)
-            if a is None or not older:
+            if a is None or not older or len(norm_key(labels.get(k, k))) < 2:
+                continue
+            overall = rel.get(k, {}).get("전체")
+            if overall is not None and overall < MIN_RELATIVE_PCT:
                 continue
             vs = a / older
             if a >= min_affinity and vs >= min_vs_older:
