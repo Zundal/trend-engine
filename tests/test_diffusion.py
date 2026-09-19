@@ -138,3 +138,22 @@ def test_momentum_backtest_scores_follow_through():
     vals = [10.0] * 40 + [10.0 * 1.03 ** i for i in range(1, 60)]  # keeps climbing
     acc = dif.momentum_accuracy(dif.momentum_backtest(vals))
     assert acc["steady"]["flagged"] > 0 and acc["steady"]["precision"] == 1.0
+
+
+def test_seasonal_adjust_removes_a_recurring_bump_but_keeps_growth():
+    weeks = [START + timedelta(weeks=i) for i in range(104)]
+    bump = lambda i: 2.0 if i % 52 in (30, 31, 32) else 1.0  # same 3 weeks every year (방학)
+    growth = lambda i: 1.0 + (0.5 if i >= 52 else 0.0)        # this year is 50% higher overall
+    ws = [(w, 100 * bump(i) * growth(i)) for i, w in enumerate(weeks)]
+    adj = dict(dif.seasonal_adjust(ws))
+    assert len(adj) == 52  # only weeks with a last-year reference
+    in_bump, normal = adj[weeks[52 + 31]], adj[weeks[52 + 10]]
+    assert abs(in_bump - normal) / normal < 0.25  # bump divided out
+    assert normal > 140  # growth kept (not normalised away)
+
+
+def test_seasonal_adjust_skips_keywords_new_this_year():
+    weeks = [START + timedelta(weeks=i) for i in range(104)]
+    ws = [(w, (1.0 if i < 52 else 100.0) * (3 if i % 52 == 20 else 1)) for i, w in enumerate(weeks)]
+    adj = dict(dif.seasonal_adjust(ws))
+    assert adj[weeks[72]] == 300.0  # last year was ~0 -> no seasonal correction

@@ -90,20 +90,20 @@ class TrendService:
 
     async def diffusion(self, max_age: timedelta = timedelta(hours=20)) -> dict[str, Any]:
         """세대 확산 감지 (Korea): stage of each youth interest + validated past cases."""
-        if hit := self.store.cache_get("diffusion:v4", max_age):
+        if hit := self.store.cache_get("diffusion:v5", max_age):
             return hit
         y = await self.youth()
         keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"])
-        tracked = await diffusion.track(self.settings, self.store, keywords)
-        known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
-        for it in tracked["items"]:
-            it["category"] = known.get(it["keyword"]) or "기타"
         cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
         if cases is None:
             cases = await diffusion.cases(self.settings, self.store)
             self.store.cache_set("diffusion-cases:v1", cases)
+        tracked = await diffusion.track(self.settings, self.store, keywords, typical_lag=diffusion.typical_lags(cases))
+        known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
+        for it in tracked["items"]:
+            it["category"] = known.get(it["keyword"]) or "기타"
         result = {"tracked": tracked, "cases": cases}
-        self.store.cache_set("diffusion:v4", result)
+        self.store.cache_set("diffusion:v5", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
             "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result

@@ -201,7 +201,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <ol class="bars" id="y-disc"></ol>
     </section>
     <section class="card" id="y-rise-card" hidden>
-      <h2>📈 10·20대 사이 상승세 <small>3주 연속 검색 증가 — 계속 오를 확률이 평균의 약 1.6배</small></h2>
+      <h2>📈 10·20대 사이 3주 연속 증가 <small>설명용 신호 — 계속 오를지는 보장되지 않음 (세대 확산 탭에서 적중률 확인)</small></h2>
       <ol class="bars" id="y-rise"></ol>
     </section>
     <section class="card">
@@ -683,10 +683,12 @@ function difRow(it, from, to) {
   const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
     : it.stage === "확산형" ? `20대보다 늦게: ${lags}`
     : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
-  const mom = it.rising_now ? `<span class="badge b-spread" title="10·20대 검색이 3주 연속 증가 — 과거 데이터상 계속 오를 확률이 평균의 약 1.6배">📈 상승세</span>`
-    : it.spiking_now ? `<span class="badge b-flat" title="갑자기 튀었지만 과거 데이터상 대부분 가라앉음">⚡ 반짝</span>` : "";
+  const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 증가 (설명용 — 예측력은 아래 '예측이 맞았나'에서 매일 측정)">📈 3주 연속 증가</span>`
+    : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 갑자기 튐 (설명용)">⚡ 반짝 급등</span>` : "";
+  const fc = Object.entries(it.forecast?.ages || {}).map(([a, f]) => `${a} ${f.weeks_from_now === 0 ? "이번 주" : `약 ${f.weeks_from_now}주 뒤`}`).join(" · ");
   return `<div class="dif"><div><h3>${esc(it.keyword)}${catTag(it.category)}</h3>
-      <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span> ${mom}<div class="why">${esc(why)}</div></div>
+      <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span> ${mom}<div class="why">${esc(why)}</div>
+      ${fc ? `<div class="why" title="윗세대도 시작이 늦은 만큼 늦게 정점 — 과거 유행 검증 오차 평균 약 2.7주"><b>예상 정점</b> ${esc(fc)}</div>` : ""}</div>
     <div class="strip">${DIF_AGES.map((a) => {
       const g = it.ages?.[a]; if (!g) return "";
       return `<span>${a}${g.thin ? "·" : ""}</span>${stripSVG(g.strip, g.thin)}`;
@@ -698,11 +700,12 @@ function renderAccuracy(a) {
   const kpi = (h) => { const m = a[`${h}w`]; return `<div class="kpi"><div class="vs">"확산 대기" 후 ${h}주 안에 40대+가 실제로 오름</div>
     <div class="big">${pct(m.precision)}</div><div class="vs">${m.hits}/${a.waiting}건 · 전체 평균 ${pct(m.base_rate)} → <b>${m.lift ?? "–"}배</b></div></div>`; };
   const m = DIF?.tracked?.momentum_accuracy;
-  const mk = m?.steady?.precision != null ? `<div class="kpi"><div class="vs">"📈 상승세"(3주 연속 증가) 후 2주 안에 20%+ 더 오름</div>
-    <div class="big">${pct(m.steady.precision)}</div><div class="vs">${m.steady.flagged}건 · 평균 ${pct(m.base_rate)} → <b>${m.steady.lift}배</b> · ⚡반짝은 ${m.spike.lift ?? "–"}배</div></div>` : "";
+  const mk = m?.steady?.precision != null ? `<div class="kpi"><div class="vs">"3주 연속 증가" 후 2주 안에 20%+ 더 오름 (매일 재측정)</div>
+    <div class="big">${pct(m.steady.precision)}</div><div class="vs">${m.steady.flagged}건 · 평균 ${pct(m.base_rate)} → <b>${m.steady.lift}배</b> · 반짝 급등은 ${m.spike.lift ?? "–"}배 — 1배 근처면 예측력 없음</div></div>` : "";
+  const un = DIF?.tracked?.accuracy_unadjusted?.["8w"];
   $("#dif-acc").innerHTML = `<div class="acc">${kpi(4)}${kpi(8)}${mk}</div>
     <div class="legend" style="margin-top:8px">키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}) —
-    "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 표본이 작아 참고용.</div>`;
+    "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}. 표본이 작아 참고용.</div>`;
 }
 function renderDiffusion() {
   if (!DIF) return;

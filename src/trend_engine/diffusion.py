@@ -147,9 +147,36 @@ def classify(stats: dict[str, AgeStats]) -> dict[str, Any]:
     }
 
 
+def seasonal_adjust(ws: list[tuple[date, float]], clip: tuple[float, float] = (0.5, 2.0)) -> list[tuple[date, float]]:
+    """Divide out last year's seasonal shape: factor(w) = last year's week w ÷ last year's ±6-week average
+    around it (so long-term growth is kept, only the recurring bump — 방학, 추석 — is removed).
+    Weeks without a last-year reference are dropped; keywords that barely existed last year (< 10% of this
+    year's level) are left unadjusted (their "season" is noise)."""
+    by = dict(ws)
+    this_mean = _mean([v for _, v in ws[-52:]]) or 0.0
+    out = []
+    for d, v in ws:
+        ly = d - timedelta(weeks=52)
+        if ly not in by:
+            continue
+        neigh = [by[x] for k in range(-6, 7) if (x := ly + timedelta(weeks=k)) in by]
+        local = _mean(neigh)
+        if local <= 0 or local < 0.1 * this_mean:
+            f = 1.0
+        else:
+            f = min(max(by[ly] / local, clip[0]), clip[1])
+        out.append((d, v / f))
+    return out
+
+
 def analyze(series_by_age: dict[str, list[tuple[str, float]]], bins: int | None = None,
             volume_pct: dict[str, float] | None = None) -> dict[str, Any]:
-    stats = {a: age_stats(weekly(series_by_age[a]), bins) for a in AGE_NAMES if series_by_age.get(a)}
+    return analyze_weekly({a: weekly(series_by_age[a]) for a in AGE_NAMES if series_by_age.get(a)}, bins, volume_pct)
+
+
+def analyze_weekly(weekly_by_age: dict[str, list[tuple[date, float]]], bins: int | None = None,
+                   volume_pct: dict[str, float] | None = None) -> dict[str, Any]:
+    stats = {a: age_stats(ws, bins) for a, ws in weekly_by_age.items() if ws}
     for a, st in stats.items():
         if volume_pct and a in volume_pct:
             st.volume_pct = round(volume_pct[a], 4)
@@ -158,16 +185,15 @@ def analyze(series_by_age: dict[str, list[tuple[str, float]]], bins: int | None 
     result["ages"] = {a: {"rise": s.rise.isoformat() if s.rise else None, "peak": s.peak.isoformat() if s.peak else None,
                           "level": s.level, "surge": s.surge, "volume_pct": s.volume_pct, "thin": s.thin,
                           "strip": s.strip} for a, s in stats.items()}
-    first = next(iter(series_by_age.values()), [])
-    result["weeks"] = len(weekly(first)) if first else 0
+    first = next(iter(weekly_by_age.values()), [])
+    result["weeks"] = len(first)
     return result
 
 
 # --- 상승세 vs 반짝 급등 -----------------------------------------------------------------------
-# Measured on 20 youth keywords × 10·20대 × 42 weeks (docs/ENGINE.md): a *sudden spike* (3-day level
-# ≥ 3σ, ≥ 1.5× the previous 4 weeks) keeps growing no more often than any random day (lift 0.96 —
-# spikes mean-revert), while *3 weeks of steady growth* (weekly averages +15%, +15%, +10%) is followed by
-# a further ≥ 20% rise within 2 weeks 34% vs 22% of the time (lift 1.58). So: 상승세 = signal, 반짝 = warning.
+# Descriptive labels, NOT validated predictors (docs/ENGINE.md): on 42 weeks "3 weeks of steady growth"
+# looked predictive (lift 1.58) but on 96 weeks it reversed (0.89) — the first result was overfit because
+# the rule was picked and scored on the same data. Accuracy is re-measured on every run and shown as-is.
 SPIKE_Z, SPIKE_RATIO = 3.0, 1.5
 STEADY_STEPS = (1.15, 1.15, 1.10)  # this week / last week, last / 2 weeks ago, 2 / 3 weeks ago
 FOLLOW_UP, FOLLOW_GAIN = 14, 1.2   # outcome: 7-day average 14 days later ≥ 1.2× today's
@@ -241,9 +267,14 @@ def _spread_after(ws: list[tuple[date, float]], cut: int, horizon: int) -> bool:
 
 def backtest(series_by_age: dict[str, list[tuple[str, float]]], volume_pct: dict[str, float] | None = None,
              window: int = 17, horizons: tuple[int, ...] = HORIZONS) -> list[dict[str, Any]]:
+    return backtest_weekly({a: weekly(series_by_age[a]) for a in AGE_NAMES if series_by_age.get(a)},
+                           volume_pct, window, horizons)
+
+
+def backtest_weekly(weekly_by_age: dict[str, list[tuple[date, float]]], volume_pct: dict[str, float] | None = None,
+                    window: int = 17, horizons: tuple[int, ...] = HORIZONS) -> list[dict[str, Any]]:
     """Walk forward week by week: stage as of week t (using only weeks ≤ t) vs whether any 40대+
     age took off within the next h weeks. Only cut-offs with the full horizon available are scored."""
-    weekly_by_age = {a: weekly(series_by_age[a]) for a in AGE_NAMES if series_by_age.get(a)}
     if not weekly_by_age:
         return []
     n = min(len(ws) for ws in weekly_by_age.values())
@@ -321,30 +352,57 @@ async def _with_client(profiler: SegmentProfiler, coro_fn):
             profiler._client = None
 
 
+def typical_lags(cases_result: dict[str, Any] | None) -> dict[str, float]:
+    """Median 20대→age lag (weeks) over past 확산형 cases — fallback forecast for ages not yet moving."""
+    out: dict[str, float] = {}
+    items = [c for c in (cases_result or {}).get("items", []) if c.get("stage") == "확산형"]
+    for age in OLD:
+        lags = sorted(c["lags"][age] for c in items if c["lags"].get(age) is not None and c["lags"][age] >= 0)
+        if lags:
+            out[age] = float(lags[len(lags) // 2])
+    return out
+
+
 async def track(settings, store, keywords: list[str], weeks: int = 17, today: date | None = None,
-                history_weeks: int = 42) -> dict[str, Any]:
+                history_weeks: int = 42, typical_lag: dict[str, float] | None = None) -> dict[str, Any]:
     """Current stage for each tracked keyword over the last `weeks` weeks, plus a walk-forward
     backtest over `history_weeks` (same number of requests — only the date range is longer)."""
     end = (today or date.today()) - timedelta(days=1)  # search data lags ~1 day
     start = end - timedelta(weeks=weeks)
-    hist_start = end - timedelta(weeks=history_weeks)
+    hist_start = end - timedelta(weeks=history_weeks + 54)  # +1 year: seasonal reference (same request count)
     prof = SegmentProfiler(settings, store)
     groups = {k: [k] for k in dict.fromkeys(k for k in keywords if k.strip())}
     series, vol = await _with_client(prof, lambda: fetch_series(prof, groups, hist_start.isoformat(), end.isoformat()))
-    items, records, m_records = [], [], []
-    cutoff = start.strftime("%Y%m%d")
+    items, records, raw_records, m_records = [], [], [], []
     for name, by_age in series.items():
         if not by_age:
             continue
-        records += [r | {"keyword": name} for r in backtest(by_age, vol.get(name), window=weeks)]
+        full = {a: weekly(pts) for a, pts in by_age.items() if pts}
+        adj = {a: seasonal_adjust(ws) for a, ws in full.items()}
+        raw = {a: full[a][-len(adj[a]):] if adj[a] else full[a][-history_weeks:] for a in full}
+        adj = {a: adj[a] or raw[a] for a in full}
+        records += [r | {"keyword": name} for r in backtest_weekly(adj, vol.get(name), window=weeks)]
+        raw_records += backtest_weekly(raw, vol.get(name), window=weeks)
         rising: dict[str, Any] = {}
         for age in YOUNG:
             if by_age.get(age) and not (vol.get(name, {}).get(age, 1) < THIN_PCT):
                 vals = daily(by_age[age])
                 m_records += momentum_backtest(vals)
                 rising[age] = momentum(vals)
-        recent = {a: [(p, v) for p, v in pts if p.replace("-", "")[:8] >= cutoff] for a, pts in by_age.items()}
-        a = analyze(recent, volume_pct=vol.get(name))
+        a = analyze_weekly({x: ws[-weeks:] for x, ws in adj.items()}, volume_pct=vol.get(name))
+        if a["stage"] in ("확산 대기", "확산 중"):  # young booming now: a forward-looking forecast makes sense
+            from . import bass
+
+            v = vol.get(name, {})
+            young_age = "20대" if v.get("20대", 1) >= THIN_PCT else "10대"
+            recent = {x: ws[-weeks:] for x, ws in full.items()}
+            if recent.get(young_age):
+                olders = {x: [val for _, val in recent[x]] for x in OLD if recent.get(x) and v.get(x, 1) >= THIN_PCT}
+                fc = bass.forecast([w for w, _ in recent[young_age]], [val for _, val in recent[young_age]],
+                                   olders, typical_lag)
+                fc["ages"] = {x: f for x, f in fc["ages"].items() if f["weeks_from_now"] >= 0}  # only peaks still ahead
+                if fc["ages"]:
+                    a["forecast"] = fc
         a["momentum"] = {g: m for g, m in rising.items() if m}
         a["rising_now"] = any(m and m["steady"] for m in rising.values())
         a["spiking_now"] = not a["rising_now"] and any(m and m["spike"] for m in rising.values())
@@ -353,7 +411,9 @@ async def track(settings, store, keywords: list[str], weeks: int = 17, today: da
     order = {"확산 중": 0, "윗세대 상승": 1, "확산 대기": 2, "전 연령 동시": 3, "지나감": 4, "상시 관심": 5}
     items.sort(key=lambda x: (order[x["stage"]], x.get("old_lag_weeks") or 99, x["keyword"]))
     return {"period": [start.isoformat(), end.isoformat()], "items": items, "synthetic": prof.synthetic,
-            "accuracy": accuracy(records) | {"history": [hist_start.isoformat(), end.isoformat()], "keywords": len(series)},
+            "accuracy": accuracy(records) | {"history": [(end - timedelta(weeks=history_weeks)).isoformat(), end.isoformat()],
+                                             "keywords": len(series), "seasonal_adjusted": True},
+            "accuracy_unadjusted": accuracy(raw_records),
             "momentum_accuracy": momentum_accuracy(m_records)}
 
 
