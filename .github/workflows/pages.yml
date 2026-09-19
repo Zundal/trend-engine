@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write  # 일별 기록을 data 브랜치에 커밋
   issues: write    # 수집 문제 발생 시 경고 이슈
+  actions: write   # 오래된 스냅샷 캐시 정리
   pages: write
   id-token: write
 
@@ -36,8 +37,6 @@ jobs:
       NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
       NAVER_API: ${{ vars.NAVER_API }}  # 비우면 자동: 키 있으면 hub, 없으면 web(키 없는 데이터랩 웹). 구 키면 legacy
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-      SEOUL_API_KEY: ${{ secrets.SEOUL_API_KEY }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TREND_ENGINE_DATA_KEY: ${{ secrets.TREND_ENGINE_DATA_KEY }}  # 공개 데이터 암호화 키 (64 hex)
       TREND_ENGINE_DB: data/trends.db
       TREND_ENGINE_ARCHIVE: archive
@@ -86,6 +85,15 @@ jobs:
         with:
           path: data
           key: trend-db-${{ github.run_id }}
+
+      # 매 실행마다 새 캐시가 생기므로 최신 3개만 남긴다 (이어받기에는 최신 1개면 충분)
+      - name: Prune old snapshot caches
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list -R "${{ github.repository }}" --key trend-db- --sort created_at --order desc --limit 100 --json id -q '.[3:][].id' \
+            | xargs -r -n1 gh cache delete -R "${{ github.repository }}" || true
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

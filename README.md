@@ -5,12 +5,10 @@ Google·네이버·YouTube·포털 실시간 이슈·위키백과·뉴스를 모
 **국가 / 서울 / 연령 / 성별** 단위로 쪼개 봅니다.
 
 ```
-Google Trends(국가·서울) ─┐
-시그널·네이트 실시간 ─────┤                     ┌─ 통합 랭킹 (NEW / ▲▼ 추이)
-위키백과 조회수 ──────────┼─► 정규화·클러스터링 ─┼─ 연령·성별 affinity (네이버 DataLab)
-YouTube 인기 · 뉴스 ──────┘     교차 점수         ├─ 그룹별 쇼핑 인기 검색어 (네이버 쇼핑인사이트)
-                                                  ├─ 서울 핫스팟 연령 분포 (서울 도시데이터)
-                                                  └─ AI 브리핑 (Claude, 근거 검증)
+Google Trends · 포털 실시간 이슈 · 위키백과 ─┐                       ┌─ 10·20대: 30대 이상보다 유독 찾는 것 (연령별 검색)
+인기 동영상 · 뉴스 ─────────────────────────┼─► 정규화·교차 점수 ──┼─ 세대 확산: 10·20대 → 윗세대로 번지나 (+ 적중률)
+네이버 연령별 검색 · 쇼핑 인기어 ────────────┘   + 매일 기록        ├─ 나라별: 실시간 / 7일 / 30일 랭킹
+                                                                   └─ 전체 연령: 연령·성별 관심·쇼핑
 ```
 
 ## 화면
@@ -48,8 +46,6 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 | YouTube 국가별 인기 영상 | `YOUTUBE_API_KEY` | YouTube 패널 비활성 |
 | **연령·성별** 관심도 (네이버 검색어 트렌드) | 불필요 — 키 없으면 데이터랩 웹 사용, 키(`NAVER_CLIENT_ID/SECRET`) 있으면 공식 API | — |
 | **연령·성별 쇼핑 인기 검색어** (네이버 쇼핑인사이트) | 불필요 | — |
-| 서울 핫스팟 실시간 인구·연령 | `SEOUL_API_KEY` | 공개 sample 키로 1곳만 |
-| AI 브리핑 | `ANTHROPIC_API_KEY` | 브리핑 비활성 |
 
 ## 배포 (GitHub Pages)
 
@@ -58,7 +54,7 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 
 1. 저장소 Settings → Pages → Source: **GitHub Actions**
 2. (선택) Settings → Secrets and variables → Actions 에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`,
-   `YOUTUBE_API_KEY`, `SEOUL_API_KEY`, `ANTHROPIC_API_KEY` 추가 → 다음 실행부터 반영
+   `YOUTUBE_API_KEY`(선택: `NAVER_CLIENT_ID`/`NAVER_CLIENT_SECRET`) 추가 → 다음 실행부터 반영
 3. Actions → Deploy dashboard → Run workflow (즉시 1회 실행)
 
 공개 사이트의 데이터 파일은 소스 정보를 제거한 뒤 AES-256-GCM 으로 암호화되어(`api/*.dat`) 브라우저에서 복호화됩니다
@@ -74,8 +70,7 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 | `segments -r KR --top 16 --segments "20대,30대,20대 여성"` | 상위 트렌드의 연령·성별 affinity |
 | `keyword 아이폰 갤럭시 --segments "10대,20대,50대"` | 임의 키워드 그룹 비교 |
 | `shopping [--segments "20대 여성,60대+"]` | 그룹별 쇼핑 인기 검색어 (★ = 그 그룹만의 관심) |
-| `seoul [--places "강남역,성수카페거리"]` | 서울 핫스팟 혼잡도·연령 분포 |
-| `brief -r KR` | Claude 트렌드 브리핑 |
+| `health-check health.json` | export 점검 결과 확인 (문제 있으면 종료코드 1) |
 | `doctor` | 모든 업스트림 라이브 점검 |
 | `record --regions KR,KR-11,US,JP` | 라이브 응답으로 테스트 fixture 갱신 |
 | `export --out site --regions KR,KR-11,US` | GitHub Pages 용 정적 사이트 생성 |

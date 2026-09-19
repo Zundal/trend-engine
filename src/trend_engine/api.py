@@ -79,17 +79,10 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     def youth_period():
         return svc.youth_period()
 
-    @app.get("/api/seoul")
-    async def seoul(places: str | None = None):
-        return await svc.seoul(_split(places))
-
     @app.get("/api/history")
     def history(key: str, region: str = "KR"):
         return svc.history(region, key)
 
-    @app.post("/api/brief")
-    async def brief(region: str = "KR"):
-        return await guard(svc.brief(region))
 
     return app
 

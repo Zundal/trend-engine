@@ -12,7 +12,6 @@ from typing import Any
 from .config import Settings, get_region
 from .engine import make_client
 from .segments import SegmentProfiler
-from .seoul import SeoulCity
 from .sources import REGISTRY
 
 
@@ -49,12 +48,6 @@ async def doctor(settings: Settings, region: str = "KR") -> list[dict[str, Any]]
     else:
         rows.append({"check": "naver_datalab", "label": "네이버 DataLab", "status": "skip", "detail": "missing NAVER_CLIENT_ID/SECRET"})
 
-    seoul = await SeoulCity(settings).hotspots(["강남역"])
-    rows.append({"check": "seoul_citydata", "label": "서울 도시데이터",
-                 "status": "ok" if seoul["places"] else "fail",
-                 "detail": ("sample key: " if seoul["sample"] else "") + ", ".join(p["name"] for p in seoul["places"]) + " ".join(seoul["errors"])})
-    rows.append({"check": "anthropic", "label": "Claude 브리핑", "status": "ok" if settings.anthropic_api_key else "skip",
-                 "detail": settings.ai_model if settings.anthropic_api_key else "missing ANTHROPIC_API_KEY"})
     return rows
 
 

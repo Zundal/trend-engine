@@ -3,20 +3,18 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 
-from pathlib import Path
-
-from . import ai, archive, diffusion, youth
+from . import archive, diffusion, youth
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
-from .seoul import SeoulCity
-from .shopping import ShoppingInsight
 from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
+from .shopping import ShoppingInsight
+from .store import Store
 
 # Today's-issue profiling covers every age plus the 10·20대 splits and the 30대+ baseline.
 REPORT_SEGMENTS = [x.name for x in DEFAULT_SEGMENTS] + [g for g in YOUTH_GROUPS if g not in AGE_GROUPS] + [OLDER]
-from .store import Store
 
 
 class TrendService:
@@ -24,7 +22,6 @@ class TrendService:
         self.settings = settings or Settings.from_env()
         self.store = store if store is not None else Store(self.settings.db_path)
         self.engine = TrendEngine(self.settings, self.store)
-        self.seoul_city = SeoulCity(self.settings, self.store)
         self.shopping_insight = ShoppingInsight(self.settings, self.store)
 
     def meta(self) -> dict[str, Any]:
@@ -38,10 +35,7 @@ class TrendService:
                 "segments": True,
                 "segments_mode": "offline" if s.offline else s.naver_mode,
                 "youtube": bool(s.offline or s.youtube_api_key),
-                "seoul": True,
                 "shopping": True,
-                "seoul_full": bool(s.seoul_api_key),
-                "ai": bool(s.anthropic_api_key),
             },
         }
 
@@ -120,28 +114,6 @@ class TrendService:
 
     def age_period(self) -> dict[str, Any]:
         return {name: archive.period_segments(self.store, self.archive_root, n) for name, n in archive.PERIODS.items()}
-
-    async def seoul(self, places: list[str] | None = None) -> dict[str, Any]:
-        return await self.seoul_city.hotspots(places)
-
-    async def brief(self, region: str = "KR", llm: ai.LLM | None = None) -> dict[str, Any]:
-        report = await self.report(region)
-        key = f"brief:{report['region']}:{report['generated_at']}"
-        if llm is None and (hit := self.store.cache_get(key, timedelta(hours=6))):
-            return hit
-        if llm is None:
-            if not self.settings.anthropic_api_key:
-                raise PermissionError("ANTHROPIC_API_KEY 가 필요합니다 (pip install 'trend-engine[ai]')")
-            llm = ai.claude_llm(self.settings.anthropic_api_key, self.settings.ai_model)
-        segments = None
-        try:
-            segments = await self.report_segments(region)
-        except PermissionError:
-            pass
-        seoul = await self.seoul() if get_region(region).code == "KR-11" else None
-        result = ai.make_brief(report, llm, segments, seoul)
-        self.store.cache_set(key, result)
-        return result
 
     def history(self, region: str, key: str) -> list[dict[str, Any]]:
         return self.store.history(key, get_region(region).code)

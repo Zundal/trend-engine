@@ -5,7 +5,7 @@
 
 ## 한 줄 요약
 여러 트렌드 소스 → `TrendItem` → 정규화·클러스터링·점수(`scoring.py`) → `TrendCluster` 랭킹 → SQLite 스냅샷.
-세그먼트(연령·성별)는 네이버 DataLab, 서울은 Google `KR-11` + 서울 도시데이터, 요약은 Claude.
+세그먼트(연령·성별)는 네이버 DataLab, 10·20대 발견은 youth.py, 세대 확산은 diffusion.py.
 
 ## 명령 (모두 저장소 루트에서)
 ```bash
@@ -26,12 +26,10 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/scoring.py` | 병합 + 점수 공식 (docstring 이 명세) |
 | `src/trend_engine/engine.py` | 소스 병렬 수집 → scoring → store |
 | `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
-| `src/trend_engine/seoul.py` | 서울 실시간 도시데이터 핫스팟 |
 | `src/trend_engine/archive.py` | 일별 요약(KST) · data 브랜치 기록 · 7일/30일 기간 뷰 |
 | `src/trend_engine/diffusion.py` | 세대 확산 감지: 연령별 주간 추이 → 급상승 시점·시차 → 단계 판정, 과거 사례 검증 |
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
-| `src/trend_engine/ai.py` | Claude 브리핑 + 근거 검증(`validate_brief`) |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
 | `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (의존성 없는 단일 HTML) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
@@ -44,7 +42,6 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 3. **소스 하나가 죽어도 리포트는 나온다.** 예외는 `source_status` 로만 보고한다.
 4. **합성 데이터는 반드시 표시한다.** 오프라인 DataLab 결과는 `synthetic: true`, 합성 fixture 는 `_synthetic` 필드. UI·AI 프롬프트 모두 이를 드러낸다.
 5a. **공개되는 것은 `publish.py` 뷰만.** 대시보드 API·정적 파일에 소스 이름/언론사/소스 상태를 넣지 말 것 (`tests/test_export.py` 가 검사). 정적 파일은 암호화(.dat).
-5. **AI 는 수집 데이터 밖의 키워드를 말할 수 없다.** `validate_brief` 가 근거 없는 키워드를 제거한다. 이 검증을 약화시키지 말 것.
 6. **API 와 CLI 는 `TrendService` 만 호출한다.** 로직을 인터페이스 레이어에 복제하지 말 것.
 7. 점수 공식을 바꾸면 `scoring.py` docstring, `docs/ARCHITECTURE.md`, `tests/test_scoring.py` 골든 값을 함께 갱신.
 

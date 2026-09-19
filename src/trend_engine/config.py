@@ -61,9 +61,6 @@ class Settings:
     naver_client_secret: str = ""
     naver_api: str = ""  # "hub" (NAVER API HUB key), "legacy" (developers.naver.com key), "web" (no key); "" = auto
     youtube_api_key: str = ""
-    seoul_api_key: str = ""
-    anthropic_api_key: str = ""
-    ai_model: str = "claude-opus-5"
     offline: bool = False
     db_path: str = "data/trends.db"
     archive_dir: str = "data/archive"  # daily summaries (committed to the `data` branch in CI)
@@ -97,9 +94,6 @@ class Settings:
             naver_client_secret=env("NAVER_CLIENT_SECRET", ""),
             naver_api=env("NAVER_API", "").strip().lower(),
             youtube_api_key=env("YOUTUBE_API_KEY", ""),
-            seoul_api_key=env("SEOUL_API_KEY", ""),
-            anthropic_api_key=env("ANTHROPIC_API_KEY", ""),
-            ai_model=env("TREND_ENGINE_AI_MODEL", "claude-opus-5"),
             offline=env("TREND_ENGINE_OFFLINE", "0") in ("1", "true", "yes"),
             db_path=env("TREND_ENGINE_DB", "data/trends.db"),
             archive_dir=env("TREND_ENGINE_ARCHIVE", "data/archive"),

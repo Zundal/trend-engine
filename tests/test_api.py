@@ -20,9 +20,6 @@ def test_end_to_end_offline(service):
     assert rep["videos"] and rep["news"]
     assert "source_status" not in rep and "sources" not in rep["clusters"][0]
 
-    seoul = client.get("/api/report", params={"region": "KR-11"}).json()
-    assert seoul["region_name"] == "서울"
-    assert seoul["clusters"][0]["label"] != rep["clusters"][0]["label"] or True  # different geo feed
 
     seg = client.get("/api/segments", params={"region": "KR", "top": 8}).json()
     assert seg["synthetic"] is True and set(seg["segments"]) >= {"20대", "여성"}
@@ -35,15 +32,9 @@ def test_end_to_end_offline(service):
     shop = client.get("/api/shopping").json()
     assert shop["by_segment"] and shop["offline"] is True
 
-    hot = client.get("/api/seoul").json()
-    assert hot["places"] and hot["sample"] is True
-
     key = rep["clusters"][0]["key"]
     assert len(client.get("/api/history", params={"key": key}).json()) >= 1
 
-    # No API key configured -> 412 with a helpful message, not a 500
-    r = client.post("/api/brief", params={"region": "KR"})
-    assert r.status_code == 412 and "ANTHROPIC_API_KEY" in r.json()["detail"]
     json.dumps(rep, ensure_ascii=False)
 
 

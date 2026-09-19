@@ -46,17 +46,6 @@ def _render_segments(s: dict) -> None:
         print(f"  ! {e}")
 
 
-def _render_seoul(d: dict) -> None:
-    if d.get("sample"):
-        print("⚠ SEOUL_API_KEY 없음: 공개 sample 키로 1개 장소만 표시합니다.")
-    for p in d["places"]:
-        ages = " ".join(f"{k}:{v:.0f}%" for k, v in p["ages"].items())
-        print(f"  {p['name']:<18} {p['congestion']:<6} {p['population_min']:,}~{p['population_max']:,}명  "
-              f"주 연령층: {p.get('dominant_group') or '-'}  | {ages}")
-    for e in d.get("errors", []):
-        print(f"  ! {e}")
-
-
 def _render_shopping(d: dict) -> None:
     print(f"쇼핑 인기 검색어 {d['period'][0]} ~ {d['period'][1]} (★ = 전체 순위엔 없는 그룹 고유 관심)\n")
     for seg, cats in d["by_segment"].items():
@@ -66,18 +55,6 @@ def _render_shopping(d: dict) -> None:
             print(f"  {cat:<8} " + ", ".join(("★" if k in dist else "") + k for k in v["top"][:6]))
     for e in d.get("errors", []):
         print(f"  ! {e}")
-
-
-def _render_brief(b: dict) -> None:
-    print(f"\n{b['headline']}\n")
-    for t in b["themes"]:
-        print(f"● [{t['category']}] {t['title']} — {t['summary']}\n   {', '.join(t['keywords'])}")
-    for s in b["segment_insights"]:
-        print(f"◆ {s['segment']}: {s['insight']}")
-    if b.get("seoul"):
-        print(f"\n서울: {b['seoul']}")
-    for c in b.get("caveats", []) + b.get("warnings", []):
-        print(f"  ※ {c}")
 
 
 def _render_doctor(rows: list[dict]) -> None:
@@ -105,15 +82,9 @@ def main(argv: list[str] | None = None) -> int:
     k.add_argument("keywords", nargs="+")
     k.add_argument("--segments")
 
-    se = sub.add_parser("seoul", help="서울 핫스팟 실시간 인구·연령 분포")
-    se.add_argument("--places", help="쉼표 구분 장소명 (서울시 POI 명칭)")
-
     sh = sub.add_parser("shopping", help="연령·성별 쇼핑 인기 검색어 (네이버 쇼핑인사이트, 키 불필요)")
     sh.add_argument("--segments", help="예: '20대,20대 여성,60대+'")
     sh.add_argument("--categories", help="예: '패션의류,디지털/가전'")
-
-    b = sub.add_parser("brief", help="Claude AI 트렌드 브리핑")
-    b.add_argument("-r", "--region", default="KR")
 
     sv = sub.add_parser("serve", help="API + 대시보드 실행")
     sv.add_argument("--host", default="127.0.0.1")
@@ -189,10 +160,6 @@ def main(argv: list[str] | None = None) -> int:
             _print(asyncio.run(svc.keyword_segments(args.keywords, split(args.segments))), args.json, _render_segments)
         elif args.cmd == "shopping":
             _print(asyncio.run(svc.shopping(split(args.segments), split(args.categories))), args.json, _render_shopping)
-        elif args.cmd == "seoul":
-            _print(asyncio.run(svc.seoul(split(args.places))), args.json, _render_seoul)
-        elif args.cmd == "brief":
-            _print(asyncio.run(svc.brief(args.region)), args.json, _render_brief)
     except PermissionError as e:
         print(f"설정 필요: {e}", file=sys.stderr)
         return 2

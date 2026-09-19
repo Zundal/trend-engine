@@ -118,7 +118,7 @@ class Store:
         self.db.execute("DELETE FROM cache WHERE created_at<?", (old,))
         self.db.commit()
 
-    # --- generic cache (Naver DataLab quota, Seoul API, AI briefs) ------------
+    # --- generic cache (Naver DataLab quota, derived views, daily snapshots) ------------
     def cache_get(self, key: str, max_age: timedelta) -> Any | None:
         row = self.db.execute("SELECT created_at, payload FROM cache WHERE key=?", (key,)).fetchone()
         if not row or datetime.fromisoformat(row["created_at"]) < utcnow() - max_age:

@@ -1,7 +1,7 @@
 [project]
 name = "trend-engine"
 version = "0.1.0"
-description = "Cross-source trend engine: Google/Naver/YouTube/Korean realtime keywords, by country, Seoul, age & gender"
+description = "Trend engine: what 10·20대 care about, how it spreads to older ages, and what's trending by country"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,9 +10,6 @@ dependencies = [
     "uvicorn>=0.30",
     "cryptography>=42",
 ]
-
-[project.optional-dependencies]
-ai = ["anthropic>=0.100"]
 
 [project.scripts]
 trend-engine = "trend_engine.cli:main"

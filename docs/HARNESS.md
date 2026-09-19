@@ -9,7 +9,6 @@
 | `tests/test_normalize.py` | 한국어 매칭 규칙 + 과병합 회귀 (`아이폰16` ≠ `아이폰17`) |
 | `tests/test_scoring.py` | 점수 공식 골든 값, family, 언급 가산, 추이 상태, 결정성 |
 | `tests/test_segments.py` | DataLab affinity 수식을 손계산과 대조, 배치 크기, 합성 플래그 |
-| `tests/test_seoul.py` | 도시데이터 파싱, sample 판별, 연령 편중 계산 |
 | `tests/test_ai.py` | 가짜 LLM 으로 프롬프트 구성·근거 없는 키워드 제거 검증 (API 호출 없음) |
 | `tests/test_api.py` | HTTP 전 구간 E2E (오프라인), 키 없을 때 412, 미지원 지역 degrade |
 
@@ -42,6 +41,3 @@ DataLab 은 `synthetic_response()`, 서울은 sample fixture. DB 는 `data/offli
 3. `pytest tests/test_contract.py -k <source>` 실패 확인 → `parse()` 수정 → 통과
 4. 커밋 (fixture + 코드 함께)
 
-## AI 브리핑 평가
-`validate_brief` 가 런타임 가드레일(근거 없는 키워드 제거 + `warnings`)이자 평가 지표다.
-실사용에서 `warnings` 비율이 높아지면 프롬프트(`ai.SYSTEM`)를 조정한다.

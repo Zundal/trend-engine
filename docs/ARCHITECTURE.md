@@ -17,8 +17,8 @@
                                    │
           ┌────────────────────────┼─────────────────────────┐
           ▼                        ▼                         ▼
- segments.SegmentProfiler   seoul.SeoulCity            ai.make_brief
- (Naver DataLab, 연령·성별)  (서울 핫스팟 연령 분포)     (Claude + validate_brief)
+ segments.SegmentProfiler   youth (10·20대 발견)        diffusion (세대 확산 + 백테스트)
+ (Naver DataLab, 연령·성별)  shopping (쇼핑인사이트)      archive (일별 기록·기간 뷰)
           └────────────── service.TrendService ──────────────┘
                          │                    │
                      api.py (FastAPI + web/)   cli.py
@@ -66,7 +66,7 @@ score           = (Σ family_score + content_boost) × consensus × 100
 ## 저장소
 - `reports`: 리포트 JSON 전체 (재현·디버깅용).
 - `clusters`: (report_id, rank, key) — `/api/history` 순위 추이.
-- `cache`: DataLab 응답(6h), 서울 도시데이터(10m), 세그먼트 결과·AI 브리핑(리포트 단위).
+- `cache`: DataLab 응답(6h), 세그먼트·쇼핑·10·20대(3h)·세대 확산(20h) 결과, 일별 스냅샷(`daily:*`, 기록되면 archive 로).
 - 이전 스냅샷 기준: 30분 이상 지난 최신 리포트 (없으면 직전 리포트).
 
 ## 확장 지점
