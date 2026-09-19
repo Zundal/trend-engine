@@ -34,10 +34,12 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
 
     files = {p.stem: p.read_text() for p in api.glob("*.dat")}
     assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping",
-                          "shopping-month", "period-KR", "period-US", "age-period", "youth", "youth-period", "diffusion"}
+                          "shopping-month", "period-KR", "period-US", "age-period", "youth", "youth-period", "diffusion", "alerts"}
     assert "segments-US" not in files  # Korean search data isn't published for foreign regions
     for name, blob in files.items():
-        assert not PROVIDERS.search(blob) and "{" not in blob, f"{name} not encrypted"
+        # ciphertext is random base64: it can spell 'naver' by chance, so check the *shape* here and
+        # scan the decrypted content below
+        assert re.fullmatch(r"[A-Za-z0-9+/=]+", blob) and "{" not in blob, f"{name} not encrypted"
         plain = json.dumps(publish.decrypt(blob, key), ensure_ascii=False)
         leak = SOURCE_TOKENS.search(plain)
         assert not leak, f"{name} leaks a source identifier: {leak and leak.group(0)}"
@@ -55,6 +57,8 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert ages["week"]["days_available"] == 1 and ages["week"]["by_segment"]
 
     page = (tmp_path / "index.html").read_text()
+    feed = (tmp_path / "feed.xml").read_text()
+    assert feed.startswith("<?xml") and not PROVIDERS.search(feed)  # public RSS: source-free
     assert "let STATIC = true;" in page and f'const DATA_KEY = "{KEY_HEX}";' in page
     assert not PROVIDERS.search(page), PROVIDERS.search(page)
     assert (tmp_path / ".nojekyll").exists()
