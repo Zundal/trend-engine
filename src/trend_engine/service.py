@@ -78,14 +78,14 @@ class TrendService:
 
     async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
         """10·20대 focus view (Korea): discovered youth interests + today's issues vs 30대 이상."""
-        if hit := self.store.cache_get("youth-latest", max_age):
+        if hit := self.store.cache_get("youth-latest:v2", max_age):
             return hit
         report = await self.report("KR")
         shopping = await self.shopping(days=7)
         segments = await self.report_segments("KR")
         result = {"discover": await youth.discover(self.settings, self.store, report, shopping),
                   "issues": youth.issue_view(segments)}
-        self.store.cache_set("youth-latest", result)
+        self.store.cache_set("youth-latest:v2", result)
         archive.record_daily_extras(self.store, archive.kst_today(), None, None, result["discover"])
         return result
 
