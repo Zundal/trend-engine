@@ -98,6 +98,18 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         except Exception as e:  # noqa: BLE001
             lines.append(f"youth: FAIL {e}")
 
+    # --- 세대 확산 감지 (daily, cached 20h; past cases monthly)
+    if "KR" in regions:
+        try:
+            dif = await svc.diffusion()
+            write("diffusion", dif)
+            stages: dict[str, int] = {}
+            for i in dif["tracked"]["items"]:
+                stages[i["stage"]] = stages.get(i["stage"], 0) + 1
+            lines.append(f"diffusion: {len(dif['tracked']['items'])} tracked {stages}, {len(dif['cases']['items'])} cases")
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"diffusion: FAIL {e}")
+
     # --- history: remember today's snapshots, archive finished days, build period views
     archive.record_daily_extras(svc.store, today, seg_today, shop_today, youth_today)
     done = archive.finalize(svc.store, root, regions, today)

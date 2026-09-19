@@ -128,8 +128,13 @@ def synthetic_response(body: dict[str, Any]) -> dict[str, Any]:
         seed = int(hashlib.md5(f"{g['groupName']}|{seg}".encode()).hexdigest()[:8], 16)
         rnd = random.Random(seed)
         level = 60 if g["groupName"] == body.get("_anchor") else rnd.uniform(1, 80)
+        try:  # real dates so callers that parse periods (diffusion.py) work offline too
+            d0, d1 = date.fromisoformat(body["startDate"]), date.fromisoformat(body["endDate"])
+            periods = [(d0 + timedelta(days=i)).strftime("%Y%m%d") for i in range(min((d1 - d0).days + 1, 2000))]
+        except (KeyError, ValueError):
+            periods = [f"d{i}" for i in range(7)]
         results.append({"title": g["groupName"], "keywords": g["keywords"],
-                        "data": [{"period": f"d{i}", "ratio": round(level * rnd.uniform(0.7, 1.3), 3)} for i in range(7)]})
+                        "data": [{"period": p, "ratio": round(level * rnd.uniform(0.7, 1.3), 3)} for p in periods]})
     return {"results": results}
 
 

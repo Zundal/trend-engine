@@ -71,6 +71,10 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def youth():
         return await svc.youth()
 
+    @app.get("/api/diffusion")
+    async def diffusion_view():
+        return await svc.diffusion()
+
     @app.get("/api/youth-period")
     def youth_period():
         return svc.youth_period()

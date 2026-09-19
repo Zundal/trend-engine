@@ -7,7 +7,7 @@ from typing import Any
 
 from pathlib import Path
 
-from . import ai, archive, youth
+from . import ai, archive, diffusion, youth
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .seoul import SeoulCity
@@ -87,6 +87,23 @@ class TrendService:
                   "issues": youth.issue_view(segments)}
         self.store.cache_set("youth-latest:v2", result)
         archive.record_daily_extras(self.store, archive.kst_today(), None, None, result["discover"])
+        return result
+
+    async def diffusion(self, max_age: timedelta = timedelta(hours=20)) -> dict[str, Any]:
+        """세대 확산 감지 (Korea): stage of each youth interest + validated past cases."""
+        if hit := self.store.cache_get("diffusion:v1", max_age):
+            return hit
+        y = await self.youth()
+        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"])
+        tracked = await diffusion.track(self.settings, self.store, keywords)
+        cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
+        if cases is None:
+            cases = await diffusion.cases(self.settings, self.store)
+            self.store.cache_set("diffusion-cases:v1", cases)
+        result = {"tracked": tracked, "cases": cases}
+        self.store.cache_set("diffusion:v1", result)
+        archive.record_daily(self.store, archive.kst_today(), "diffusion", {
+            "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result
 
     def youth_period(self) -> dict[str, Any]:

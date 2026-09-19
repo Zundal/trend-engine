@@ -79,6 +79,11 @@ def record_daily_extras(store: Store, day: date, segments: dict | None, shopping
             "period": shopping.get("period"), "by_segment": shopping.get("by_segment", {})})
 
 
+def record_daily(store: Store, day: date, kind: str, data: Any) -> None:
+    """Generic daily snapshot (e.g. kind="diffusion"), archived by finalize() once the day is over."""
+    store.cache_set(f"daily:{kind}:{day.isoformat()}", data)
+
+
 def finalize(store: Store, root: Path, regions: list[str], today: date | None = None) -> list[str]:
     """Write summaries for every finished KST day that isn't archived yet. Returns files written."""
     today = today or kst_today()
@@ -93,7 +98,7 @@ def finalize(store: Store, root: Path, regions: list[str], today: date | None = 
             if summary:
                 _write_json(path, summary)
                 written.append(str(path.relative_to(root)))
-    for kind in ("segments", "shopping", "youth"):
+    for kind in ("segments", "shopping", "youth", "diffusion"):
         for key in store.cache_keys(f"daily:{kind}:"):
             day = date.fromisoformat(key.rsplit(":", 1)[1])
             path = root / day.isoformat() / f"{kind}.json"
