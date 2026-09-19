@@ -71,6 +71,17 @@ LEXICON: dict[str, tuple[str, ...]] = {
     "음식": ("맛집", "레시피", "디저트", "과자", "라면", "치킨", "카페", "메뉴", "먹방"),
     "생활·건강": ("날씨", "건강", "병원", "독감", "코로나", "다이어트", "여행", "휴가", "연휴", "추석", "설날"),
 }
+# Basic English / Japanese domain words so foreign-country trends aren't left as 기타.
+for _cat, _words in {
+    "스포츠": ("nfl", "nba", "mlb", "nhl", "ufc", "f1", "golf", "standings", "fc", "premier", "tennis", "match", "サッカー", "野球", "試合"),
+    "생활·건강": ("weather", "forecast", "storm", "hurricane", "earthquake", "天気", "台風", "地震"),
+    "경제·재테크": ("stock", "stocks", "earnings", "price", "prices", "bitcoin", "crypto", "tariff", "株価", "円安"),
+    "정치·사회": ("election", "senate", "congress", "governor", "shooting", "選挙", "首相"),
+    "연예·방송": ("film", "movie", "season", "episode", "trailer", "netflix", "ドラマ", "映画"),
+    "게임": ("game", "gaming", "roblox", "minecraft", "fortnite", "ゲーム"),
+}.items():
+    LEXICON[_cat] = LEXICON[_cat] + _words
+
 _DISAMBIG = re.compile(r"동음이의|동명이인|disambiguation|曖昧さ回避|消歧义|định hướng", re.I)
 UA = "trend-engine/0.1 (category classifier)"
 

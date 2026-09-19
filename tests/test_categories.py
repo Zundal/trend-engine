@@ -46,3 +46,9 @@ async def test_engine_attaches_categories_offline():
     assert all(l in cat.TAXONOMY for l in labels)
     assert sum(l != "기타" for l in labels) >= len(labels) // 2  # recorded evidence classifies most trends
     assert all(c.category_votes or c.category == "기타" for c in rep.clusters)
+
+
+def test_foreign_trends_get_basic_categories():
+    assert cat.classify(["chicago weather"], [], {}, [], {}, {})[0] == "생활·건강"
+    assert cat.classify(["al east standings"], [], {}, [], {}, {})[0] == "스포츠"
+    assert cat.classify(["nvidia stock"], [], {}, [], {}, {})[0] == "경제·재테크"
