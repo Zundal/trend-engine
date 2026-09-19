@@ -33,6 +33,7 @@ CATEGORIES: dict[str, str] = {
 SEGMENTS: dict[str, dict[str, str]] = {
     "10대": {"age": "10"}, "20대": {"age": "20"}, "30대": {"age": "30"}, "40대": {"age": "40"},
     "50대": {"age": "50"}, "60대+": {"age": "60"}, "남성": {"gender": "m"}, "여성": {"gender": "f"},
+    "10대 여성": {"age": "10", "gender": "f"}, "10대 남성": {"age": "10", "gender": "m"},
     "20대 여성": {"age": "20", "gender": "f"}, "20대 남성": {"age": "20", "gender": "m"},
 }
 

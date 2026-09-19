@@ -77,10 +77,16 @@ AGE_GROUPS: dict[str, tuple[str, ...]] = {
 GENDERS = {"남성": "m", "여성": "f"}
 ALL = Segment("전체")
 DEFAULT_SEGMENTS = [Segment(n, a) for n, a in AGE_GROUPS.items()] + [Segment(n, gender=g) for n, g in GENDERS.items()]
+# 10·20대 focus: gender splits + the comparison baseline "30대 이상" (all ages 30+ in one group).
+YOUTH_GROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"]
+OLDER = "30대 이상"
+OLDER_AGES = ("5", "6", "7", "8", "9", "10", "11")
 
 
 def parse_segment(name: str) -> Segment:
-    """'20대', '여성', '20대 여성', '20대+30대 남성' -> Segment."""
+    """'20대', '여성', '20대 여성', '20대+30대 남성', '30대 이상' -> Segment."""
+    if name == OLDER:
+        return Segment(OLDER, OLDER_AGES)
     ages: list[str] = []
     gender = ""
     toks = [p for w in name.split() for p in ([w] if w in AGE_GROUPS else [x for x in w.split("+") if x])]

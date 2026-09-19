@@ -7,12 +7,15 @@ from typing import Any
 
 from pathlib import Path
 
-from . import ai, archive
+from . import ai, archive, youth
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .seoul import SeoulCity
 from .shopping import ShoppingInsight
-from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, SegmentProfiler, parse_segment
+from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
+
+# Today's-issue profiling covers every age plus the 10·20대 splits and the 30대+ baseline.
+REPORT_SEGMENTS = [x.name for x in DEFAULT_SEGMENTS] + [g for g in YOUTH_GROUPS if g not in AGE_GROUPS] + [OLDER]
 from .store import Store
 
 
@@ -58,7 +61,7 @@ class TrendService:
 
     async def report_segments(self, region: str = "KR", top: int = 16, segments: list[str] | None = None) -> dict[str, Any]:
         report = await self.report(region)
-        segs = segments or [x.name for x in DEFAULT_SEGMENTS]
+        segs = segments or REPORT_SEGMENTS
         key = f"segments:{report['region']}:{report['generated_at']}:{top}:{','.join(segs)}"
         if hit := self.store.cache_get(key, timedelta(hours=6)):
             return hit
@@ -72,6 +75,23 @@ class TrendService:
                        days: int = 7) -> dict[str, Any]:
         max_age = timedelta(hours=3) if days <= 7 else timedelta(hours=24)
         return await self.shopping_insight.top(segments, categories, max_age=max_age, days=days)
+
+    async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
+        """10·20대 focus view (Korea): discovered youth interests + today's issues vs 30대 이상."""
+        if hit := self.store.cache_get("youth-latest", max_age):
+            return hit
+        report = await self.report("KR")
+        shopping = await self.shopping(days=7)
+        segments = await self.report_segments("KR")
+        result = {"discover": await youth.discover(self.settings, self.store, report, shopping),
+                  "issues": youth.issue_view(segments)}
+        self.store.cache_set("youth-latest", result)
+        archive.record_daily_extras(self.store, archive.kst_today(), None, None, result["discover"])
+        return result
+
+    def youth_period(self) -> dict[str, Any]:
+        return {name: archive.period_segments(self.store, self.archive_root, n, kind="youth", top_n=8, limit=15)
+                for name, n in archive.PERIODS.items()}
 
     @property
     def archive_root(self) -> Path:

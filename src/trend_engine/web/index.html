@@ -79,6 +79,13 @@ ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
 .tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
 svg.spark { width: 100%; height: 40px; }
+/* 10·20대 */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.vs h3 { font-size: 13px; margin: 0 0 6px; }
+.vs ol { margin: 0; padding-left: 20px; font-size: 13px; }
+.vs li { padding: 3px 0; }
+.kind { display: inline-block; font-size: 10px; padding: 0 5px; margin-left: 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; vertical-align: 1px; }
+@media (max-width: 520px) { .vs { grid-template-columns: 1fr; } }
 /* 연령별 */
 .bars { list-style: none; margin: 0; padding: 0; }
 .bars li { display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(80px, 38%) 58px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
@@ -112,14 +119,22 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
   <div class="bar">
     <h1>Trend <span>Engine</span></h1>
     <nav class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-country" aria-selected="true" data-view="country">나라별</button>
-      <button class="tab" role="tab" id="tab-age" aria-selected="false" data-view="age">연령별</button>
+      <button class="tab" role="tab" id="tab-youth" aria-selected="true" data-view="youth">10·20대</button>
+      <button class="tab" role="tab" id="tab-country" aria-selected="false" data-view="country">나라별</button>
+      <button class="tab" role="tab" id="tab-age" aria-selected="false" data-view="age">전체 연령</button>
     </nav>
     <div class="spacer"></div>
     <span class="meta" id="gen"></span>
     <button class="ghost" id="refresh" hidden>새로 수집</button>
   </div>
-  <div class="sub" id="sub-country">
+  <div class="sub" id="sub-youth">
+    <div class="chips" id="ygroups" role="group" aria-label="10·20대 그룹"></div>
+    <span class="hint">한국</span>
+    <div class="seg" id="yperiod" role="group" aria-label="기간">
+      <button data-p="now" aria-pressed="true">지금</button><button data-p="week" aria-pressed="false">7일</button><button data-p="month" aria-pressed="false">30일</button>
+    </div>
+  </div>
+  <div class="sub" id="sub-country" hidden>
     <div class="chips" id="regions" role="group" aria-label="나라"></div>
     <div class="seg" id="cperiod" role="group" aria-label="기간">
       <button data-p="live" aria-pressed="true">실시간</button><button data-p="week" aria-pressed="false">7일</button><button data-p="month" aria-pressed="false">30일</button>
@@ -135,8 +150,33 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 </header>
 <div id="banner"></div>
 
+<!-- 10·20대 -->
+<main id="view-youth">
+  <section class="card wide">
+    <h2>한눈에 — 10대 vs 20대 <small id="y-vs-sub">30대 이상보다 유독 더 찾는 것</small></h2>
+    <div class="vs" id="y-vs"><div class="empty">불러오는 중…</div></div>
+  </section>
+  <div class="col">
+    <section class="card">
+      <h2><span id="y-title">10대가 유독 찾는 것</span> <small>30대 이상 대비 몇 배 더 검색하는지</small></h2>
+      <div class="note" id="y-note" hidden></div>
+      <ol class="bars" id="y-disc"></ol>
+    </section>
+    <section class="card">
+      <h2><span id="y-title3">오늘 이슈 중 10대가 더 관심</span> <small>30대 이상 대비</small></h2>
+      <ol class="bars" id="y-issues"></ol>
+    </section>
+  </div>
+  <div class="col">
+    <section class="card">
+      <h2><span id="y-title2">10대 쇼핑 관심</span> <small><b style="color:var(--accent)">주황</b> = 전체 순위엔 없는 이 그룹만의 관심</small></h2>
+      <div id="y-shop"><div class="empty">불러오는 중…</div></div>
+    </section>
+  </div>
+</main>
+
 <!-- 나라별 -->
-<main id="view-country">
+<main id="view-country" hidden>
   <div class="col">
     <section class="card">
       <h2 id="rank-title">지금 관심 랭킹 <small>행을 누르면 상세</small></h2>
@@ -189,10 +229,13 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const GROUPS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성", "20대 여성", "20대 남성"];
+const BASIC_SEGS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성"];
 const HIDDEN_REGIONS = new Set(["KR-11", "KR-26"]); // 서울·부산은 나라 탭에서 제외
 let META = null, REPORT = null, SEG = null;
-let view = "country", region = "KR", group = "20대", selected = null, showAll = false;
-let cperiod = "live", aperiod = "week";
+let view = "youth", region = "KR", group = "20대", selected = null, showAll = false;
+let cperiod = "live", aperiod = "week", yperiod = "now", ygroup = "10대";
+const YGROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"];
+let YOUTH = null, YPER = null;
 const PERIOD = {}, SHOPS = {};
 let AGEP = null;
 const PLABEL = { week: "7일", month: "30일" };
@@ -222,7 +265,7 @@ async function api(path, opts) {
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
-    return staticGet(["meta", "age-period"].includes(name) ? name : `${name}-${r}`);
+    return staticGet(["meta", "age-period", "youth", "youth-period"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -234,19 +277,21 @@ async function api(path, opts) {
 // ---- routing: #country/KR, #age/20대 -------------------------------------------------
 function readHash() {
   const [v, arg, p] = decodeURIComponent(location.hash.slice(1)).split("/");
-  if (v === "age") { view = "age"; if (GROUPS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
+  if (v === "youth") { view = "youth"; if (YGROUPS.includes(arg)) ygroup = arg; if (p === "now" || PLABEL[p]) yperiod = p; }
+  else if (v === "age") { view = "age"; if (GROUPS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
   else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; }
 }
 function writeHash() {
-  const h = view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
+  const h = view === "youth" ? `#youth/${ygroup}/${yperiod}` : view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
   if (location.hash !== h) history.replaceState(null, "", h);
 }
 function setView(v) {
   view = v; writeHash();
   for (const t of $$(".tab")) t.setAttribute("aria-selected", String(t.dataset.view === v));
+  $("#view-youth").hidden = $("#sub-youth").hidden = v !== "youth";
   $("#view-country").hidden = $("#sub-country").hidden = v !== "country";
   $("#view-age").hidden = $("#sub-age").hidden = v !== "age";
-  if (v === "country") loadCountry(); else loadAge();
+  if (v === "youth") loadYouth(); else if (v === "country") loadCountry(); else loadAge();
 }
 
 // ---- 나라별 --------------------------------------------------------------------------
@@ -409,6 +454,7 @@ function renderHeat(s) {
   const rows = s.keywords.filter((k) => Object.values(s.affinity[k]).some((v) => v != null));
   const warn = s.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 샘플 데이터 — 실제 값이 아닙니다</div>` : "";
   if (!rows.length) { $("#heat").innerHTML = warn + `<div class="empty">비교할 수 있는 키워드가 없습니다</div>`; return; }
+  s = { ...s, segments: s.segments.filter((g) => BASIC_SEGS.includes(g)) };
   $("#heat").innerHTML = warn + `<table class="heat"><thead><tr><th class="kw">키워드</th>${s.segments.map((g) => `<th class="${g === group ? "on" : ""}">${esc(g)}</th>`).join("")}</tr></thead><tbody>${
     rows.map((k) => `<tr><td class="kw" title="${esc(labels[k] || k)}">${esc(labels[k] || k)}</td>${s.segments.map((g) => {
       const v = s.affinity[k][g];
@@ -442,6 +488,59 @@ async function loadAge(custom) {
   if (sp) $("#gen").textContent = `${sp[0]} ~ ${sp[1]}`;
 }
 
+// ---- 10·20대 ------------------------------------------------------------------------
+function youthRows(g) {  // discovered interests for the selected period
+  if (yperiod === "now") return (YOUTH?.discover.groups[g] || []).map((r) => ({ ...r, days: null }));
+  return (YPER?.[yperiod]?.by_segment[g] || []).map((r) => ({ keyword: r.keyword, kind: r.kind, vs_older: r.avg_vs_older, affinity: r.avg_affinity, days: r.days }));
+}
+function barsHTML(rows, empty) {
+  const max = Math.max(...rows.map((r) => r.vs_older || 0), 1);
+  return rows.map((r, i) => `<li>
+      <span class="n">${i + 1}</span>
+      <span class="label" title="${esc(r.keyword)}">${esc(r.keyword)}${r.kind ? `<span class="kind">${esc(r.kind)}</span>` : ""}</span>
+      <span class="bar-bg"><i style="width:${((r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span>
+      <span class="x">${r.days ? `${r.days}일·` : ""}${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="empty">${empty}</li>`;
+}
+function renderYouth() {
+  $("#ygroups").innerHTML = YGROUPS.map((g) => `<button class="chip" aria-pressed="${g === ygroup}" data-g="${esc(g)}">${esc(g)}</button>`).join("");
+  for (const b of $$("#yperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === yperiod));
+  const pl = yperiod === "now" ? "지금" : `최근 ${PLABEL[yperiod]}`;
+  $("#y-title").textContent = `${ygroup}${josa(ygroup)} 유독 찾는 것 (${pl})`;
+  $("#y-title2").textContent = `${ygroup} 쇼핑 관심 (${yperiod === "month" ? "30일" : "7일"})`;
+  $("#y-title3").textContent = `오늘 이슈 중 ${ygroup}${josa(ygroup)} 더 관심`;
+  $("#y-vs-sub").textContent = `${pl} · 30대 이상보다 유독 더 찾는 것`;
+  // 한눈에: 10대 vs 20대
+  $("#y-vs").innerHTML = ["10대", "20대"].map((g) => `<div><h3>${g}</h3><ol>${youthRows(g).slice(0, 6).map((r) =>
+    `<li>${esc(r.keyword)} <span class="muted">${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="muted">아직 없음</li>`}</ol></div>`).join("");
+  const pd = yperiod === "now" ? null : YPER?.[yperiod];
+  const note = $("#y-note");
+  note.hidden = !(pd && pd.days_available < pd.days);
+  if (pd) note.textContent = `최근 ${PLABEL[yperiod]} 중 기록 ${pd.days_available}일 — 매일 쌓이는 중`;
+  $("#y-disc").innerHTML = barsHTML(youthRows(ygroup), "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
+  $("#y-issues").innerHTML = barsHTML(YOUTH?.issues.groups[ygroup] || [], "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
+  const shop = SHOPS[yperiod === "month" ? "month" : "week"];
+  const cats = shop?.by_segment[ygroup];
+  $("#y-shop").innerHTML = !shop ? `<div class="empty">불러오는 중…</div>` : !cats ? `<div class="empty">데이터가 없습니다</div>` :
+    `<div class="shopgrid">${Object.entries(cats).map(([cat, v]) => {
+      const dist = new Set(v.distinctive);
+      return `<div><h4>${esc(cat)}</h4><ol>${v.top.slice(0, 6).map((k) => `<li class="${dist.has(k) ? "dist" : ""}">${esc(k)}</li>`).join("")}</ol></div>`;
+    }).join("")}</div>`;
+}
+async function loadYouth() {
+  renderYouth();
+  const sp = yperiod === "month" ? "month" : "week";
+  try {
+    const jobs = [];
+    if (!YOUTH) jobs.push(api("api/youth").then((d) => { YOUTH = d; }));
+    if (yperiod !== "now" && !YPER) jobs.push(api("api/youth-period").then((d) => { YPER = d; }));
+    if (!SHOPS[sp]) jobs.push(api(`api/shopping?days=${sp === "month" ? 30 : 7}`).then((d) => { SHOPS[sp] = d; }));
+    await Promise.all(jobs);
+  } catch (e) { $("#y-disc").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
+  renderYouth();
+  const per = YOUTH?.discover.period;
+  if (per) $("#gen").textContent = `검색 ${per[0]} ~ ${per[1]} 기준`;
+}
+
 // ---- init ---------------------------------------------------------------------------
 (async function init() {
   META = await api("api/meta");
@@ -464,6 +563,14 @@ async function loadAge(custom) {
     writeHash(); loadAge();
   };
   $$(".tab").forEach((t) => t.onclick = () => setView(t.dataset.view));
+  $("#ygroups").onclick = (e) => {
+    const b = e.target.closest("[data-g]"); if (!b) return;
+    ygroup = b.dataset.g; writeHash(); renderYouth();
+  };
+  $("#yperiod").onclick = (e) => {
+    const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === yperiod) return;
+    yperiod = b.dataset.p; writeHash(); loadYouth();
+  };
   $("#rank").onclick = (e) => {
     const li = e.target.closest("[data-i]"); if (!li) return;
     selected = +li.dataset.i; renderRank();

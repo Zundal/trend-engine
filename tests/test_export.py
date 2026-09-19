@@ -30,7 +30,7 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
 
     files = {p.stem: p.read_text() for p in api.glob("*.dat")}
     assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping",
-                          "shopping-month", "period-KR", "period-US", "age-period"}
+                          "shopping-month", "period-KR", "period-US", "age-period", "youth", "youth-period"}
     assert "segments-US" not in files  # Korean search data isn't published for foreign regions
     for name, blob in files.items():
         assert not PROVIDERS.search(blob) and "{" not in blob, f"{name} not encrypted"

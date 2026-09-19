@@ -67,6 +67,14 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     def age_period():
         return svc.age_period()
 
+    @app.get("/api/youth")
+    async def youth():
+        return await svc.youth()
+
+    @app.get("/api/youth-period")
+    def youth_period():
+        return svc.youth_period()
+
     @app.get("/api/seoul")
     async def seoul(places: str | None = None):
         return await svc.seoul(_split(places))

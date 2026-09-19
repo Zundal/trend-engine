@@ -86,8 +86,20 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         except Exception as e:  # noqa: BLE001
             lines.append(f"{name}: FAIL {e}")
 
-    # --- history: remember today's 연령·쇼핑 snapshot, archive finished days, build period views
-    archive.record_daily_extras(svc.store, today, seg_today, shop_today)
+    # --- 10·20대 focus (Korea)
+    youth_today = None
+    if "KR" in regions:
+        try:
+            y = await svc.youth()  # cached 3h
+            write("youth", y)
+            youth_today = y["discover"]
+            lines.append("youth: " + ", ".join(f"{g} {len(v)}" for g, v in y["discover"]["groups"].items())
+                         + f" (from {y['discover'].get('candidates')} candidates)")
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"youth: FAIL {e}")
+
+    # --- history: remember today's snapshots, archive finished days, build period views
+    archive.record_daily_extras(svc.store, today, seg_today, shop_today, youth_today)
     done = archive.finalize(svc.store, root, regions, today)
     lines.append(f"archive: {len(done)} new files" + (f" ({', '.join(done[:4])}{'…' if len(done) > 4 else ''})" if done else ""))
     for code in regions:
@@ -95,6 +107,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         write(f"period-{code}", periods)
     ages = {name: archive.period_segments(svc.store, root, n, today) for name, n in archive.PERIODS.items()}
     write("age-period", ages)
+    write("youth-period", {name: archive.period_segments(svc.store, root, n, today, kind="youth", top_n=8, limit=15)
+                           for name, n in archive.PERIODS.items()})
     lines.append(f"periods: week {ages['week']['days_available']}d / month {ages['month']['days_available']}d of 연령 history")
     svc.store.prune()
 

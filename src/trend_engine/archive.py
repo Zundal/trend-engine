@@ -66,8 +66,11 @@ def _write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
-def record_daily_extras(store: Store, day: date, segments: dict | None, shopping: dict | None) -> None:
-    """Keep the latest 연령·쇼핑 snapshot of each KST day in the store until it is archived."""
+def record_daily_extras(store: Store, day: date, segments: dict | None, shopping: dict | None,
+                        youth: dict | None = None) -> None:
+    """Keep the latest 연령·쇼핑·10·20대 snapshot of each KST day in the store until it is archived."""
+    if youth:
+        store.cache_set(f"daily:youth:{day.isoformat()}", {"top_by_segment": youth.get("groups", {}), "labels": {}})
     if segments:
         store.cache_set(f"daily:segments:{day.isoformat()}", {
             "top_by_segment": segments.get("top_by_segment", {}), "labels": segments.get("labels", {})})
@@ -90,7 +93,7 @@ def finalize(store: Store, root: Path, regions: list[str], today: date | None = 
             if summary:
                 _write_json(path, summary)
                 written.append(str(path.relative_to(root)))
-    for kind in ("segments", "shopping"):
+    for kind in ("segments", "shopping", "youth"):
         for key in store.cache_keys(f"daily:{kind}:"):
             day = date.fromisoformat(key.rsplit(":", 1)[1])
             path = root / day.isoformat() / f"{kind}.json"
@@ -143,13 +146,15 @@ def period_trends(store: Store, root: Path, region: str, days: int, today: date 
     return {"days": days, "days_available": len(daily), "dates": [d["date"] for d in daily], "items": items}
 
 
-def period_segments(store: Store, root: Path, days: int, today: date | None = None, limit: int = 10) -> dict[str, Any]:
-    """Per 연령·성별 group: keywords that over-indexed on the most days in the period."""
+def period_segments(store: Store, root: Path, days: int, today: date | None = None, limit: int = 10,
+                    kind: str = "segments", top_n: int = 5) -> dict[str, Any]:
+    """Per group: keywords that over-indexed on the most days in the period.
+    kind="segments" (오늘 이슈 by age) or "youth" (10·20대 discovery)."""
     today = today or kst_today()
     snaps: list[dict[str, Any]] = []
     for i in range(days - 1, -1, -1):
         day = today - timedelta(days=i)
-        d = _load(root, day, "segments.json") or store.cache_get(f"daily:segments:{day.isoformat()}", timedelta(days=3650))
+        d = _load(root, day, f"{kind}.json") or store.cache_get(f"daily:{kind}:{day.isoformat()}", timedelta(days=3650))
         if d:
             snaps.append(d)
     out: dict[str, list[dict[str, Any]]] = {}
@@ -157,13 +162,17 @@ def period_segments(store: Store, root: Path, days: int, today: date | None = No
     for d in snaps:
         labels = d.get("labels", {})
         for seg, rows in d.get("top_by_segment", {}).items():
-            for r in rows[:5]:
+            for r in rows[:top_n]:
                 if (r.get("affinity") or 0) <= 100:
                     continue
-                a = acc[seg].setdefault(r["keyword"], {"keyword": labels.get(r["keyword"], r["keyword"]), "days": 0, "aff_sum": 0.0})
+                a = acc[seg].setdefault(r["keyword"], {"keyword": labels.get(r["keyword"], r["keyword"]), "days": 0,
+                                                       "aff_sum": 0.0, "vs_sum": 0.0, "kind": r.get("kind", "")})
                 a["days"] += 1
                 a["aff_sum"] += r["affinity"]
+                a["vs_sum"] += r.get("vs_older") or 0.0
     for seg, kws in acc.items():
         rows = sorted(kws.values(), key=lambda a: (-a["days"], -a["aff_sum"]))[:limit]
-        out[seg] = [{"keyword": a["keyword"], "days": a["days"], "avg_affinity": round(a["aff_sum"] / a["days"], 1)} for a in rows]
+        out[seg] = [{"keyword": a["keyword"], "days": a["days"], "avg_affinity": round(a["aff_sum"] / a["days"], 1),
+                     **({"avg_vs_older": round(a["vs_sum"] / a["days"], 1), "kind": a["kind"]} if a["vs_sum"] else {})}
+                    for a in rows]
     return {"days": days, "days_available": len(snaps), "by_segment": out}
