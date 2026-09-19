@@ -168,3 +168,10 @@ def test_seasonal_adjust_skips_keywords_new_this_year():
     ws = [(w, (1.0 if i < 52 else 100.0) * (3 if i % 52 == 20 else 1)) for i, w in enumerate(weeks)]
     adj = dict(dif.seasonal_adjust(ws))
     assert adj[weeks[72]] == 300.0  # last year was ~0 -> no seasonal correction
+
+
+def test_half_year_gap_is_not_called_diffusion():
+    late = {"10대": curve(5), "20대": curve(5), "30대": curve(99),
+            "40대": curve(40, weeks=60), "50대": curve(99), "60대+": curve(99)}
+    r = dif.analyze({a: curve(5, weeks=60) if a in ("10대", "20대") else v for a, v in late.items()})
+    assert r["stage"] != "확산 중" or (r["old_lag_weeks"] or 0) <= dif.MAX_LAG_WEEKS

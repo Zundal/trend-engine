@@ -39,6 +39,8 @@ def test_watchlist_keywords_are_marked_and_first_seen():
 
 
 def test_forecast_alert_only_when_peak_is_near():
+    now = tracked(forecast={"ages": {"40대": {"weeks_from_now": 0}}})  # already peaking: not a forecast
+    assert not any(a.kind == "forecast" for a in al.evaluate(now, None, None, [], "2026-09-20")[0])
     near = tracked(forecast={"ages": {"40대": {"weeks_from_now": 3}}})
     far = tracked(forecast={"ages": {"40대": {"weeks_from_now": 20}}})
     assert any(a.kind == "forecast" for a in al.evaluate(near, None, None, [], "2026-09-20")[0])

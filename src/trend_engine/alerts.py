@@ -71,7 +71,7 @@ def evaluate(tracked: dict[str, Any], youth: dict[str, Any] | None, previous: di
                    "윗세대 상승": "윗세대에서 오르기 시작"}[stage]
             alerts.append(Alert(today, "stage", kw, it.get("category") or "기타", f"{stage}: {msg}", is_watched))
         ages = (it.get("forecast") or {}).get("ages") or {}
-        soon = {a: f for a, f in ages.items() if 0 <= f.get("weeks_from_now", 99) <= FORECAST_WEEKS}
+        soon = {a: f for a, f in ages.items() if 1 <= f.get("weeks_from_now", 99) <= FORECAST_WEEKS}  # 0 = now, not a forecast
         if soon and prev_stage.get(kw) != stage:  # only alongside a stage change, not every day
             when = ", ".join(f"{a} {f['weeks_from_now']}주 뒤" for a, f in sorted(soon.items()))
             alerts.append(Alert(today, "forecast", kw, it.get("category") or "기타", f"정점 예상: {when}", is_watched))

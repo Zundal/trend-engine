@@ -33,6 +33,7 @@ AGE_NAMES = [a for a, _ in AGES]
 YOUNG = ("10대", "20대")
 OLD = ("40대", "50대", "60대+")
 LAG_WEEKS = 2  # older ages rising ≥ 2 weeks after young = real diffusion, not a shared news shock
+MAX_LAG_WEEKS = 26  # a "lag" of half a year is two separate events, not one spreading trend
 ACTIVE = 0.5  # an age is "active" while its recent level is ≥ 50% of its own window peak
 BOOM = 1.6  # an age "booms" only if its peak is ≥ 1.6× its baseline (else it's steady interest)
 # baseline = min(first 3 weeks, median): catches trends that rose early and stayed up (median would
@@ -134,8 +135,8 @@ def classify(stats: dict[str, AgeStats]) -> dict[str, Any]:
         stage = "윗세대 상승"
     else:
         old_lags = [lags[a] for a in old_active if lags.get(a) is not None]
-        stage = "확산 중" if old_lags and min(old_lags) >= LAG_WEEKS else "전 연령 동시"
-    old_lag = [lags[a] for a in OLD if lags.get(a) is not None]
+        stage = "확산 중" if old_lags and LAG_WEEKS <= min(old_lags) <= MAX_LAG_WEEKS else "전 연령 동시"
+    old_lag = [lags[a] for a in OLD if lags.get(a) is not None and lags[a] <= MAX_LAG_WEEKS]
     vy = [stats[a].volume_pct for a in YOUNG if a in stats and stats[a].volume_pct is not None]
     vo = [stats[a].volume_pct for a in OLD if a in stats and stats[a].volume_pct is not None]
     return {
