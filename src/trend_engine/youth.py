@@ -26,9 +26,20 @@ from .segments import OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
 MAX_CANDIDATES = 40
 MIN_AFFINITY = 120.0
 MIN_VS_OLDER = 1.5
-# Overall volume floor, in % of the anchor keyword ('날씨'). Rare queries swing age ratios wildly
-# ("발로란트 강의 131배"); 등산 ≈ 0.05%, so 0.02% keeps real interests and drops long-tail noise.
-MIN_RELATIVE_PCT = 0.02
+# Empirical-Bayes shrinkage instead of a hard volume cut-off: rare queries swing age ratios wildly
+# ("발로란트 강의 131배"), so a ratio is pulled toward 1× in proportion to how little data backs it:
+#   w = V / (V + K),  shrunk = raw ** w      (V = overall volume as % of the anchor '날씨')
+# K = 0.05% (≈ '등산'): a keyword with that much volume keeps half of its log-ratio.
+SHRINK_K = 0.05
+MIN_RELATIVE_PCT = 0.002  # below this there is essentially no data at all
+
+
+def shrink(ratio: float, volume_pct: float | None, k: float = SHRINK_K) -> float:
+    """Pull a ratio (1.0 = no difference) toward 1 by the evidence weight w = V/(V+K)."""
+    if volume_pct is None or ratio <= 0:
+        return ratio
+    w = volume_pct / (volume_pct + k)
+    return ratio ** w
 _JUNK = re.compile(r"^(\d+|shorts?|쇼츠|official|mv|m/v|live|vlog|브이로그|뉴스|news|하이라이트|highlight|예고편|trailer|full|ep\.?\s?\d+|\d+화)$", re.I)
 
 
@@ -118,10 +129,12 @@ def youth_view(profile: dict[str, Any], kinds: dict[str, str] | None = None, lab
             overall = rel.get(k, {}).get("전체")
             if overall is not None and overall < MIN_RELATIVE_PCT:
                 continue
-            vs = a / older
-            if a >= min_affinity and vs >= min_vs_older:
-                rows.append({"keyword": labels.get(k, k), "affinity": round(a, 1), "vs_older": round(vs, 1),
-                             "kind": kinds.get(k, ""), "category": cats.get(k, "기타")})
+            raw = a / older
+            vs = shrink(raw, overall)
+            aff_s = 100 * shrink(a / 100, overall)
+            if aff_s >= min_affinity and vs >= min_vs_older:
+                rows.append({"keyword": labels.get(k, k), "affinity": round(aff_s, 1), "vs_older": round(vs, 1),
+                             "vs_raw": round(raw, 1), "kind": kinds.get(k, ""), "category": cats.get(k, "기타")})
         rows.sort(key=lambda r: (-r["vs_older"], -r["affinity"]))
         groups[g] = rows[:limit]
     return {"period": profile.get("period"), "groups": groups, "synthetic": profile.get("synthetic", False)}

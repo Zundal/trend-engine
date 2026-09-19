@@ -261,10 +261,11 @@ class SegmentProfiler:
         await asyncio.gather(*(run(keywords[i : i + BATCH]) for i in range(0, len(keywords), BATCH)))
         return out
 
-    async def profile(self, keywords: list[str], segments: list[Segment] | None = None) -> SegmentResult:
+    async def profile(self, keywords: list[str], segments: list[Segment] | None = None,
+                      end: date | None = None) -> SegmentResult:
         segments = segments or DEFAULT_SEGMENTS
         keywords = list(dict.fromkeys(k.strip() for k in keywords if k.strip() and k.strip() != self.anchor))
-        end = date.today() - timedelta(days=1)  # DataLab lags ~1 day
+        end = end or date.today() - timedelta(days=1)  # DataLab lags ~1 day
         start = end - timedelta(days=self.days - 1)
         s, e = start.isoformat(), end.isoformat()
 

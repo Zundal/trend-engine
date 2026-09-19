@@ -42,7 +42,7 @@ def test_youth_view_requires_both_affinity_and_gap_vs_older():
     v = youth.youth_view({"affinity": aff, "period": ["a", "b"]}, {"아일릿": "콘텐츠"})
     assert [r["keyword"] for r in v["groups"]["10대"]] == ["아일릿"]
     top = v["groups"]["10대"][0]
-    assert top == {"keyword": "아일릿", "affinity": 400.0, "vs_older": 8.0, "kind": "콘텐츠", "category": "기타"}
+    assert top == {"keyword": "아일릿", "affinity": 400.0, "vs_older": 8.0, "vs_raw": 8.0, "kind": "콘텐츠", "category": "기타"}
     assert v["groups"]["20대"][0]["vs_older"] == 4.0
     assert v["groups"]["10대 여성"] == []  # no data -> empty, not an error
 
@@ -76,6 +76,19 @@ def test_youth_view_drops_rare_and_one_char_keywords():
     rel = {"발로란트 강의": {"전체": 0.001}, "발로란트": {"전체": 0.5}, "약": {"전체": 3.0}}
     v = youth.youth_view({"affinity": aff, "relative": rel})
     assert [r["keyword"] for r in v["groups"]["10대"]] == ["발로란트"]
+
+
+def test_shrinkage_pulls_thin_ratios_toward_one():
+    assert youth.shrink(10.0, None) == 10.0          # no volume info -> untouched
+    assert youth.shrink(10.0, youth.SHRINK_K) == 10.0 ** 0.5  # at K: half the log-ratio
+    assert youth.shrink(10.0, 5.0) > 9.5             # plenty of data -> almost raw
+    assert youth.shrink(131.0, 0.003) < 1.5          # "발로란트 강의 131배" -> ~1×
+    # a well-searched 3× beats a barely-searched 20×
+    aff = {"탄탄": {g: 300.0 for g in YOUTH_GROUPS} | {OLDER: 100.0},
+           "희귀": {g: 2000.0 for g in YOUTH_GROUPS} | {OLDER: 100.0}}
+    rel = {"탄탄": {"전체": 1.0}, "희귀": {"전체": 0.004}}
+    rows = youth.youth_view({"affinity": aff, "relative": rel})["groups"]["10대"]
+    assert rows[0]["keyword"] == "탄탄"
 
 
 def test_candidate_categories_follow_origin_then_lexicon():
