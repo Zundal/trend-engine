@@ -6,6 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
+from . import alerts as alerts_mod
 from . import archive, diffusion, youth
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
@@ -94,7 +95,9 @@ class TrendService:
             return hit
         y = await self.youth()
         report = await self.report("KR")
-        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"], report=report)
+        watchlist = alerts_mod.load_watchlist(Path(self.settings.watchlist_path))
+        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"], report=report,
+                                              pinned=watchlist)
         cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
         if cases is None:
             cases = await diffusion.cases(self.settings, self.store)
@@ -103,11 +106,31 @@ class TrendService:
         known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
         for it in tracked["items"]:
             it["category"] = known.get(it["keyword"]) or "기타"
-        result = {"tracked": tracked, "cases": cases}
+        result = {"tracked": tracked, "cases": cases, "watchlist": watchlist}
         self.store.cache_set("diffusion:v5", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
             "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result
+
+    async def alerts(self, dif: dict[str, Any] | None = None) -> dict[str, Any]:
+        """New alerts vs the previous run + the last two weeks of them (for the feed and the card)."""
+        dif = dif or await self.diffusion()
+        y = await self.youth()
+        today = archive.kst_today().isoformat()
+        state = self.store.cache_get("alerts-state", timedelta(days=30))
+        new, next_state = alerts_mod.evaluate(dif["tracked"], y["discover"], state,
+                                              dif.get("watchlist", []), today)
+        history = self.store.cache_get("alerts-history", timedelta(days=60)) or []
+        merged = alerts_mod.merge_recent(new, history)
+        self.store.cache_set("alerts-state", next_state)
+        self.store.cache_set("alerts-history", merged)
+        archive.record_daily(self.store, archive.kst_today(), "alerts", {"alerts": [a.to_dict() for a in new]})
+        if new and self.settings.slack_webhook:
+            import httpx
+
+            async with httpx.AsyncClient(timeout=self.settings.timeout) as client:
+                await alerts_mod.notify_slack(self.settings.slack_webhook, new, self.settings.site_url, client)
+        return {"new": [a.to_dict() for a in new], "recent": merged, "watchlist": dif.get("watchlist", [])}
 
     def youth_period(self) -> dict[str, Any]:
         return {name: archive.period_segments(self.store, self.archive_root, n, kind="youth", top_n=8, limit=15)

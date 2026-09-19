@@ -38,6 +38,7 @@ jobs:
       NAVER_API: ${{ vars.NAVER_API }}  # 비우면 자동: 키 있으면 hub, 없으면 web(키 없는 데이터랩 웹). 구 키면 legacy
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       TREND_ENGINE_DATA_KEY: ${{ secrets.TREND_ENGINE_DATA_KEY }}  # 공개 데이터 암호화 키 (64 hex)
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}  # (선택) 새 알림을 슬랙으로
       TREND_ENGINE_DB: data/trends.db
       TREND_ENGINE_ARCHIVE: archive
     steps:

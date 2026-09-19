@@ -113,9 +113,10 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             health.problem(f"10·20대 분석 실패 — {str(e)[:160]}")
 
     # --- 세대 확산 감지 (daily, cached 20h; past cases monthly)
+    dif_result: dict[str, Any] | None = None
     if "KR" in regions:
         try:
-            dif = await svc.diffusion()
+            dif = dif_result = await svc.diffusion()
             write("diffusion", dif)
             stages: dict[str, int] = {}
             for i in dif["tracked"]["items"]:
@@ -128,6 +129,19 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         except Exception as e:  # noqa: BLE001
             lines.append(f"diffusion: FAIL {e}")
             health.problem(f"세대 확산 분석 실패 — {str(e)[:160]}")
+
+    # --- 알림 (watchlist + 변화 감지) → 암호화 카드 + 공개 RSS 피드
+    if "KR" in regions:
+        try:
+            from . import alerts as alerts_mod
+
+            al = await svc.alerts(dif_result)
+            write("alerts", al)
+            (out / "feed.xml").write_text(alerts_mod.to_rss(al["recent"], svc.settings.site_url), encoding="utf-8")
+            lines.append(f"alerts: {len(al['new'])} new, {len(al['recent'])} in feed, watchlist {len(al['watchlist'])}")
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"alerts: FAIL {e}")
+            health.problem(f"알림 생성 실패 — {str(e)[:160]}")
 
     # --- history: remember today's snapshots, archive finished days, build period views
     archive.record_daily_extras(svc.store, today, seg_today, shop_today, youth_today)

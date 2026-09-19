@@ -229,6 +229,10 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <span><span class="badge b-flat">상시 관심</span> 꾸준함 (유행 아님)</span>
     </div>
   </section>
+  <section class="card wide" id="alert-card" hidden>
+    <h2>🔔 알림 <small id="alert-sub">변화가 생겼을 때만 — <a href="feed.xml" id="feed-link">RSS 구독</a> · watchlist.txt 에 키워드를 적으면 고정 추적</small></h2>
+    <ul class="list" id="alerts"></ul>
+  </section>
   <section class="card wide">
     <h2>예측이 맞았나 <small id="acc-sub">과거 데이터로 매주 판정을 다시 해 보고, 실제로 윗세대가 따라왔는지 채점</small></h2>
     <div id="dif-acc"><div class="empty">불러오는 중…</div></div>
@@ -305,7 +309,7 @@ let META = null, REPORT = null, SEG = null;
 let view = "youth", region = "KR", group = "20대", selected = null, showAll = false;
 let cperiod = "live", aperiod = "week", yperiod = "now", ygroup = "10대";
 const YGROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"];
-let YOUTH = null, YPER = null, DIF = null;
+let YOUTH = null, YPER = null, DIF = null, ALERTS = null;
 // ---- 카테고리 (engine: categories.py) ----
 const CATS = ["연예·방송", "음악", "게임", "스포츠", "패션·뷰티", "음식", "테크·IT", "경제·재테크", "정치·사회", "생활·건강", "기타"];
 const CAT_COLOR = { "연예·방송": "#d6336c", "음악": "#ae3ec9", "게임": "#7048e8", "스포츠": "#1c7ed6", "패션·뷰티": "#e8590c",
@@ -351,7 +355,7 @@ async function api(path, opts) {
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
-    return staticGet(["meta", "age-period", "youth", "youth-period", "diffusion"].includes(name) ? name : `${name}-${r}`);
+    return staticGet(["meta", "age-period", "youth", "youth-period", "diffusion", "alerts"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -714,8 +718,21 @@ function renderAccuracy(a) {
     <div class="legend" style="margin-top:8px">키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}) —
     "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}. 표본이 작아 참고용.</div>`;
 }
+const ALERT_ICON = { stage: "🔄", youth: "🔥", forecast: "⏱", watchlist: "🔖" };
+function renderAlerts() {
+  const recent = ALERTS?.recent || [];
+  $("#alert-card").hidden = !recent.length;
+  const days = new Set(recent.map((a) => a.date));
+  $("#alert-sub").innerHTML = `최근 ${days.size}일 ${recent.length}건 · 변화가 생겼을 때만 — <a href="feed.xml">RSS 구독</a>`
+    + (ALERTS?.watchlist?.length ? ` · 관심 키워드 ${ALERTS.watchlist.length}개 추적 중` : " · watchlist.txt 에 키워드를 적으면 고정 추적");
+  $("#alerts").innerHTML = recent.slice(0, 15).map((a) => `<li>
+      <span>${ALERT_ICON[a.kind] || "•"}</span>
+      <a href="#diffusion" style="flex:1"><b>${esc(a.keyword)}</b>${a.watched ? " 🔖" : ""}${catTag(a.category)} <span class="muted">${esc(a.message)}</span></a>
+      <span class="tag">${esc(a.date.slice(5))}</span></li>`).join("");
+}
 function renderDiffusion() {
   if (!DIF) return;
+  renderAlerts();
   renderAccuracy(DIF.tracked.accuracy);
   const t = DIF.tracked, [s, e] = t.period;
   $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${s} ~ ${e}`;
@@ -730,6 +747,7 @@ async function loadDiffusion() {
     try { DIF = await api("api/diffusion"); }
     catch (e) { $("#dif-now").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
   }
+  if (!ALERTS) { try { ALERTS = await api("api/alerts"); } catch (_) { ALERTS = { recent: [] }; } }
   renderDiffusion();
   $("#gen").textContent = `검색 ${DIF.tracked.period[0]} ~ ${DIF.tracked.period[1]} · 매일 갱신`;
 }

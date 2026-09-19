@@ -138,3 +138,17 @@ def test_country_ranking_shows_themes(page, site):
     page.wait_for_selector("#detail h3")
     assert page.locator("#detail h3").inner_text().strip()
     assert not page.errors, page.errors
+
+
+def test_alerts_card_and_feed(page, site):
+    import urllib.request
+    page.goto(site + "#diffusion")
+    page.wait_for_selector("#dif-now .dif")
+    page.wait_for_timeout(800)
+    card = page.locator("#alert-card")
+    if not card.is_hidden():  # offline fixtures may produce no alerts on a first run
+        assert page.locator("#alerts li").count() > 0
+        assert "RSS" in page.locator("#alert-sub").inner_text()
+    feed = urllib.request.urlopen(site + "feed.xml").read().decode()
+    assert feed.startswith("<?xml") and "<rss" in feed
+    assert not page.errors, page.errors
