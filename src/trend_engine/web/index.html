@@ -589,11 +589,14 @@ function stripSVG(vals, thin) {
   return `<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">${vals.map((v, i) =>
     `<rect x="${(i * w).toFixed(2)}" y="0" width="${(w + 0.05).toFixed(2)}" height="10" fill="rgb(var(--hot))" fill-opacity="${thin ? 0.08 : (0.06 + 0.94 * Math.max(0, Math.min(1, v))).toFixed(2)}"/>`).join("")}</svg>`;
 }
+const STAGE_NOTE = { "확산 대기": "아직 10·20대만 — 윗세대는 조용", "전 연령 동시": "모든 연령이 같은 시기에",
+  "지나감": "고점이 지나감", "상시 관심": "뚜렷한 급상승 없이 꾸준함", "동시형": "모든 연령이 1주 안에 함께 뜸", "윗세대 상승": "지금 40대+가 오르는 중" };
 function difRow(it, from, to) {
-  const lag = it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : "";
-  const lags = DIF_AGES.filter((a) => it.lags?.[a] != null && !["10대", "20대"].includes(a)).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
+  // Only 40대+ lags carry the "did it spread?" signal; 30대 is in between and noisy on long windows.
+  const lags = ["40대", "50대", "60대+"].filter((a) => it.lags?.[a] != null).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
   const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
-    : it.stage === "확산형" ? `20대 대비: ${lags}` : lag || (it.young_start ? `10·20대 상승 ${it.young_start.slice(5).replace("-", "/")}~` : "");
+    : it.stage === "확산형" ? `20대보다 늦게: ${lags}`
+    : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
   return `<div class="dif"><div><h3>${esc(it.keyword)}</h3>
       <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span><div class="why">${esc(why)}</div></div>
     <div class="strip">${DIF_AGES.map((a) => {
