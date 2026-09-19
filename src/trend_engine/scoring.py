@@ -118,6 +118,24 @@ def build_clusters(
     return clusters
 
 
+NOVELTY_WEIGHT = 0.6  # an every-day regular keeps 40% of its score
+NOVELTY_MIN_DAYS = 3  # need this many past days of history before novelty kicks in
+
+
+def apply_novelty(clusters: list[TrendCluster], seen_days: dict[str, set], history_days: int) -> list[TrendCluster]:
+    """Demote evergreen interests (방송사 wiki pages, 날씨, 상시 게임) by how many of the past days they
+    were already in the ranking: score × (1 - 0.6 × familiarity). Re-sorted; pure."""
+    for c in clusters:
+        keys = {c.key, norm_key(c.query), *(norm_key(v) for v in c.variants)}
+        days = set().union(*(seen_days.get(k, set()) for k in keys)) if keys else set()
+        c.days_seen = len(days)
+        if history_days >= NOVELTY_MIN_DAYS:
+            familiarity = min(len(days) / history_days, 1.0)
+            c.novelty = round(1 - familiarity, 2)
+            c.score = round(c.score * (1 - NOVELTY_WEIGHT * familiarity), 1)
+    return sorted(clusters, key=lambda c: (-c.score, c.label))
+
+
 def apply_history(current: list[TrendCluster], previous: list[TrendCluster]) -> None:
     """Set status/rank_change by comparing with the previous snapshot's ranking."""
     for i, c in enumerate(current):

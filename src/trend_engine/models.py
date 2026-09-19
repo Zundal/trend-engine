@@ -49,6 +49,8 @@ class TrendCluster:
     rank_change: int | None = None  # + means moved up vs previous snapshot
     segments: dict[str, float] = field(default_factory=dict)  # segment -> affinity index (100 = avg)
     category: str | None = None  # categories.TAXONOMY
+    novelty: float | None = None  # 1 = never seen in the last 30 days, 0 = in the ranking every day
+    days_seen: int = 0  # past days (of the last 30) this interest was in the ranking
     category_votes: dict[str, int] = field(default_factory=dict)  # evidence behind `category`
 
     def to_dict(self) -> dict[str, Any]:

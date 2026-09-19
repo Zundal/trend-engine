@@ -60,3 +60,21 @@ def test_history_status():
 def test_deterministic():
     items = [kw("google_trends", i, f"키워드{i}") for i in range(1, 11)]
     assert [c.to_dict() for c in build_clusters(items, [], W)] == [c.to_dict() for c in build_clusters(items, [], W)]
+
+
+def test_novelty_demotes_every_day_regulars():
+    from trend_engine.scoring import apply_novelty
+    items = [kw("wikipedia", 1, "문화방송"), kw("google_trends", 1, "새 이슈")]
+    clusters = build_clusters(items, [], {"wikipedia": 1.0, "google_trends": 1.0})
+    days = {f"d{i}" for i in range(10)}
+    out = apply_novelty(clusters, {"문화방송": days}, history_days=10)
+    assert [c.label for c in out] == ["새 이슈", "문화방송"]
+    regular = out[1]
+    assert (regular.days_seen, regular.novelty, regular.score) == (10, 0.0, 40.0)  # 100 × (1 - 0.6)
+    assert out[0].novelty == 1.0 and out[0].score == 100.0
+
+
+def test_novelty_waits_for_enough_history():
+    from trend_engine.scoring import apply_novelty
+    [c] = apply_novelty(build_clusters([kw("wikipedia", 1, "문화방송")], [], {"wikipedia": 1.0}), {"문화방송": {"d1"}}, 2)
+    assert c.novelty is None and c.score == 100.0 and c.days_seen == 1

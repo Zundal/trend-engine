@@ -36,6 +36,8 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
                 "rank_change": c.get("rank_change"),
                 "volume": c.get("volume"),
                 "category": c.get("category") or "기타",
+                "novelty": c.get("novelty"),
+                "days_seen": c.get("days_seen", 0),
                 "related": c.get("related", []),
                 "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
             }

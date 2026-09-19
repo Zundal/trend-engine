@@ -87,3 +87,20 @@ def test_prune_keeps_ranks_drops_old_payloads():
     assert s.snapshot_times("KR") == [old]
     assert s.db.execute("SELECT payload FROM reports").fetchone()[0] == "null"
     assert s.history("a", "KR")  # ranks survive for aggregation
+
+
+async def test_engine_novelty_uses_past_days():
+    from trend_engine.config import Settings
+    from trend_engine.engine import TrendEngine
+
+    s = Store(":memory:")
+    today = archive.kst_today()
+    for back in range(1, 11):  # '문화방송' (a daily wiki regular in the fixtures) was ranked every past day
+        d = today - timedelta(days=back)
+        snap(s, f"{d.isoformat()}T12:00", ["문화방송"])
+    rep = await TrendEngine(Settings(offline=True, db_path=":memory:"), s).collect("KR", save=False)
+    regular = next(c for c in rep.clusters if c.label == "문화방송")
+    assert regular.days_seen == 10 and regular.novelty == 0.0
+    fresh = [c for c in rep.clusters if c.days_seen == 0]
+    assert fresh and all(c.novelty == 1.0 for c in fresh)
+    assert rep.clusters.index(regular) > len(rep.clusters) // 3  # pushed out of the top third

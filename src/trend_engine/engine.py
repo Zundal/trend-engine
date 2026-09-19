@@ -5,14 +5,14 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import fields
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import httpx
 
 from . import categories
 from .config import Settings, get_region
 from .models import TrendCluster, TrendItem, TrendReport
-from .scoring import build_clusters
+from .scoring import apply_history, apply_novelty, build_clusters
 from .sources import REGISTRY, Source
 from .store import Store, utcnow
 
@@ -100,9 +100,30 @@ class TrendEngine:
 
         weights = {name: s.weight for name, s in REGISTRY.items()}
         families = {name: s.family or name for name, s in REGISTRY.items()}
-        clusters = build_clusters(keyword_items, [i for v in content.values() for i in v], weights, previous,
-                                  families=families)
+        clusters = build_clusters(keyword_items, [i for v in content.values() for i in v], weights, None,
+                                  limit=80, families=families)
+        if self.store is not None:
+            seen, n_days = self._seen_days(region.code)
+            clusters = apply_novelty(clusters, seen, n_days)
+        clusters = clusters[:50]
+        if previous is not None:
+            apply_history(clusters, previous)
         return clusters, status, content
+
+    def _seen_days(self, region_code: str) -> tuple[dict[str, set], int]:
+        """key -> KST days (last 30, excluding today) it was in the ranking; number of days with data."""
+        from .archive import KST, day_bounds, kst_today
+
+        today = kst_today()
+        start, _ = day_bounds(today - timedelta(days=30))
+        end, _ = day_bounds(today)
+        seen: dict[str, set] = {}
+        days: set = set()
+        for r in self.store.cluster_rows(region_code, start, end):
+            d = datetime.fromisoformat(r["generated_at"]).astimezone(KST).date()
+            days.add(d)
+            seen.setdefault(r["key"], set()).add(d)
+        return seen, len(days)
 
     def _finish(self, region, clusters, content, status, save) -> TrendReport:
         report = TrendReport(

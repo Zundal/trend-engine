@@ -405,7 +405,7 @@ function renderRank() {
   $("#rank").innerHTML = cs.map((c) => `
     <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
       <span class="n">${c._i + 1}</span>
-      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}</span>
+      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}${c.days_seen >= 7 ? `<span class="ctag" title="지난 30일 중 ${c.days_seen}일 순위권 — 점수 낮춤">단골 ${c.days_seen}일</span>` : ""}</span>
       ${statusCell(c)}
       <span class="score"><i style="width:${(c.score / max * 100).toFixed(1)}%"></i></span>
     </li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
@@ -454,6 +454,7 @@ async function renderDetail(c) {
   $("#detail").innerHTML = `<div class="detail">
     <h3>${esc(c.label)}${catTag(c.category)}</h3>
     ${c.volume ? `<div class="muted">검색량 ${c.volume.toLocaleString()}+</div>` : ""}
+    ${c.novelty != null ? `<div class="muted">${c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권 (신규성 ${Math.round(c.novelty * 100)}%)` : "지난 30일 동안 처음 등장"}</div>` : ""}
     ${c.related.length ? `<b>관련 뉴스</b><ul>${c.related.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     ${mentions.length ? `<b>관련 콘텐츠</b><ul>${mentions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
