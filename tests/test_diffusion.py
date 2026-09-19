@@ -120,3 +120,21 @@ def test_backtest_never_peeks_into_the_future():
     series = {a: (curve(20, weeks=34) if a in ("10대", "20대") else curve(99, weeks=34)) for a in dif.AGE_NAMES}
     acc = dif.accuracy(dif.backtest(series, horizons=(4, 8)))
     assert acc["waiting"] > 0 and acc["4w"]["hits"] == 0 and acc["4w"]["precision"] == 0.0
+
+
+def test_momentum_separates_steady_climb_from_spike():
+    flat = [10.0 + (i % 3) for i in range(60)]
+    m = dif.momentum(flat)
+    assert not m["steady"] and not m["spike"]
+    spike = flat[:-3] + [30.0, 38.0, 46.0]
+    assert dif.momentum(spike)["spike"] is True
+    steady = [10.0] * 35 + [10.0 * 1.03 ** i for i in range(1, 30)]  # ~+23%/week for 4 weeks
+    ms = dif.momentum(steady)
+    assert ms["steady"] is True and ms["spike"] is False and ms["growth_3w_pct"] > 50
+    assert dif.momentum(flat[:20]) is None
+
+
+def test_momentum_backtest_scores_follow_through():
+    vals = [10.0] * 40 + [10.0 * 1.03 ** i for i in range(1, 60)]  # keeps climbing
+    acc = dif.momentum_accuracy(dif.momentum_backtest(vals))
+    assert acc["steady"]["flagged"] > 0 and acc["steady"]["precision"] == 1.0

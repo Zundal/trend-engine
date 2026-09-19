@@ -163,6 +163,68 @@ def analyze(series_by_age: dict[str, list[tuple[str, float]]], bins: int | None 
     return result
 
 
+# --- 상승세 vs 반짝 급등 -----------------------------------------------------------------------
+# Measured on 20 youth keywords × 10·20대 × 42 weeks (docs/ENGINE.md): a *sudden spike* (3-day level
+# ≥ 3σ, ≥ 1.5× the previous 4 weeks) keeps growing no more often than any random day (lift 0.96 —
+# spikes mean-revert), while *3 weeks of steady growth* (weekly averages +15%, +15%, +10%) is followed by
+# a further ≥ 20% rise within 2 weeks 34% vs 22% of the time (lift 1.58). So: 상승세 = signal, 반짝 = warning.
+SPIKE_Z, SPIKE_RATIO = 3.0, 1.5
+STEADY_STEPS = (1.15, 1.15, 1.10)  # this week / last week, last / 2 weeks ago, 2 / 3 weeks ago
+FOLLOW_UP, FOLLOW_GAIN = 14, 1.2   # outcome: 7-day average 14 days later ≥ 1.2× today's
+
+
+def daily(points: list[tuple[str, float]]) -> list[float]:
+    return [v for _, v in sorted(((_d(p), float(v)) for p, v in points))]
+
+
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs) if xs else 0.0
+
+
+def _ma(vals: list[float], at: int, n: int = 7) -> float:
+    return _mean(vals[at - n + 1: at + 1])
+
+
+def momentum(vals: list[float], at: int | None = None) -> dict[str, Any] | None:
+    """상승세/반짝 at day index `at` (default: last), using only days ≤ at."""
+    at = len(vals) - 1 if at is None else at
+    if at < 34:
+        return None
+    base = vals[at - 30: at - 2]
+    mu = _mean(base)
+    sd = max((sum((x - mu) ** 2 for x in base) / len(base)) ** 0.5, 0.1 * mu, 1e-9)
+    level = _mean(vals[at - 2: at + 1])
+    z = (level - mu) / sd
+    ratio = level / mu if mu > 0 else (99.0 if level > 0 else 0.0)
+    w0, w1, w2, w3 = (_ma(vals, at - 7 * i) for i in range(4))
+    steady = all(b > 0 and a >= k * b for (a, b), k in zip(((w0, w1), (w1, w2), (w2, w3)), STEADY_STEPS))
+    spike = z >= SPIKE_Z and ratio >= SPIKE_RATIO and not steady
+    growth = round((w0 / w3 - 1) * 100) if w3 > 0 else None
+    return {"steady": steady, "spike": spike, "z": round(z, 1), "ratio": round(ratio, 2), "growth_3w_pct": growth}
+
+
+def momentum_backtest(vals: list[float]) -> list[dict[str, Any]]:
+    out = []
+    for at in range(34, len(vals) - FOLLOW_UP):
+        m = momentum(vals, at)
+        now = _ma(vals, at)
+        if m is None or now <= 0:
+            continue
+        out.append({"steady": m["steady"], "spike": m["spike"], "grew": _ma(vals, at + FOLLOW_UP) >= FOLLOW_GAIN * now})
+    return out
+
+
+def momentum_accuracy(records: list[dict[str, Any]]) -> dict[str, Any]:
+    base = _mean([1.0 if r["grew"] else 0.0 for r in records]) if records else None
+    out: dict[str, Any] = {"days": len(records), "base_rate": round(base, 3) if base is not None else None}
+    for kind in ("steady", "spike"):
+        flagged = [r for r in records if r[kind]]
+        prec = _mean([1.0 if r["grew"] else 0.0 for r in flagged]) if flagged else None
+        out[kind] = {"flagged": len(flagged), "precision": round(prec, 3) if prec is not None else None,
+                     "lift": round(prec / base, 2) if prec is not None and base else None}
+    return out
+
+
 # --- backtest: would the verdict have predicted what happened next? ------------------------------
 HORIZONS = (4, 8)  # weeks
 
@@ -269,20 +331,30 @@ async def track(settings, store, keywords: list[str], weeks: int = 17, today: da
     prof = SegmentProfiler(settings, store)
     groups = {k: [k] for k in dict.fromkeys(k for k in keywords if k.strip())}
     series, vol = await _with_client(prof, lambda: fetch_series(prof, groups, hist_start.isoformat(), end.isoformat()))
-    items, records = [], []
+    items, records, m_records = [], [], []
     cutoff = start.strftime("%Y%m%d")
     for name, by_age in series.items():
         if not by_age:
             continue
         records += [r | {"keyword": name} for r in backtest(by_age, vol.get(name), window=weeks)]
+        rising: dict[str, Any] = {}
+        for age in YOUNG:
+            if by_age.get(age) and not (vol.get(name, {}).get(age, 1) < THIN_PCT):
+                vals = daily(by_age[age])
+                m_records += momentum_backtest(vals)
+                rising[age] = momentum(vals)
         recent = {a: [(p, v) for p, v in pts if p.replace("-", "")[:8] >= cutoff] for a, pts in by_age.items()}
         a = analyze(recent, volume_pct=vol.get(name))
+        a["momentum"] = {g: m for g, m in rising.items() if m}
+        a["rising_now"] = any(m and m["steady"] for m in rising.values())
+        a["spiking_now"] = not a["rising_now"] and any(m and m["spike"] for m in rising.values())
         a["keyword"] = name
         items.append(a)
     order = {"확산 중": 0, "윗세대 상승": 1, "확산 대기": 2, "전 연령 동시": 3, "지나감": 4, "상시 관심": 5}
     items.sort(key=lambda x: (order[x["stage"]], x.get("old_lag_weeks") or 99, x["keyword"]))
     return {"period": [start.isoformat(), end.isoformat()], "items": items, "synthetic": prof.synthetic,
-            "accuracy": accuracy(records) | {"history": [hist_start.isoformat(), end.isoformat()], "keywords": len(series)}}
+            "accuracy": accuracy(records) | {"history": [hist_start.isoformat(), end.isoformat()], "keywords": len(series)},
+            "momentum_accuracy": momentum_accuracy(m_records)}
 
 
 async def cases(settings, store) -> dict[str, Any]:
