@@ -127,3 +127,14 @@ def test_categories_overview_and_filters(page, site):
     row_tags = page.locator("#rank .ctag").all_inner_texts()
     assert row_tags and set(row_tags) == {chosen}
     assert not page.errors, page.errors
+
+
+def test_country_ranking_shows_themes(page, site):
+    page.goto(site + "#country/KR/live")
+    wait_rows(page, "#rank li[data-i]", 10)
+    labels = page.locator("#rank .label").all_inner_texts()
+    assert labels and all(l.strip() for l in labels)
+    page.click("#rank li[data-i='0']")
+    page.wait_for_selector("#detail h3")
+    assert page.locator("#detail h3").inner_text().strip()
+    assert not page.errors, page.errors

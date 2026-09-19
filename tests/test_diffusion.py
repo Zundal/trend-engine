@@ -95,6 +95,17 @@ def test_tracked_keywords_prefers_today():
     assert dif.tracked_keywords(today, month) == ["A", "B", "C"]
 
 
+def test_tracked_keywords_spreads_across_categories_and_honours_pins():
+    today = {"groups": {"10대": [{"keyword": f"게임{i}", "category": "게임"} for i in range(8)]
+                        + [{"keyword": "노래1", "category": "음악"}]}}
+    report = {"clusters": [{"label": "이슈1", "query": "이슈1", "category": "정치·사회"}]}
+    got = dif.tracked_keywords(today, None, limit=8, report=report, pinned=["내브랜드"])
+    assert got[0] == "내브랜드"
+    assert got.count("노래1") == 1 and "이슈1" in got
+    assert sum(1 for k in got if k.startswith("게임")) == dif.PER_CATEGORY + 1  # cap, then fill-up slots
+    assert len(got) == 8 and len(set(got)) == 8
+
+
 def test_partial_weeks_are_dropped():
     # starts on a Wednesday and ends on a Tuesday: only the 2 complete Mon–Sun weeks remain
     pts = [((START + timedelta(days=d)).strftime("%Y%m%d"), 10.0) for d in range(2, 23)]

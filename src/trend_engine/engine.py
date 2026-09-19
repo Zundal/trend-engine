@@ -12,7 +12,7 @@ import httpx
 from . import categories
 from .config import Settings, get_region
 from .models import TrendCluster, TrendItem, TrendReport
-from .scoring import apply_history, apply_novelty, build_clusters
+from .scoring import apply_history, apply_novelty, build_clusters, build_themes
 from .sources import REGISTRY, Source
 from .store import Store, utcnow
 
@@ -126,7 +126,9 @@ class TrendEngine:
         return seen, len(days)
 
     def _finish(self, region, clusters, content, status, save) -> TrendReport:
+        themes = build_themes(clusters, [i for v in content.values() for i in v])
         report = TrendReport(
+            themes=themes,
             region=region.code,
             region_name=region.name,
             generated_at=utcnow().isoformat(timespec="seconds"),

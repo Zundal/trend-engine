@@ -58,6 +58,22 @@ class TrendCluster:
 
 
 @dataclass
+class TrendTheme:
+    """Several clusters that are the same story ('아시안게임 개막' + '나고야' + '아시안게임')."""
+
+    label: str
+    key: str
+    score: float
+    members: list[TrendCluster] = field(default_factory=list)
+    category: str | None = None
+    status: str | None = None
+    rank_change: int | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class TrendReport:
     region: str
     region_name: str
@@ -65,6 +81,7 @@ class TrendReport:
     clusters: list[TrendCluster]
     content: dict[str, list[TrendItem]]  # source -> items (youtube, news)
     source_status: dict[str, dict[str, Any]]  # source -> {ok, count, error}
+    themes: list[TrendTheme] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -72,6 +89,7 @@ class TrendReport:
             "region_name": self.region_name,
             "generated_at": self.generated_at,
             "clusters": [c.to_dict() for c in self.clusters],
+            "themes": [t.to_dict() for t in self.themes],
             "content": {k: [i.to_dict() for i in v] for k, v in self.content.items()},
             "source_status": self.source_status,
         }

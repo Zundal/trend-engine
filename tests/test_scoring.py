@@ -78,3 +78,38 @@ def test_novelty_waits_for_enough_history():
     from trend_engine.scoring import apply_novelty
     [c] = apply_novelty(build_clusters([kw("wikipedia", 1, "문화방송")], [], {"wikipedia": 1.0}), {"문화방송": {"d1"}}, 2)
     assert c.novelty is None and c.score == 100.0 and c.days_seen == 1
+
+
+def _theme_labels(clusters, content):
+    from trend_engine.scoring import build_themes
+    return [[m.label for m in t.members] for t in build_themes(clusters, content)]
+
+
+def test_themes_merge_the_same_story_but_not_lookalikes():
+    from trend_engine.scoring import build_themes
+    items = [kw("google_trends", 1, "아이치 나고야 아시안게임 개막"), kw("google_trends", 2, "나고야"),
+             kw("google_trends", 3, "아이폰16"), kw("google_trends", 4, "아이폰17"),
+             kw("nate", 1, "마크"), kw("nate", 2, "마크롱")]
+    clusters = build_clusters(items, [], W)
+    groups = _theme_labels(clusters, [])
+    assert ["아이치 나고야 아시안게임 개막", "나고야"] in groups  # whole-word containment
+    assert all(len(g) == 1 for g in groups if g[0] in ("아이폰16", "아이폰17", "마크", "마크롱"))
+
+
+def test_themes_merge_two_entities_that_share_a_headline():
+    from trend_engine.scoring import build_themes
+    head = [content("google_news", 1, "손흥민 토트넘 복귀전 골")]
+    items = [kw("google_trends", 1, "손흥민"), kw("google_trends", 2, "토트넘")]
+    clusters = build_clusters(items, head, W)
+    assert len(clusters) == 2  # different words: the keyword clusterer keeps them apart
+    themes = build_themes(clusters, head)
+    assert len(themes) == 1 and [m.label for m in themes[0].members] == ["손흥민", "토트넘"]
+    assert themes[0].score == round(clusters[0].score + 0.25 * clusters[1].score, 1)
+    assert themes[0].label == clusters[0].label  # strongest member names the theme
+
+
+def test_theme_takes_a_real_category_from_any_member():
+    from trend_engine.scoring import build_themes
+    a, b = build_clusters([kw("google_trends", 1, "나고야 아시안게임"), kw("google_trends", 2, "나고야")], [], W)
+    a.category, b.category = "기타", "스포츠"
+    assert build_themes([a, b], [])[0].category == "스포츠"

@@ -93,7 +93,8 @@ class TrendService:
         if hit := self.store.cache_get("diffusion:v5", max_age):
             return hit
         y = await self.youth()
-        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"])
+        report = await self.report("KR")
+        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"], report=report)
         cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
         if cases is None:
             cases = await diffusion.cases(self.settings, self.store)

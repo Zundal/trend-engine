@@ -402,14 +402,18 @@ function renderRank() {
   if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
   $("#rank").classList.toggle("period", !!pd);
   if (pd) return renderPeriodRank(pd);
-  renderCatChips($("#c-cchips"), REPORT.clusters, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
-  const all = REPORT.clusters.map((c, i) => ({ ...c, _i: i }));
+  // one row per story: themes group clusters that are the same thing (아시안게임 + 나고야)
+  const source = REPORT.themes?.length ? REPORT.themes : REPORT.clusters;
+  renderCatChips($("#c-cchips"), source, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
+  const all = source.map((c, i) => ({ ...c, _i: i }));
   const cs = byCat(all, ccat).slice(0, showAll ? 50 : 20);
   const max = Math.max(...cs.map((c) => c.score), 1);
   $("#rank").innerHTML = cs.map((c) => `
     <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
       <span class="n">${c._i + 1}</span>
-      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}${c.days_seen >= 7 ? `<span class="ctag" title="지난 30일 중 ${c.days_seen}일 순위권 — 점수 낮춤">단골 ${c.days_seen}일</span>` : ""}</span>
+      <span class="label" title="${esc((c.members || []).map((m) => m.label).join(" · ") || c.label)}">${esc(c.label)}${catTag(c.category)}${
+        c.members?.length > 1 ? `<span class="ctag" style="--c:var(--muted)" title="${esc(c.members.slice(1).map((m) => m.label).join(", "))}">외 ${c.members.length - 1}</span>` : ""}${
+        (c.days_seen ?? c.members?.[0]?.days_seen ?? 0) >= 7 ? `<span class="ctag" title="지난 30일 중 자주 순위권 — 점수 낮춤">단골</span>` : ""}</span>
       ${statusCell(c)}
       <span class="score"><i style="width:${(c.score / max * 100).toFixed(1)}%"></i></span>
     </li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
@@ -453,17 +457,20 @@ function sparkDays(dates, series) {
     <div class="legend"><span>${dates[0].slice(5)}</span><span style="margin-left:auto">${dates.at(-1).slice(5)}</span></div>
     <div class="muted" style="font-size:11px">위쪽이 1위 · 아래 끝 ${maxR}위 · 끊긴 날 = 순위권 밖</div>`;
 }
-async function renderDetail(c) {
+async function renderDetail(t) {
+  const c = t.members?.[0] || t;  // theme -> its strongest member carries the evidence
   const mentions = c.mentions || [];
+  const others = (t.members || []).slice(1);
   $("#detail").innerHTML = `<div class="detail">
-    <h3>${esc(c.label)}${catTag(c.category)}</h3>
+    <h3>${esc(t.label)}${catTag(t.category || c.category)}</h3>
+    ${others.length ? `<div class="muted">같은 이야기로 묶임: ${others.map((m) => esc(m.label)).join(" · ")}</div>` : ""}
     ${c.volume ? `<div class="muted">검색량 ${c.volume.toLocaleString()}+</div>` : ""}
     ${c.novelty != null ? `<div class="muted">${c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권 (신규성 ${Math.round(c.novelty * 100)}%)` : "지난 30일 동안 처음 등장"}</div>` : ""}
     ${c.related.length ? `<b>관련 뉴스</b><ul>${c.related.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     ${mentions.length ? `<b>관련 콘텐츠</b><ul>${mentions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
   try {
-    const h = await api(`api/history?region=${region}&key=${encodeURIComponent(c.key)}`);
+    const h = await api(`api/history?region=${region}&key=${encodeURIComponent(t.key)}`);
     $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다" : spark(h.map((x) => x.rank));
   } catch (e) { $("#spark").textContent = e.message; }
 }

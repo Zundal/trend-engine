@@ -23,7 +23,20 @@ NEWS_SOURCES = ("google_news",)
 
 def public_report(r: dict[str, Any]) -> dict[str, Any]:
     content = r.get("content", {})
+    def cluster_view(c: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "label": c["label"], "key": c["key"], "score": c["score"], "status": c.get("status"),
+            "rank_change": c.get("rank_change"), "volume": c.get("volume"),
+            "category": c.get("category") or "기타", "novelty": c.get("novelty"), "days_seen": c.get("days_seen", 0),
+            "related": c.get("related", []),
+            "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
+        }
+
     return {
+        "themes": [{"label": t["label"], "key": t["key"], "score": t["score"], "category": t.get("category") or "기타",
+                    "status": t.get("status"), "rank_change": t.get("rank_change"),
+                    "members": [cluster_view(m) for m in t.get("members", [])]}
+                   for t in r.get("themes", [])],
         "region": r["region"],
         "region_name": r["region_name"],
         "generated_at": r["generated_at"],

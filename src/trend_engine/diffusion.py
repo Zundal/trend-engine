@@ -438,12 +438,38 @@ async def cases(settings, store) -> dict[str, Any]:
     return {"items": items, "synthetic": prof.synthetic}
 
 
-def tracked_keywords(youth_today: dict[str, Any] | None, youth_month: dict[str, Any] | None, limit: int = 20) -> list[str]:
-    """What to watch: keywords 10·20대 over-index on, today first, then the last 30 days."""
-    counts: dict[str, int] = {}
+PER_CATEGORY = 4  # keep the watch list spread across categories, not just whatever 게임 dominates
+
+
+def tracked_keywords(youth_today: dict[str, Any] | None, youth_month: dict[str, Any] | None, limit: int = 50,
+                     report: dict[str, Any] | None = None, pinned: list[str] | None = None) -> list[str]:
+    """What to watch: pinned (watchlist) first, then 10·20대 keywords (today > last 30 days), then
+    today's top trends — capped per category so one loud category can't fill the list."""
+    counts: dict[str, float] = {}
+    cats: dict[str, str] = {}
     for src, weight in ((youth_today or {}).get("groups", {}), 3), ((youth_month or {}).get("by_segment", {}), 1):
         for rows in src.values():
             for r in rows[:10]:
-                k = r["keyword"]
-                counts[k] = counts.get(k, 0) + weight
-    return [k for k, _ in sorted(counts.items(), key=lambda kv: -kv[1])][:limit]
+                counts[r["keyword"]] = counts.get(r["keyword"], 0) + weight
+                cats.setdefault(r["keyword"], r.get("category") or "기타")
+    for c in (report or {}).get("clusters", [])[:30]:  # broaden coverage beyond youth-skewed keywords
+        k = c.get("query") or c["label"]
+        counts[k] = counts.get(k, 0) + 0.5
+        cats.setdefault(k, c.get("category") or "기타")
+
+    out = list(dict.fromkeys(pinned or []))
+    used: dict[str, int] = {}
+    for k, _ in sorted(counts.items(), key=lambda kv: -kv[1]):
+        if len(out) >= limit:
+            break
+        cat = cats.get(k, "기타")
+        if k in out or used.get(cat, 0) >= PER_CATEGORY:
+            continue
+        out.append(k)
+        used[cat] = used.get(cat, 0) + 1
+    for k, _ in sorted(counts.items(), key=lambda kv: -kv[1]):  # fill any remaining slots
+        if len(out) >= limit:
+            break
+        if k not in out:
+            out.append(k)
+    return out[:limit]

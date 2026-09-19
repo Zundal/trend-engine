@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from .models import TrendCluster, TrendItem
-from .normalize import mentions_any, norm_key, similar, similar_text
+from .models import TrendCluster, TrendItem, TrendTheme
+from .normalize import mentions_any, norm_key, similar, similar_text, tokens
 
 CONSENSUS_BONUS = 0.3
 FAMILY_ECHO = 0.25
@@ -116,6 +116,42 @@ def build_clusters(
     if previous is not None:
         apply_history(clusters, previous)
     return clusters
+
+
+THEME_ECHO = 0.25  # extra members add a quarter of their score to the theme
+
+
+def _same_story(a: TrendCluster, b: TrendCluster, titles: list[set[str]]) -> bool:
+    """Only merge on evidence: one is a whole word of the other, or both appear in one headline/video
+    title, or they share a related article. (Plain character overlap would merge 마크 / 마크롱.)"""
+    ta = set().union(*(tokens(x) for x in [a.label, a.query, *a.variants])) or {a.key}
+    tb = set().union(*(tokens(x) for x in [b.label, b.query, *b.variants])) or {b.key}
+    if (ta <= tb or tb <= ta) and min(len(ta), len(tb)) >= 1:
+        return True
+    if set(a.related) & set(b.related):
+        return True
+    return any(ta & t and tb & t for t in titles)
+
+
+def build_themes(clusters: list[TrendCluster], content_items: list[TrendItem], limit: int = 30) -> list[TrendTheme]:
+    """Group clusters that tell the same story; the strongest member names the theme."""
+    titles = [tokens(c.keyword) for c in content_items]
+    themes: list[TrendTheme] = []
+    for c in clusters:  # clusters arrive strongest-first
+        for t in themes:
+            if any(_same_story(c, m, titles) for m in t.members):
+                t.members.append(c)
+                break
+        else:
+            themes.append(TrendTheme(label=c.label, key=c.key, score=c.score, members=[c],
+                                     category=c.category, status=c.status, rank_change=c.rank_change))
+    for t in themes:
+        rest = sum(m.score for m in t.members[1:])
+        t.score = round(t.members[0].score + THEME_ECHO * rest, 1)
+        cats = [m.category for m in t.members if m.category and m.category != "기타"]
+        t.category = cats[0] if cats else t.members[0].category
+    themes.sort(key=lambda t: (-t.score, t.label))
+    return themes[:limit]
 
 
 NOVELTY_WEIGHT = 0.6  # an every-day regular keeps 40% of its score
