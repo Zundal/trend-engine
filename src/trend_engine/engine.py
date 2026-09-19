@@ -9,6 +9,7 @@ from datetime import timedelta
 
 import httpx
 
+from . import categories
 from .config import Settings, get_region
 from .models import TrendCluster, TrendItem, TrendReport
 from .scoring import build_clusters
@@ -61,7 +62,23 @@ class TrendEngine:
         sources = self.sources_for(region.code, only)
         async with make_client(self.settings) as client:
             results = await asyncio.gather(*(self._run_source(s, client, region) for s in sources))
+            clusters, status, content = self._build(results, region, save)
+            await self._categorize(client, region, clusters, content, status)
+        return self._finish(region, clusters, content, status, save)
 
+    async def _categorize(self, client, region, clusters, content, status) -> None:
+        """Attach a category (+ votes) to every cluster. Never fails the report."""
+        try:
+            topics, wiki = await categories.gather_evidence(self.settings, client, region, [c.query for c in clusters[:50]])
+        except Exception as e:  # noqa: BLE001
+            log.warning("category evidence failed: %s", e)
+            topics, wiki = {}, {}
+        shop = self.store.cache_get("shopping-index", timedelta(days=7)) if self.store is not None and region.country == "KR" else None
+        videos = [i.to_dict() for i in content.get("youtube", [])]
+        for c in clusters:
+            c.category, c.category_votes = categories.classify([c.label, c.query, *c.variants], c.related, topics, videos, wiki, shop or {})
+
+    def _build(self, results, region, save):
         status: dict[str, dict] = {}
         keyword_items: list[TrendItem] = []
         content: dict[str, list[TrendItem]] = {}
@@ -85,6 +102,9 @@ class TrendEngine:
         families = {name: s.family or name for name, s in REGISTRY.items()}
         clusters = build_clusters(keyword_items, [i for v in content.values() for i in v], weights, previous,
                                   families=families)
+        return clusters, status, content
+
+    def _finish(self, region, clusters, content, status, save) -> TrendReport:
         report = TrendReport(
             region=region.code,
             region_name=region.name,

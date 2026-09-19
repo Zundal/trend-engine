@@ -79,6 +79,19 @@ ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
 .tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
 svg.spark { width: 100%; height: 40px; }
+/* 카테고리 */
+.ctag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px;
+  color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); white-space: nowrap; }
+.cchips { display: flex; gap: 5px; flex-wrap: wrap; margin: 0 0 10px; }
+.cchip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.cchip[aria-pressed="true"] { background: var(--c, var(--ink)); border-color: var(--c, var(--ink)); color: #fff; }
+.cchip .k { opacity: .7; margin-left: 3px; }
+.ctiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.ctile { border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 8px; padding: 8px 10px; cursor: pointer; background: var(--panel); text-align: left; font: inherit; color: var(--ink); }
+.ctile[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 10%, var(--panel)); }
+.ctile h4 { margin: 0 0 4px; font-size: 13px; color: var(--c); display: flex; justify-content: space-between; }
+.ctile ol { margin: 0; padding-left: 16px; font-size: 12px; }
+.ctile li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 10·20대 */
 .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .vs h3 { font-size: 13px; margin: 0 0 6px; }
@@ -173,6 +186,10 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 <!-- 10·20대 -->
 <main id="view-youth">
   <section class="card wide">
+    <h2><span id="y-cat-title">10대 카테고리별 한눈에</span> <small>분야별로 이 그룹이 유독 찾는 것 · 누르면 아래 목록을 그 분야로 거름</small></h2>
+    <div class="ctiles" id="y-cats"><div class="empty">불러오는 중…</div></div>
+  </section>
+  <section class="card wide">
     <h2>한눈에 — 10대 vs 20대 <small id="y-vs-sub">30대 이상보다 유독 더 찾는 것</small></h2>
     <div class="vs" id="y-vs"><div class="empty">불러오는 중…</div></div>
   </section>
@@ -180,6 +197,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
     <section class="card">
       <h2><span id="y-title">10대가 유독 찾는 것</span> <small>30대 이상 대비 몇 배 더 검색하는지</small></h2>
       <div class="note" id="y-note" hidden></div>
+      <div class="cchips" id="y-cchips"></div>
       <ol class="bars" id="y-disc"></ol>
     </section>
     <section class="card">
@@ -213,6 +231,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
   </section>
   <section class="card wide">
     <h2>지금 추적 중 <small id="dif-sub">10·20대가 유독 찾는 키워드</small></h2>
+    <div class="cchips" id="d-cchips"></div>
     <div id="dif-now"><div class="empty">불러오는 중…</div></div>
   </section>
   <section class="card wide">
@@ -227,6 +246,7 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
     <section class="card">
       <h2 id="rank-title">지금 관심 랭킹 <small>행을 누르면 상세</small></h2>
       <div class="note" id="rank-note" hidden></div>
+      <div class="cchips" id="c-cchips"></div>
       <ol class="rank" id="rank"></ol>
       <button class="ghost" id="more" style="margin-top:8px" hidden></button>
       <div id="detail"></div>
@@ -282,6 +302,22 @@ let view = "youth", region = "KR", group = "20대", selected = null, showAll = f
 let cperiod = "live", aperiod = "week", yperiod = "now", ygroup = "10대";
 const YGROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"];
 let YOUTH = null, YPER = null, DIF = null;
+// ---- 카테고리 (engine: categories.py) ----
+const CATS = ["연예·방송", "음악", "게임", "스포츠", "패션·뷰티", "음식", "테크·IT", "경제·재테크", "정치·사회", "생활·건강", "기타"];
+const CAT_COLOR = { "연예·방송": "#d6336c", "음악": "#ae3ec9", "게임": "#7048e8", "스포츠": "#1c7ed6", "패션·뷰티": "#e8590c",
+  "음식": "#f08c00", "테크·IT": "#0c8599", "경제·재테크": "#2f9e44", "정치·사회": "#5c677d", "생활·건강": "#74b816", "기타": "#909296" };
+let ycat = "", ccat = "", dcat = "";
+const catTag = (c) => c ? `<span class="ctag" style="--c:${CAT_COLOR[c] || "#909296"}">${esc(c)}</span>` : "";
+function renderCatChips(el, items, selected, onPick) {
+  const counts = {};
+  for (const it of items) counts[it.category || "기타"] = (counts[it.category || "기타"] || 0) + 1;
+  const present = CATS.filter((c) => counts[c]);
+  if (present.length < 2) { el.innerHTML = ""; return; }
+  el.innerHTML = `<button class="cchip" aria-pressed="${!selected}" data-c="">전체<span class="k">${items.length}</span></button>` +
+    present.map((c) => `<button class="cchip" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === selected}" data-c="${esc(c)}">${esc(c)}<span class="k">${counts[c]}</span></button>`).join("");
+  el.onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) onPick(b.dataset.c); };
+}
+const byCat = (items, c) => c ? items.filter((it) => (it.category || "기타") === c) : items;
 const PERIOD = {}, SHOPS = {};
 let AGEP = null;
 const PLABEL = { week: "7일", month: "30일" };
@@ -362,12 +398,14 @@ function renderRank() {
   if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
   $("#rank").classList.toggle("period", !!pd);
   if (pd) return renderPeriodRank(pd);
-  const cs = REPORT.clusters.slice(0, showAll ? 50 : 20);
+  renderCatChips($("#c-cchips"), REPORT.clusters, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
+  const all = REPORT.clusters.map((c, i) => ({ ...c, _i: i }));
+  const cs = byCat(all, ccat).slice(0, showAll ? 50 : 20);
   const max = Math.max(...cs.map((c) => c.score), 1);
-  $("#rank").innerHTML = cs.map((c, i) => `
-    <li data-i="${i}" class="${selected === i ? "sel" : ""}">
-      <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(c.label)}">${esc(c.label)}</span>
+  $("#rank").innerHTML = cs.map((c) => `
+    <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
+      <span class="n">${c._i + 1}</span>
+      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}</span>
       ${statusCell(c)}
       <span class="score"><i style="width:${(c.score / max * 100).toFixed(1)}%"></i></span>
     </li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
@@ -375,12 +413,13 @@ function renderRank() {
   $("#more").textContent = showAll ? "접기" : `더보기 (${REPORT.clusters.length}개)`;
 }
 function renderPeriodRank(pd) {
-  const items = pd.items.slice(0, showAll ? 40 : 20);
+  renderCatChips($("#c-cchips"), pd.items, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
+  const items = byCat(pd.items.map((c, i) => ({ ...c, _i: i })), ccat).slice(0, showAll ? 40 : 20);
   const max = Math.max(...items.map((c) => c.exposure), 1);
-  $("#rank").innerHTML = items.map((c, i) => `
-    <li data-i="${i}" class="${selected === i ? "sel" : ""}">
-      <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(c.label)}">${esc(c.label)}</span>
+  $("#rank").innerHTML = items.map((c) => `
+    <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
+      <span class="n">${c._i + 1}</span>
+      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}</span>
       <span class="pmeta">${c.new_in_period ? `<b class="st new">NEW</b> ` : ""}${c.days}일 · ${c.best_rank}위</span>
       <span class="score"><i style="width:${(c.exposure / max * 100).toFixed(1)}%"></i></span>
     </li>`).join("") || `<li class="empty">아직 기록이 없습니다</li>`;
@@ -413,7 +452,7 @@ function sparkDays(dates, series) {
 async function renderDetail(c) {
   const mentions = c.mentions || [];
   $("#detail").innerHTML = `<div class="detail">
-    <h3>${esc(c.label)}</h3>
+    <h3>${esc(c.label)}${catTag(c.category)}</h3>
     ${c.volume ? `<div class="muted">검색량 ${c.volume.toLocaleString()}+</div>` : ""}
     ${c.related.length ? `<b>관련 뉴스</b><ul>${c.related.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     ${mentions.length ? `<b>관련 콘텐츠</b><ul>${mentions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
@@ -539,13 +578,13 @@ async function loadAge(custom) {
 // ---- 10·20대 ------------------------------------------------------------------------
 function youthRows(g) {  // discovered interests for the selected period
   if (yperiod === "now") return (YOUTH?.discover.groups[g] || []).map((r) => ({ ...r, days: null }));
-  return (YPER?.[yperiod]?.by_segment[g] || []).map((r) => ({ keyword: r.keyword, kind: r.kind, vs_older: r.avg_vs_older, affinity: r.avg_affinity, days: r.days }));
+  return (YPER?.[yperiod]?.by_segment[g] || []).map((r) => ({ keyword: r.keyword, kind: r.kind, category: r.category, vs_older: r.avg_vs_older, affinity: r.avg_affinity, days: r.days }));
 }
 function barsHTML(rows, empty) {
   const max = Math.max(...rows.map((r) => r.vs_older || 0), 1);
   return rows.map((r, i) => `<li>
       <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(r.keyword)}">${esc(r.keyword)}${r.kind ? `<span class="kind">${esc(r.kind)}</span>` : ""}</span>
+      <span class="label" title="${esc(r.keyword)}${r.kind ? " · " + esc(r.kind) : ""}">${esc(r.keyword)}${catTag(r.category)}</span>
       <span class="bar-bg"><i style="width:${((r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span>
       <span class="x">${r.days ? `${r.days}일·` : ""}${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="empty">${empty}</li>`;
 }
@@ -564,8 +603,11 @@ function renderYouth() {
   const note = $("#y-note");
   note.hidden = !(pd && pd.days_available < pd.days);
   if (pd) note.textContent = `최근 ${PLABEL[yperiod]} 중 기록 ${pd.days_available}일 — 매일 쌓이는 중`;
-  $("#y-disc").innerHTML = barsHTML(youthRows(ygroup), "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
-  $("#y-issues").innerHTML = barsHTML(YOUTH?.issues.groups[ygroup] || [], "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
+  const disc = youthRows(ygroup), iss = YOUTH?.issues.groups[ygroup] || [];
+  renderCatChips($("#y-cchips"), [...disc, ...iss], ycat, (c) => { ycat = c; renderYouth(); });
+  $("#y-disc").innerHTML = barsHTML(byCat(disc, ycat), ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
+  $("#y-issues").innerHTML = barsHTML(byCat(iss, ycat), "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
+  renderCatTiles(disc, iss);
   const shop = SHOPS[yperiod === "month" ? "month" : "week"];
   const cats = shop?.by_segment[ygroup];
   $("#y-shop").innerHTML = !shop ? `<div class="empty">불러오는 중…</div>` : !cats ? `<div class="empty">데이터가 없습니다</div>` :
@@ -573,6 +615,30 @@ function renderYouth() {
       const dist = new Set(v.distinctive);
       return `<div><h4>${esc(cat)}</h4><ol>${v.top.slice(0, 6).map((k) => `<li class="${dist.has(k) ? "dist" : ""}">${esc(k)}</li>`).join("")}</ol></div>`;
     }).join("")}</div>`;
+}
+function renderCatTiles(disc, iss) {
+  $("#y-cat-title").textContent = `${ygroup} 카테고리별 한눈에 (${yperiod === "now" ? "지금" : "최근 " + PLABEL[yperiod]})`;
+  const groups = {};
+  for (const r of [...disc, ...iss]) {
+    const c = r.category || "기타";
+    (groups[c] ||= new Map()).set(r.keyword, Math.max(groups[c].get(r.keyword) || 0, r.vs_older || 0));
+  }
+  // shopping adds product interests per category (its own 분야 → our taxonomy)
+  const SHOPMAP = { "패션의류": "패션·뷰티", "패션잡화": "패션·뷰티", "화장품/미용": "패션·뷰티", "식품": "음식", "디지털/가전": "테크·IT",
+    "스포츠/레저": "스포츠", "생활/건강": "생활·건강", "가구/인테리어": "생활·건강", "출산/육아": "생활·건강", "여가/생활편의": "생활·건강" };
+  const shop = SHOPS[yperiod === "month" ? "month" : "week"]?.by_segment[ygroup] || {};
+  const shopBy = {};
+  for (const [sc, v] of Object.entries(shop)) {
+    const c = SHOPMAP[sc]; if (!c) continue;
+    for (const k of v.distinctive.slice(0, 2)) if (!groups[c]?.has(k) && !(shopBy[c] ||= []).includes(k)) shopBy[c].push(k);
+  }
+  const cats = CATS.filter((c) => c !== "기타" && (groups[c] || shopBy[c]));
+  $("#y-cats").innerHTML = cats.map((c) => {
+    const kws = [...(groups[c] || new Map()).entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} <span class="muted">${v.toFixed(1)}배</span>`);
+    const items = [...kws, ...(shopBy[c] || []).slice(0, Math.max(0, 3 - kws.length)).map((k) => `${esc(k)} <span class="muted">쇼핑</span>`)].slice(0, 3);
+    return `<button class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h4><span>${esc(c)}</span><span>${(groups[c]?.size || 0) + (shopBy[c]?.length || 0)}</span></h4><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
+  }).join("") || `<div class="empty">분야별 데이터가 아직 없습니다</div>`;
+  $("#y-cats").onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) { ycat = ycat === b.dataset.c ? "" : b.dataset.c; renderYouth(); } };
 }
 async function loadYouth() {
   renderYouth();
@@ -605,7 +671,7 @@ function difRow(it, from, to) {
   const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
     : it.stage === "확산형" ? `20대보다 늦게: ${lags}`
     : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
-  return `<div class="dif"><div><h3>${esc(it.keyword)}</h3>
+  return `<div class="dif"><div><h3>${esc(it.keyword)}${catTag(it.category)}</h3>
       <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span><div class="why">${esc(why)}</div></div>
     <div class="strip">${DIF_AGES.map((a) => {
       const g = it.ages?.[a]; if (!g) return "";
@@ -626,8 +692,9 @@ function renderDiffusion() {
   renderAccuracy(DIF.tracked.accuracy);
   const t = DIF.tracked, [s, e] = t.period;
   $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${s} ~ ${e}`;
+  renderCatChips($("#d-cchips"), t.items, dcat, (c) => { dcat = c; renderDiffusion(); });
   $("#dif-now").innerHTML = (t.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 샘플 데이터 — 실제 값이 아닙니다</div>` : "")
-    + (t.items.map((it) => difRow(it, s.slice(5), e.slice(5))).join("") || `<div class="empty">추적할 키워드가 아직 없습니다</div>`);
+    + (byCat(t.items, dcat).map((it) => difRow(it, s.slice(5), e.slice(5))).join("") || `<div class="empty">추적할 키워드가 아직 없습니다</div>`);
   $("#dif-cases").innerHTML = DIF.cases.items.map((it) => difRow(it, it.window[0].slice(0, 7), it.window[1].slice(0, 7))).join("")
     || `<div class="empty">사례 계산 중입니다</div>`;
 }

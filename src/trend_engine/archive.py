@@ -51,6 +51,8 @@ def daily_trends(store: Store, region: str, day: date) -> dict[str, Any] | None:
         a = agg.setdefault(r["key"], {"key": r["key"], "label": r["label"], "hours": 0, "best_rank": r["rank"],
                                       "score_sum": 0.0, "first": r["generated_at"], "last": r["generated_at"]})
         a["label"] = r["label"]  # latest wording wins
+        if r.get("category"):
+            a["category"] = r["category"]
         a["hours"] += 1
         a["best_rank"] = min(a["best_rank"], r["rank"])
         a["score_sum"] += r["score"]
@@ -136,6 +138,8 @@ def period_trends(store: Store, root: Path, region: str, days: int, today: date 
             a = agg.setdefault(k["key"], {"key": k["key"], "label": k["label"], "days": 0, "hours": 0,
                                           "best_rank": k["best_rank"], "exposure": 0.0, "series": {}})
             a["label"] = k["label"]
+            if k.get("category"):
+                a["category"] = k["category"]
             a["days"] += 1
             a["hours"] += k["hours"]
             a["best_rank"] = min(a["best_rank"], k["best_rank"])
@@ -171,13 +175,15 @@ def period_segments(store: Store, root: Path, days: int, today: date | None = No
                 if (r.get("affinity") or 0) <= 100:
                     continue
                 a = acc[seg].setdefault(r["keyword"], {"keyword": labels.get(r["keyword"], r["keyword"]), "days": 0,
-                                                       "aff_sum": 0.0, "vs_sum": 0.0, "kind": r.get("kind", "")})
+                                                       "aff_sum": 0.0, "vs_sum": 0.0, "kind": r.get("kind", ""),
+                                                       "category": r.get("category")})
                 a["days"] += 1
                 a["aff_sum"] += r["affinity"]
                 a["vs_sum"] += r.get("vs_older") or 0.0
     for seg, kws in acc.items():
         rows = sorted(kws.values(), key=lambda a: (-a["days"], -a["aff_sum"]))[:limit]
         out[seg] = [{"keyword": a["keyword"], "days": a["days"], "avg_affinity": round(a["aff_sum"] / a["days"], 1),
-                     **({"avg_vs_older": round(a["vs_sum"] / a["days"], 1), "kind": a["kind"]} if a["vs_sum"] else {})}
+                     **({"avg_vs_older": round(a["vs_sum"] / a["days"], 1), "kind": a["kind"]} if a["vs_sum"] else {}),
+                     **({"category": a["category"]} if a.get("category") else {})}
                     for a in rows]
     return {"days": days, "days_available": len(snaps), "by_segment": out}

@@ -72,12 +72,42 @@ def candidates(report: dict[str, Any], shopping: dict[str, Any] | None, limit: i
     return dict(list(picked.items())[:limit])
 
 
+def candidate_categories(kinds: dict[str, str], report: dict[str, Any], shopping: dict[str, Any] | None) -> dict[str, str]:
+    """Category per candidate from where it came from; the classifier's lexicon/video votes as fallback."""
+    from . import categories as cat
+
+    by_query: dict[str, str] = {}
+    for c in report.get("clusters", []):
+        if c.get("category"):
+            by_query[norm_key(c.get("query") or c["label"])] = c["category"]
+            by_query.setdefault(norm_key(c["label"]), c["category"])
+    videos = [v for items in report.get("content", {}).values() for v in items
+              if v.get("kind") == "content" and v.get("category")]
+    shop = cat.shopping_index(shopping)
+    out: dict[str, str] = {}
+    for term, kind in kinds.items():
+        k = norm_key(term)
+        found = None
+        if kind == "이슈":
+            found = by_query.get(k)
+        elif kind == "콘텐츠":
+            v = next((v for v in videos if k in {norm_key(t) for t in v.get("related", [])}), None)
+            found = cat.VIDEO_CATEGORIES.get(v["category"]) if v else None
+        elif kind == "쇼핑" and k in shop:
+            found = cat.SHOPPING_CATEGORIES.get(shop[k])
+        if not found or found == "기타":
+            found = cat.classify([term], [], {}, videos, {}, shop)[0]
+        out[term] = found
+    return out
+
+
 def youth_view(profile: dict[str, Any], kinds: dict[str, str] | None = None, labels: dict[str, str] | None = None,
-               min_affinity: float = MIN_AFFINITY, min_vs_older: float = MIN_VS_OLDER, limit: int = 15) -> dict[str, Any]:
+               min_affinity: float = MIN_AFFINITY, min_vs_older: float = MIN_VS_OLDER, limit: int = 15,
+               cats: dict[str, str] | None = None) -> dict[str, Any]:
     """Turn a segment profile (must include OLDER) into per-group youth rankings."""
     aff = profile["affinity"]
     rel = profile.get("relative", {})
-    kinds, labels = kinds or {}, labels or {}
+    kinds, labels, cats = kinds or {}, labels or {}, cats or {}
     groups: dict[str, list[dict[str, Any]]] = {}
     for g in YOUTH_GROUPS:
         rows = []
@@ -91,7 +121,7 @@ def youth_view(profile: dict[str, Any], kinds: dict[str, str] | None = None, lab
             vs = a / older
             if a >= min_affinity and vs >= min_vs_older:
                 rows.append({"keyword": labels.get(k, k), "affinity": round(a, 1), "vs_older": round(vs, 1),
-                             "kind": kinds.get(k, "")})
+                             "kind": kinds.get(k, ""), "category": cats.get(k, "기타")})
         rows.sort(key=lambda r: (-r["vs_older"], -r["affinity"]))
         groups[g] = rows[:limit]
     return {"period": profile.get("period"), "groups": groups, "synthetic": profile.get("synthetic", False)}
@@ -101,12 +131,13 @@ async def discover(settings, store, report: dict[str, Any], shopping: dict[str, 
     kinds = candidates(report, shopping)
     prof = SegmentProfiler(settings, store)
     result = await prof.profile(list(kinds), [parse_segment(g) for g in [*YOUTH_GROUPS, OLDER]])
-    view = youth_view(result.to_dict(), kinds)
+    view = youth_view(result.to_dict(), kinds, cats=candidate_categories(kinds, report, shopping))
     view["candidates"] = len(kinds)
     return view
 
 
-def issue_view(segments: dict[str, Any]) -> dict[str, Any]:
+def issue_view(segments: dict[str, Any], report: dict[str, Any] | None = None) -> dict[str, Any]:
     """Today's issues ranked by how much more each youth group cares than 30대 이상."""
-    return youth_view(segments, {k: "이슈" for k in segments.get("keywords", [])}, segments.get("labels"),
-                      min_affinity=100.0, min_vs_older=1.2, limit=10)
+    kinds = {k: "이슈" for k in segments.get("keywords", [])}
+    cats = candidate_categories(kinds, report, None) if report else None
+    return youth_view(segments, kinds, segments.get("labels"), min_affinity=100.0, min_vs_older=1.2, limit=10, cats=cats)

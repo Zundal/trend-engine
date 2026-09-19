@@ -6,6 +6,7 @@ Offline side of the harness lives in Settings.offline (fixtures -> Source.parse)
 from __future__ import annotations
 
 import asyncio
+import json
 import time
 from typing import Any
 
@@ -75,6 +76,33 @@ async def record(settings: Settings, regions: list[str]) -> list[str]:
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(raw, encoding="utf-8")
                 written.append(f"OK   {path.relative_to(settings.fixtures_dir.parent.parent)}")
+        # category evidence (news sections + wikipedia), keyed so offline mode can replay it
+        from . import categories as cat
+        from .engine import TrendEngine
+        from .store import Store
+
+        offline = Settings(offline=True, db_path=":memory:")
+        for code in regions:
+            reg = get_region(code)
+            if (reg.country, reg.lang) in done:
+                continue
+            done.add((reg.country, reg.lang))
+            topics = await cat.fetch_topics(client, reg)
+            if topics:
+                p = settings.fixtures_dir / "news_topics" / f"{reg.country}.json"
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(json.dumps(topics, ensure_ascii=False), encoding="utf-8")
+                written.append(f"OK   tests/fixtures/news_topics/{reg.country}.json ({len(topics)} sections)")
+            try:  # wiki titles = what the offline engine will look up for this region
+                rep = await TrendEngine(offline, Store(":memory:")).collect(code, save=False)
+                titles = [c.query for c in rep.clusters[:50]]
+            except Exception:  # noqa: BLE001
+                titles = []
+            if titles:
+                p = settings.fixtures_dir / "wiki_categories" / f"{reg.lang}.json"
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(await cat.fetch_wiki(client, reg.lang, titles), encoding="utf-8")
+                written.append(f"OK   tests/fixtures/wiki_categories/{reg.lang}.json ({len(titles)} titles)")
     return written
 
 

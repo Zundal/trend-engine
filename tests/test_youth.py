@@ -42,7 +42,7 @@ def test_youth_view_requires_both_affinity_and_gap_vs_older():
     v = youth.youth_view({"affinity": aff, "period": ["a", "b"]}, {"아일릿": "콘텐츠"})
     assert [r["keyword"] for r in v["groups"]["10대"]] == ["아일릿"]
     top = v["groups"]["10대"][0]
-    assert top == {"keyword": "아일릿", "affinity": 400.0, "vs_older": 8.0, "kind": "콘텐츠"}
+    assert top == {"keyword": "아일릿", "affinity": 400.0, "vs_older": 8.0, "kind": "콘텐츠", "category": "기타"}
     assert v["groups"]["20대"][0]["vs_older"] == 4.0
     assert v["groups"]["10대 여성"] == []  # no data -> empty, not an error
 
@@ -76,3 +76,12 @@ def test_youth_view_drops_rare_and_one_char_keywords():
     rel = {"발로란트 강의": {"전체": 0.001}, "발로란트": {"전체": 0.5}, "약": {"전체": 3.0}}
     v = youth.youth_view({"affinity": aff, "relative": rel})
     assert [r["keyword"] for r in v["groups"]["10대"]] == ["발로란트"]
+
+
+def test_candidate_categories_follow_origin_then_lexicon():
+    report = {"clusters": [{"label": "KT 로건 연승", "query": "KT 로건", "category": "스포츠"}],
+              "content": {"youtube": [{"kind": "content", "category": "게임", "related": ["발로란트", "VCT"]}]}}
+    shopping = {"by_segment": {"10대": {"패션의류": {"top": ["후드집업"], "distinctive": ["후드집업"]}}}}
+    kinds = {"KT 로건": "이슈", "VCT": "콘텐츠", "후드집업": "쇼핑", "비트코인": "이슈"}
+    assert youth.candidate_categories(kinds, report, shopping) == {
+        "KT 로건": "스포츠", "VCT": "게임", "후드집업": "패션·뷰티", "비트코인": "경제·재테크"}

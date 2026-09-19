@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-import xml.etree.ElementTree as ET
+from defusedxml import ElementTree as ET  # remote feeds: no XXE / entity expansion
 
 from ..models import TrendItem
 from .base import Source, get_text, rerank

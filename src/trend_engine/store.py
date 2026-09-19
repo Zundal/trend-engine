@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS clusters (
     rank INTEGER NOT NULL,
     key TEXT NOT NULL,
     label TEXT NOT NULL,
-    score REAL NOT NULL
+    score REAL NOT NULL,
+    category TEXT
 );
 CREATE INDEX IF NOT EXISTS clusters_key ON clusters(key);
 CREATE TABLE IF NOT EXISTS cache (
@@ -44,6 +45,10 @@ class Store:
         self.db = sqlite3.connect(self.path, check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.executescript(SCHEMA)
+        cols = {r[1] for r in self.db.execute("PRAGMA table_info(clusters)")}
+        if "category" not in cols:  # migrate caches created before categories existed
+            self.db.execute("ALTER TABLE clusters ADD COLUMN category TEXT")
+            self.db.commit()
 
     # --- reports -------------------------------------------------------------
     def save_report(self, report: dict[str, Any]) -> int:
@@ -53,8 +58,8 @@ class Store:
         )
         rid = cur.lastrowid
         self.db.executemany(
-            "INSERT INTO clusters(report_id, rank, key, label, score) VALUES (?,?,?,?,?)",
-            [(rid, i + 1, c["key"], c["label"], c["score"]) for i, c in enumerate(report["clusters"])],
+            "INSERT INTO clusters(report_id, rank, key, label, score, category) VALUES (?,?,?,?,?,?)",
+            [(rid, i + 1, c["key"], c["label"], c["score"], c.get("category")) for i, c in enumerate(report["clusters"])],
         )
         self.db.commit()
         return int(rid)
@@ -93,7 +98,7 @@ class Store:
     def cluster_rows(self, region: str, start: datetime, end: datetime) -> list[dict[str, Any]]:
         """Every (snapshot, cluster) row in [start, end) — input for daily aggregation (archive.py)."""
         rows = self.db.execute(
-            """SELECT r.generated_at, c.rank, c.key, c.label, c.score FROM clusters c
+            """SELECT r.generated_at, c.rank, c.key, c.label, c.score, c.category FROM clusters c
                JOIN reports r ON r.id=c.report_id
                WHERE r.region=? AND r.generated_at>=? AND r.generated_at<? ORDER BY r.generated_at""",
             # timestamps are stored as UTC ISO strings; compare in the same form

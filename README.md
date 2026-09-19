@@ -79,6 +79,8 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 
 ## 문서
 
+- [docs/ENGINE.md](docs/ENGINE.md) — **우리만의 엔진 로직** (교차 점수·기준어 정규화·10·20대 발견·세대 확산+백테스트·카테고리 투표)
+
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — 구조와 데이터 흐름, 점수 공식
 - [docs/SOURCES.md](docs/SOURCES.md) — 소스별 범위, 키, 한계, 이용약관 주의
 - [docs/SEGMENTS.md](docs/SEGMENTS.md) — 연령·성별 affinity 방법론과 해석 주의

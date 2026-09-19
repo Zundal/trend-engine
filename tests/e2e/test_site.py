@@ -109,3 +109,21 @@ def test_no_source_names_leak_and_mobile_fits(page, site):
     page.goto(site)
     wait_rows(page, "#y-disc li")
     assert page.evaluate("document.documentElement.scrollWidth") <= 391
+
+
+def test_categories_overview_and_filters(page, site):
+    page.goto(site + "#youth/20대 여성/now")
+    wait_rows(page, "#y-cats .ctile")
+    tile = page.locator("#y-cats .ctile").first
+    cat = tile.get_attribute("data-c")
+    tile.click()
+    tags = page.locator("#y-disc .ctag, #y-issues .ctag").all_inner_texts()
+    assert tags and set(tags) == {cat}, (cat, tags)
+    page.goto(site + "#country/KR/live")
+    wait_rows(page, "#c-cchips .cchip", 3)
+    chip = page.locator("#c-cchips .cchip").nth(1)
+    chosen = chip.get_attribute("data-c")
+    chip.click()
+    row_tags = page.locator("#rank .ctag").all_inner_texts()
+    assert row_tags and set(row_tags) == {chosen}
+    assert not page.errors, page.errors

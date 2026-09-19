@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn>=0.30",
     "cryptography>=42",
+    "defusedxml>=0.7",
 ]
 
 [project.scripts]

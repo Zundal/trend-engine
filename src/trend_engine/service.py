@@ -67,35 +67,43 @@ class TrendService:
 
     async def shopping(self, segments: list[str] | None = None, categories: list[str] | None = None,
                        days: int = 7) -> dict[str, Any]:
+        from . import categories as cat_mod
+
         max_age = timedelta(hours=3) if days <= 7 else timedelta(hours=24)
-        return await self.shopping_insight.top(segments, categories, max_age=max_age, days=days)
+        result = await self.shopping_insight.top(segments, categories, max_age=max_age, days=days)
+        if days == 7 and not segments and not categories:  # keyword -> 쇼핑 분야, used by the category classifier
+            self.store.cache_set("shopping-index", cat_mod.shopping_index(result))
+        return result
 
     async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
         """10·20대 focus view (Korea): discovered youth interests + today's issues vs 30대 이상."""
-        if hit := self.store.cache_get("youth-latest:v2", max_age):
+        if hit := self.store.cache_get("youth-latest:v3", max_age):
             return hit
         report = await self.report("KR")
         shopping = await self.shopping(days=7)
         segments = await self.report_segments("KR")
         result = {"discover": await youth.discover(self.settings, self.store, report, shopping),
-                  "issues": youth.issue_view(segments)}
-        self.store.cache_set("youth-latest:v2", result)
+                  "issues": youth.issue_view(segments, report)}
+        self.store.cache_set("youth-latest:v3", result)
         archive.record_daily_extras(self.store, archive.kst_today(), None, None, result["discover"])
         return result
 
     async def diffusion(self, max_age: timedelta = timedelta(hours=20)) -> dict[str, Any]:
         """세대 확산 감지 (Korea): stage of each youth interest + validated past cases."""
-        if hit := self.store.cache_get("diffusion:v2", max_age):
+        if hit := self.store.cache_get("diffusion:v3", max_age):
             return hit
         y = await self.youth()
         keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"])
         tracked = await diffusion.track(self.settings, self.store, keywords)
+        known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
+        for it in tracked["items"]:
+            it["category"] = known.get(it["keyword"]) or "기타"
         cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
         if cases is None:
             cases = await diffusion.cases(self.settings, self.store)
             self.store.cache_set("diffusion-cases:v1", cases)
         result = {"tracked": tracked, "cases": cases}
-        self.store.cache_set("diffusion:v2", result)
+        self.store.cache_set("diffusion:v3", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
             "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result

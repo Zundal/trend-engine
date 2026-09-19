@@ -48,6 +48,8 @@ class TrendCluster:
     status: Literal["new", "rising", "steady", "falling"] | None = None  # None = no history yet
     rank_change: int | None = None  # + means moved up vs previous snapshot
     segments: dict[str, float] = field(default_factory=dict)  # segment -> affinity index (100 = avg)
+    category: str | None = None  # categories.TAXONOMY
+    category_votes: dict[str, int] = field(default_factory=dict)  # evidence behind `category`
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
