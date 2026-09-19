@@ -31,6 +31,8 @@ from .config import Settings
 from .store import Store
 
 log = logging.getLogger(__name__)
+# Process-wide record of path failures that were rescued by a fallback (read by export -> health).
+FALLBACK_EVENTS: list[str] = []
 
 # Naver moved new Search Trend keys to NAVER API HUB (NCP) on 2026-07-31. Same request/response body,
 # different host + auth headers. Keys issued by the old developer center keep working until 2027-06-30.
@@ -155,6 +157,9 @@ class SegmentProfiler:
         self.synthetic = poster is None and settings.offline
         self._poster = poster
         self._sem = asyncio.Semaphore(1 if settings.naver_mode == "web" else concurrency)
+        self._web_sem = asyncio.Semaphore(1)  # the web path is always paced one-at-a-time
+        self.used_modes: dict[str, int] = {}  # mode -> successful requests (observability / health)
+        self.fallback_errors: list[str] = []
         self._client: httpx.AsyncClient | None = None
         self._web_primed = False
 
@@ -180,7 +185,7 @@ class SegmentProfiler:
             "device": "",
         }
         headers = {"User-Agent": WEB_UA, "Referer": f"{WEB_BASE}/keyword/trendSearch.naver", "X-Requested-With": "XMLHttpRequest"}
-        async with self._sem:
+        async with self._web_sem:
             if not self._web_primed:  # visit the form once per session, like a browser would
                 await self._client.get(f"{WEB_BASE}/keyword/trendSearch.naver", headers={"User-Agent": WEB_UA})
                 self._web_primed = True
@@ -210,12 +215,24 @@ class SegmentProfiler:
         if self.store and (hit := self.store.cache_get(cache_key, timedelta(hours=6))):
             return hit
         assert self._client is not None
-        if self.mode == "web":
-            data = await self._post_web(body)
+        last: Exception | None = None
+        for mode in self.settings.naver_modes:
+            try:
+                data = await (self._post_web(body) if mode == "web" else self._post_api(body, mode))
+            except Exception as e:  # noqa: BLE001 — try the next path
+                last = e
+                self.fallback_errors.append(f"{mode}: {str(e)[:120]}")
+                FALLBACK_EVENTS.append(f"{mode}: {str(e)[:120]}")
+                log.warning("DataLab %s failed, trying next path: %s", mode, e)
+                continue
+            self.used_modes[mode] = self.used_modes.get(mode, 0) + 1
             if self.store:
                 self.store.cache_set(cache_key, data)
             return data
-        url, id_header, secret_header = ENDPOINTS.get(self.mode, ENDPOINTS["hub"])
+        raise last or RuntimeError("no DataLab path available")
+
+    async def _post_api(self, body: dict[str, Any], mode: str) -> dict[str, Any]:
+        url, id_header, secret_header = ENDPOINTS.get(mode, ENDPOINTS["hub"])
         async with self._sem:
             resp = await self._client.post(
                 url,
@@ -224,10 +241,7 @@ class SegmentProfiler:
             )
         if resp.status_code != 200:
             raise RuntimeError(f"DataLab HTTP {resp.status_code}: {resp.text[:200]}")
-        data = resp.json()
-        if self.store:
-            self.store.cache_set(cache_key, data)
-        return data
+        return resp.json()
 
     async def _relative(self, keywords: list[str], seg: Segment, start: str, end: str) -> dict[str, float | None]:
         """rel_s(k) for every keyword, via anchor-normalised batches."""

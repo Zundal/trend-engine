@@ -143,6 +143,11 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     lines.append(f"periods: week {ages['week']['days_available']}d / month {ages['month']['days_available']}d of 연령 history")
     svc.store.prune()
 
+    from .segments import FALLBACK_EVENTS
+
+    if FALLBACK_EVENTS:  # rescued, but a path is failing — worth knowing before the backup fails too
+        health.warn(f"네이버 연령 데이터: 기본 경로 실패 {len(FALLBACK_EVENTS)}회 → 예비 경로로 대체 ({FALLBACK_EVENTS[0]})")
+        FALLBACK_EVENTS.clear()
     write("meta", publish.public_meta(meta))
     lines.append(f"wrote {out} (encrypted)")
     if health_path:

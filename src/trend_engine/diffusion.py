@@ -163,6 +163,63 @@ def analyze(series_by_age: dict[str, list[tuple[str, float]]], bins: int | None 
     return result
 
 
+# --- backtest: would the verdict have predicted what happened next? ------------------------------
+HORIZONS = (4, 8)  # weeks
+
+
+def _spread_after(ws: list[tuple[date, float]], cut: int, horizon: int) -> bool:
+    """Did this (older) age take off in the `horizon` weeks after week index `cut`?"""
+    before = [v for _, v in ws[max(0, cut - 3): cut + 1]]
+    after = [v for _, v in ws[cut + 1: cut + 1 + horizon]]
+    if not before or not after:
+        return False
+    base = sum(before) / len(before)
+    return base > 0 and max(after) >= BOOM * base
+
+
+def backtest(series_by_age: dict[str, list[tuple[str, float]]], volume_pct: dict[str, float] | None = None,
+             window: int = 17, horizons: tuple[int, ...] = HORIZONS) -> list[dict[str, Any]]:
+    """Walk forward week by week: stage as of week t (using only weeks ≤ t) vs whether any 40대+
+    age took off within the next h weeks. Only cut-offs with the full horizon available are scored."""
+    weekly_by_age = {a: weekly(series_by_age[a]) for a in AGE_NAMES if series_by_age.get(a)}
+    if not weekly_by_age:
+        return []
+    n = min(len(ws) for ws in weekly_by_age.values())
+    thin = {a: bool(volume_pct and a in volume_pct and volume_pct[a] < THIN_PCT) for a in weekly_by_age}
+    out = []
+    for cut in range(window - 1, n - max(horizons)):
+        stats = {}
+        for a, ws in weekly_by_age.items():
+            st = age_stats(ws[cut - window + 1: cut + 1])
+            st.thin = thin[a]
+            stats[a] = st
+        verdict = classify(stats)
+        old_ages = [a for a in OLD if a in weekly_by_age and not thin[a]]
+        rec = {"week": weekly_by_age[old_ages[0] if old_ages else next(iter(weekly_by_age))][cut][0].isoformat(),
+               "stage": verdict["stage"], "old_active": any(stats[a].active for a in old_ages)}
+        for h in horizons:
+            rec[f"spread_{h}w"] = any(_spread_after(weekly_by_age[a], cut, h) for a in old_ages)
+        out.append(rec)
+    return out
+
+
+def accuracy(records: list[dict[str, Any]], horizons: tuple[int, ...] = HORIZONS) -> dict[str, Any]:
+    """Precision of '확산 대기' (young active, older quiet) vs the base rate of older take-off among
+    all cut-offs where the older ages were still quiet. lift > 1 = the verdict carries signal."""
+    quiet = [r for r in records if not r["old_active"]]
+    waiting = [r for r in quiet if r["stage"] == "확산 대기"]
+    out: dict[str, Any] = {"cutoffs": len(records), "quiet": len(quiet), "waiting": len(waiting)}
+    for h in horizons:
+        k = f"spread_{h}w"
+        hits, base_hits = sum(r[k] for r in waiting), sum(r[k] for r in quiet)
+        precision = hits / len(waiting) if waiting else None
+        base = base_hits / len(quiet) if quiet else None
+        out[f"{h}w"] = {"hits": hits, "precision": round(precision, 3) if precision is not None else None,
+                        "base_rate": round(base, 3) if base is not None else None,
+                        "lift": round(precision / base, 2) if precision is not None and base else None}
+    return out
+
+
 # --- data -----------------------------------------------------------------------------------
 async def fetch_series(profiler: SegmentProfiler, groups: dict[str, list[str]], start: str, end: str
                        ) -> tuple[dict[str, dict[str, list]], dict[str, dict[str, float]]]:
@@ -202,23 +259,30 @@ async def _with_client(profiler: SegmentProfiler, coro_fn):
             profiler._client = None
 
 
-async def track(settings, store, keywords: list[str], weeks: int = 17, today: date | None = None) -> dict[str, Any]:
-    """Current stage for each tracked keyword over the last `weeks` weeks."""
+async def track(settings, store, keywords: list[str], weeks: int = 17, today: date | None = None,
+                history_weeks: int = 42) -> dict[str, Any]:
+    """Current stage for each tracked keyword over the last `weeks` weeks, plus a walk-forward
+    backtest over `history_weeks` (same number of requests — only the date range is longer)."""
     end = (today or date.today()) - timedelta(days=1)  # search data lags ~1 day
     start = end - timedelta(weeks=weeks)
+    hist_start = end - timedelta(weeks=history_weeks)
     prof = SegmentProfiler(settings, store)
     groups = {k: [k] for k in dict.fromkeys(k for k in keywords if k.strip())}
-    series, vol = await _with_client(prof, lambda: fetch_series(prof, groups, start.isoformat(), end.isoformat()))
-    items = []
+    series, vol = await _with_client(prof, lambda: fetch_series(prof, groups, hist_start.isoformat(), end.isoformat()))
+    items, records = [], []
+    cutoff = start.strftime("%Y%m%d")
     for name, by_age in series.items():
         if not by_age:
             continue
-        a = analyze(by_age, volume_pct=vol.get(name))
+        records += [r | {"keyword": name} for r in backtest(by_age, vol.get(name), window=weeks)]
+        recent = {a: [(p, v) for p, v in pts if p.replace("-", "")[:8] >= cutoff] for a, pts in by_age.items()}
+        a = analyze(recent, volume_pct=vol.get(name))
         a["keyword"] = name
         items.append(a)
     order = {"확산 중": 0, "윗세대 상승": 1, "확산 대기": 2, "전 연령 동시": 3, "지나감": 4, "상시 관심": 5}
     items.sort(key=lambda x: (order[x["stage"]], x.get("old_lag_weeks") or 99, x["keyword"]))
-    return {"period": [start.isoformat(), end.isoformat()], "items": items, "synthetic": prof.synthetic}
+    return {"period": [start.isoformat(), end.isoformat()], "items": items, "synthetic": prof.synthetic,
+            "accuracy": accuracy(records) | {"history": [hist_start.isoformat(), end.isoformat()], "keywords": len(series)}}
 
 
 async def cases(settings, store) -> dict[str, Any]:

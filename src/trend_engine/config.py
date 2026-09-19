@@ -78,6 +78,15 @@ class Settings:
             return self.naver_api
         return "hub" if (self.naver_client_id and self.naver_client_secret) else "web"
 
+    @property
+    def naver_modes(self) -> list[str]:
+        """Primary mode first, then fallbacks: with a key the keyless web path backs up the API
+        (and vice versa when web is forced), so one blocked path doesn't stop age analysis."""
+        has_key = bool(self.naver_client_id and self.naver_client_secret)
+        primary = self.naver_mode
+        others = [m for m in (["hub", "web"] if has_key else ["web"]) if m != primary]
+        return [primary, *others]
+
     @classmethod
     def from_env(cls, dotenv: bool = True) -> "Settings":
         if dotenv:

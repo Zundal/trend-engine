@@ -101,3 +101,22 @@ def test_partial_weeks_are_dropped():
     ws = dif.weekly(pts)
     assert [w for w, _ in ws] == [START + timedelta(weeks=1), START + timedelta(weeks=2)]
     assert all(v == 70.0 for _, v in ws)
+
+
+def test_backtest_scores_waiting_verdicts_against_what_happened():
+    # young take off at week 20, older ages follow at week 24 -> "확산 대기" around weeks 20-23 is a hit
+    young, old = curve(20, weeks=34), curve(24, weeks=34)
+    series = {a: (young if a in ("10대", "20대") else old) for a in dif.AGE_NAMES}
+    recs = dif.backtest(series, window=17, horizons=(4, 8))
+    assert recs and all(set(r) >= {"week", "stage", "old_active", "spread_4w", "spread_8w"} for r in recs)
+    waiting = [r for r in recs if r["stage"] == "확산 대기"]
+    assert waiting and all(r["spread_8w"] for r in waiting)
+    acc = dif.accuracy(recs)
+    assert acc["8w"]["precision"] == 1.0 and acc["8w"]["lift"] >= 1.0
+
+
+def test_backtest_never_peeks_into_the_future():
+    # older ages never move: every waiting verdict must be a miss
+    series = {a: (curve(20, weeks=34) if a in ("10대", "20대") else curve(99, weeks=34)) for a in dif.AGE_NAMES}
+    acc = dif.accuracy(dif.backtest(series, horizons=(4, 8)))
+    assert acc["waiting"] > 0 and acc["4w"]["hits"] == 0 and acc["4w"]["precision"] == 0.0

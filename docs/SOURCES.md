@@ -16,6 +16,10 @@
 | `shopping.py` 네이버 쇼핑인사이트 | 불필요 | 11개 쇼핑 분야 × 연령(10대~60대)·성별 인기 검색어 top N. **비공식 웹 엔드포인트** |
 | `seoul.py` 서울 실시간 도시데이터(인구) | `SEOUL_API_KEY` | 핫스팟 120여 곳의 혼잡도, 성별·10세 단위 연령 비율, 거주/비거주, 예측 |
 
+## 네이버 경로 자동 전환
+`Settings.naver_modes`: 키가 있으면 [공식 API(hub) → 웹], 없으면 [웹]. 한 경로가 실패하면 다음 경로로 자동 재시도하고,
+배포 점검(health)에 "예비 경로로 대체" 경고를 남긴다. 둘 다 실패하면 경고 이슈가 열린다.
+
 ## 네이버 키 없는 모드 (web)
 - 검색어 트렌드: `datalab.naver.com` 의 공개 웹 폼과 같은 흐름 (`POST /qcHash.naver` → `GET /keyword/trendResult.naver?hashKey=` 의 `graph_data`).
   응답 수치는 공식 API 와 동일(요청 내 최대=100).

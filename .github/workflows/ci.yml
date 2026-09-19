@@ -14,3 +14,13 @@ jobs:
       - run: uv sync --all-extras --frozen
       - run: uv run pytest -q
       - run: uv run trend-engine --offline collect
+
+  # 실제 브라우저로 공개 사이트(오프라인 빌드) 점검: 복호화, 모든 탭, 콘솔 에러, 출처 노출, 모바일 폭
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.1.0
+      - run: uv sync --all-extras --group e2e --frozen
+      - run: uv run --group e2e playwright install --with-deps chromium
+      - run: E2E=1 uv run --group e2e pytest -q -m e2e tests/e2e

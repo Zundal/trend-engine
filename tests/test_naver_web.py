@@ -91,3 +91,30 @@ async def test_segments_result_reports_mode():
     assert r.mode == "test"
     r2 = await SegmentProfiler(Settings(offline=True)).profile(["a"])
     assert r2.mode == "offline" and r2.synthetic
+
+
+def test_naver_modes_fallback_order():
+    assert Settings().naver_modes == ["web"]
+    keyed = Settings(naver_client_id="i", naver_client_secret="s")
+    assert keyed.naver_modes == ["hub", "web"]
+    assert Settings(naver_client_id="i", naver_client_secret="s", naver_api="legacy").naver_modes == ["legacy", "hub", "web"]
+    assert Settings(naver_client_id="i", naver_client_secret="s", naver_api="web").naver_modes == ["web", "hub"]
+
+
+async def test_api_failure_falls_back_to_web(monkeypatch):
+    monkeypatch.setattr(seg_mod, "WEB_PACE_SECONDS", 0)
+    page = (FIX / "datalab_web" / "trendResult.html").read_text(encoding="utf-8")
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        if req.url.host == "naverapihub.apigw.ntruss.com":
+            return httpx.Response(401, text="invalid key")
+        if req.url.path.endswith("qcHash.naver"):
+            return httpx.Response(200, json={"success": True, "hashKey": "N_x"})
+        return httpx.Response(200, text=page if "trendResult" in req.url.path else "<html></html>")
+
+    prof = SegmentProfiler(Settings(naver_client_id="i", naver_client_secret="bad"))
+    prof._client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    data = await prof._post({"startDate": "2026-09-11", "endDate": "2026-09-17", "timeUnit": "date",
+                             "keywordGroups": [{"groupName": "날씨", "keywords": ["날씨"]}]})
+    assert data["results"] and prof.used_modes == {"web": 1}
+    assert prof.fallback_errors and prof.fallback_errors[0].startswith("hub: DataLab HTTP 401")

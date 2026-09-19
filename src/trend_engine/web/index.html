@@ -96,6 +96,10 @@ svg.spark { width: 100%; height: 40px; }
 .strip { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 2px 6px; font-size: 10px; color: var(--muted); }
 .strip svg { width: 100%; height: 11px; display: block; }
 .strip .axis { grid-column: 2; display: flex; justify-content: space-between; }
+.acc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.acc .kpi { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.acc .big { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+.acc .vs { font-size: 12px; color: var(--muted); }
 .legend2 { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
 @media (max-width: 620px) { .dif { grid-template-columns: 1fr; } }
 /* 연령별 */
@@ -202,6 +206,10 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <span><span class="badge b-flat">전 연령 동시</span> 뉴스처럼 한꺼번에</span>
       <span><span class="badge b-flat">상시 관심</span> 꾸준함 (유행 아님)</span>
     </div>
+  </section>
+  <section class="card wide">
+    <h2>예측이 맞았나 <small id="acc-sub">과거 데이터로 매주 판정을 다시 해 보고, 실제로 윗세대가 따라왔는지 채점</small></h2>
+    <div id="dif-acc"><div class="empty">불러오는 중…</div></div>
   </section>
   <section class="card wide">
     <h2>지금 추적 중 <small id="dif-sub">10·20대가 유독 찾는 키워드</small></h2>
@@ -592,7 +600,7 @@ function stripSVG(vals, thin) {
 const STAGE_NOTE = { "확산 대기": "아직 10·20대만 — 윗세대는 조용", "전 연령 동시": "모든 연령이 같은 시기에",
   "지나감": "고점이 지나감", "상시 관심": "뚜렷한 급상승 없이 꾸준함", "동시형": "모든 연령이 1주 안에 함께 뜸", "윗세대 상승": "지금 40대+가 오르는 중" };
 function difRow(it, from, to) {
-  // Only 40대+ lags carry the "did it spread?" signal; 30대 is in between and noisy on long windows.
+  // Only 40대+ lags answer "did it spread?"; 30대 sits in between and is noisy on long windows.
   const lags = ["40대", "50대", "60대+"].filter((a) => it.lags?.[a] != null).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
   const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
     : it.stage === "확산형" ? `20대보다 늦게: ${lags}`
@@ -604,8 +612,18 @@ function difRow(it, from, to) {
       return `<span>${a}${g.thin ? "·" : ""}</span>${stripSVG(g.strip, g.thin)}`;
     }).join("")}<div class="axis"><span>${esc(from)}</span><span>${esc(to)}</span></div></div></div>`;
 }
+function renderAccuracy(a) {
+  if (!a || !a.waiting) { $("#dif-acc").innerHTML = `<div class="empty">채점할 "확산 대기" 판정이 아직 없습니다</div>`; return; }
+  const pct = (x) => x == null ? "–" : `${Math.round(x * 100)}%`;
+  const kpi = (h) => { const m = a[`${h}w`]; return `<div class="kpi"><div class="vs">"확산 대기" 후 ${h}주 안에 40대+가 실제로 오름</div>
+    <div class="big">${pct(m.precision)}</div><div class="vs">${m.hits}/${a.waiting}건 · 전체 평균 ${pct(m.base_rate)} → <b>${m.lift ?? "–"}배</b></div></div>`; };
+  $("#dif-acc").innerHTML = `<div class="acc">${kpi(4)}${kpi(8)}</div>
+    <div class="legend" style="margin-top:8px">키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}) —
+    "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 표본이 작아 참고용.</div>`;
+}
 function renderDiffusion() {
   if (!DIF) return;
+  renderAccuracy(DIF.tracked.accuracy);
   const t = DIF.tracked, [s, e] = t.period;
   $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${s} ~ ${e}`;
   $("#dif-now").innerHTML = (t.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 샘플 데이터 — 실제 값이 아닙니다</div>` : "")

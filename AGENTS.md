@@ -35,6 +35,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
 | `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (의존성 없는 단일 HTML) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
+| `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지) |
 | `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환 |
 
 ## 반드시 지킬 불변식
@@ -55,6 +56,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 
 ## 완료 기준 (Definition of Done)
 - `uv run pytest -q` 통과, 새 동작에는 테스트 추가.
+- UI 를 바꿨다면 `E2E=1 uv run --group e2e pytest -m e2e tests/e2e` 통과 (CI 의 e2e 잡도 같은 테스트).
 - `uv run trend-engine --offline collect` 정상 출력.
 - UI 를 건드렸다면 `--offline serve` 로 띄워 콘솔 에러 없음 확인. 새 API 를 추가했다면 `export.py` 와 index.html 의 `staticPath()` 에도 반영 (정적 배포에서 깨지지 않게).
 - 사용자에게 보이는 문구는 한국어.
