@@ -46,6 +46,10 @@ h1 span { color: var(--accent); }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 .pmeta { font-size: 11px; color: var(--muted); white-space: nowrap; text-align: right; }
 .note { font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
+.attrow { display: flex; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.attrow b { font-size: 20px; font-variant-numeric: tabular-nums; min-width: 62px; }
+.attrow span { flex: 1; font-size: 13px; line-height: 1.45; }
+.attrow small { color: var(--muted); }
 button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
 button:disabled { opacity: .5; cursor: progress; }
 .banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); font-size: 13px; }
@@ -279,6 +283,10 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
     </section>
   </div>
   <div class="col">
+    <section class="card" id="card-att" hidden>
+      <h2>관심의 속도 <small>이 나라의 평소와 비교</small></h2>
+      <div id="att"></div>
+    </section>
     <section class="card">
       <h2>인기 동영상</h2>
       <ul class="list" id="yt"></ul>
@@ -519,9 +527,36 @@ async function loadCountry(refresh = false) {
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
+    renderAttention();
     $("#gen").textContent = `${new Date(REPORT.generated_at).toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" })} 기준 · 매시간 갱신`;
     renderRank(); renderContent();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
+}
+
+// 관심의 속도: 상위권이 얼마나 빨리 갈리는지(교체율)와 한 곳에 몰리는지(쏠림). 나라마다 평소 수준이
+// 달라서(모수 규모가 섞인다) 절대값을 나라끼리 비교하지 않고, 그 나라 자신의 최근 중앙값과만 견준다.
+const ATT = {};
+async function renderAttention() {
+  const box = $("#att"), card = $("#card-att");
+  const code = region;
+  try {
+    ATT[code] ??= await api(`api/attention?region=${code}`);
+  } catch { card.hidden = true; return; }
+  const a = ATT[code], s = a?.summary;
+  if (!s) { card.hidden = true; return; }
+  card.hidden = false;
+  const gap = (v) => (v > 0 ? "+" : "") + v.toFixed(1) + "%p";
+  const t = s.turnover;
+  const rows = [];
+  if (t) rows.push(`<div class="attrow"><b>${t.new_of_n}/${t.n}</b>
+    <span>상위 ${t.n}개 중 어제 없던 항목 — ${esc(t.label)} <small>(평소 ${Math.round(t.median * t.n)}개)</small></span>
+    ${miniSpark((s.spark || []).filter((v) => v !== null))}</div>`);
+  rows.push(`<div class="attrow"><b>${Math.round(s.concentration.value * 100)}%</b>
+    <span>상위 ${s.concentration.n}개가 가져간 관심 — ${esc(s.concentration.label)}
+    <small>(평소 ${Math.round(s.concentration.median * 100)}%, ${gap(s.concentration.gap_pp)})</small></span></div>`);
+  if (a.trend) rows.push(`<div class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</div>`);
+  rows.push(`<div class="note">최근 ${a.days}일 기록 기준</div>`);
+  box.innerHTML = rows.join("");
 }
 
 // ---- 연령별 --------------------------------------------------------------------------

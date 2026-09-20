@@ -103,6 +103,29 @@ async def record(settings: Settings, regions: list[str]) -> list[str]:
                 p.parent.mkdir(parents=True, exist_ok=True)
                 p.write_text(await cat.fetch_wiki(client, reg.lang, titles), encoding="utf-8")
                 written.append(f"OK   tests/fixtures/wiki_categories/{reg.lang}.json ({len(titles)} titles)")
+
+    written += await record_pageviews(settings, regions)
+    return written
+
+
+async def record_pageviews(settings: Settings, regions: list[str], days: int = 40, top: int = 25) -> list[str]:
+    """Past daily rank lists per language — what the 교체율·쏠림 view replays offline.
+    Kept small on purpose: enough days for a summary (needs 14), not a copy of the archive."""
+    from .pageviews import History, days_back
+
+    written: list[str] = []
+    langs = sorted({get_region(c).lang for c in regions})
+    async with History(settings) as hist:
+        for lang in langs:
+            by_day = await hist.top_days(lang, days_back(days), limit=top)
+            if len(by_day) < 14:
+                written.append(f"SKIP pageviews/{lang}: only {len(by_day)} days")
+                continue
+            p = settings.fixtures_dir / "pageviews" / f"{lang}-top.json"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps({d.isoformat(): rows for d, rows in sorted(by_day.items())},
+                                    ensure_ascii=False), encoding="utf-8")
+            written.append(f"OK   tests/fixtures/pageviews/{lang}-top.json ({len(by_day)} days)")
     return written
 
 

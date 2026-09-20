@@ -165,3 +165,14 @@ def test_youth_matrix_and_trend(page, site):
     assert page.locator("#y-matrix td.cat").count() >= 3
     assert page.locator("#y-trend").inner_text().strip()  # chart or "기록이 쌓이면" note
     assert not page.errors, page.errors
+
+
+def test_attention_card_shows_each_country_against_its_own_normal(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#card-att:not([hidden]) .attrow b")
+    kr = page.locator("#att").inner_text()
+    assert "상위 10개" in kr and "평소" in kr
+    page.click("#regions [data-code='JP']")
+    page.wait_for_function("ATT.JP !== undefined")
+    page.wait_for_function("document.querySelector('#att').innerText !== " + repr(kr).replace("'", '"'))
+    assert not page.errors, page.errors

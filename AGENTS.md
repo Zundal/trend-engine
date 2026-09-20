@@ -26,6 +26,8 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/scoring.py` | 병합 + 점수 공식 (docstring 이 명세) |
 | `src/trend_engine/engine.py` | 소스 병렬 수집 → scoring → store |
 | `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
+| `src/trend_engine/pageviews.py` | 위키미디어 과거 조회수(키 불필요): 지난 날짜의 인기 목록·문서별 일별 시계열 |
+| `src/trend_engine/flux.py` | 관심의 속도: 순위 교체율 + 쏠림 (나라별, 자국 기준 비교) |
 | `src/trend_engine/archive.py` | 일별 요약(KST) · data 브랜치 기록 · 7일/30일 기간 뷰 |
 | `src/trend_engine/categories.py` | 무키 카테고리 분류: 뉴스 섹션·영상 분류·위키 분류·쇼핑 분야·핵심어 사전 투표 → 11개 분야 |
 | `src/trend_engine/diffusion.py` | 세대 확산 감지: 연령별 주간 추이 → 급상승 시점·시차 → 단계 판정, 과거 사례 검증 |

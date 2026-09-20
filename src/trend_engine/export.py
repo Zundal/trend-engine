@@ -63,6 +63,20 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
                    for c in report["clusters"]}
         write(f"history-{code}", history)
 
+        # 교체율·쏠림: years of past daily rank lists, so this works for every country from day one
+        try:
+            att = await svc.attention(code)
+            if att:
+                write(f"attention-{code}", publish.public_attention(att))
+                t = att["summary"].get("turnover")
+                lines.append(f"attention {code}: {att['days']}d, 쏠림 {att['summary']['concentration']['value']:.0%}"
+                             + (f", 교체 {t['new_of_n']}/{t['n']}" if t else ""))
+            else:
+                lines.append(f"attention {code}: not enough days yet")
+        except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy
+            lines.append(f"attention {code}: FAIL {e}")
+            health.warn(f"[{code}] 교체율·쏠림 계산 실패 — {str(e)[:160]}")
+
         # Korean search data only describes Korean users — skip foreign regions (saves quota).
         if code.startswith("KR"):
             try:

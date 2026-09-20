@@ -59,6 +59,11 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def shopping(segments: str | None = None, categories: str | None = None, days: int = Query(7, ge=1, le=31)):
         return publish.public_shopping(await svc.shopping(_split(segments), _split(categories), days))
 
+    @app.get("/api/attention")
+    async def attention(region: str = "KR"):
+        a = await svc.attention(region)
+        return publish.public_attention(a) if a else {}
+
     @app.get("/api/period")
     def period(region: str = "KR"):
         return svc.period(region)

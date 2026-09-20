@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
-from . import archive, diffusion, youth
+from . import archive, diffusion, flux, pageviews, youth
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
@@ -131,6 +131,24 @@ class TrendService:
             async with httpx.AsyncClient(timeout=self.settings.timeout) as client:
                 await alerts_mod.notify_slack(self.settings.slack_webhook, new, self.settings.site_url, client)
         return {"new": [a.to_dict() for a in new], "recent": merged, "watchlist": dif.get("watchlist", [])}
+
+    async def attention(self, region: str = "KR", days: int = 400,
+                        max_age: timedelta = timedelta(hours=12)) -> dict[str, Any] | None:
+        """교체율·쏠림 (나라별). Reads past most-read lists, which go back years — unlike our own
+        archive, so this works from day one and for countries with no age data."""
+        lang = get_region(region).lang
+        key = f"attention:v1:{lang}:{days}"
+        if (hit := self.store.cache_get(key, max_age)) is not None:
+            return hit
+        async with pageviews.History(self.settings, self.store) as hist:
+            by_day = await hist.top_days(lang, pageviews.days_back(days))
+        rows = flux.daily(by_day)
+        summary = flux.summary(rows)
+        if summary is None:
+            return None
+        result = {"region": region, "days": len(rows), "summary": summary, "trend": flux.trend(rows)}
+        self.store.cache_set(key, result)
+        return result
 
     def youth_trend(self, days: int = 30) -> dict[str, Any]:
         """Category mix of each youth group over time (needs daily youth snapshots to accumulate)."""

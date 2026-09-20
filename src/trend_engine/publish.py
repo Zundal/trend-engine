@@ -73,6 +73,12 @@ def public_shopping(d: dict[str, Any]) -> dict[str, Any]:
     return {k: d[k] for k in ("period", "categories", "segments", "by_segment", "offline") if k in d}
 
 
+def public_attention(a: dict[str, Any]) -> dict[str, Any]:
+    """Numbers only — the article titles behind them would name the source."""
+    s = {k: v for k, v in a["summary"].items() if k != "top"}
+    return {"region": a["region"], "days": a["days"], "summary": s, "trend": a.get("trend")}
+
+
 def public_meta(m: dict[str, Any]) -> dict[str, Any]:
     return {"regions": m["regions"], "offline": m.get("offline", False), "static": m.get("static", False)}
 
