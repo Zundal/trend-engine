@@ -28,6 +28,8 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/segments.py` | DataLab 기준어(anchor) 정규화 affinity |
 | `src/trend_engine/pageviews.py` | 위키미디어 과거 조회수(키 불필요): 지난 날짜의 인기 목록·문서별 일별 시계열 |
 | `src/trend_engine/flux.py` | 관심의 속도: 순위 교체율 + 쏠림 (나라별, 자국 기준 비교) |
+| `src/trend_engine/entities.py` | 언어별 같은 개체 잇기(공개 지식베이스 sitelinks, 키 불필요) — 국가 간 비교의 전제 |
+| `src/trend_engine/scale.py` | 기준어 없는 전역 척도: 요청 겹침을 로그비 제약 그래프로 풀어 모든 키워드를 한 자로 |
 | `src/trend_engine/kernel.py` | 세대 전달 함수: 윗세대 곡선 = 아랫세대 곡선 ⊛ h(k) 추정(비음수·평활), 시차/전달/동시분 분해 |
 | `src/trend_engine/shapes.py` | 유행의 모양: 정점 앞뒤 비율로 예고형/하루형/대칭형/여운형 분류 + 재등장 교차검증 |
 | `src/trend_engine/archive.py` | 일별 요약(KST) · data 브랜치 기록 · 7일/30일 기간 뷰 |

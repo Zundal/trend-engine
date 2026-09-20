@@ -195,3 +195,12 @@ def test_transfer_kernel_card_breaks_a_handover_into_lag_strength_and_same_week(
     first = page.locator("#transfer .xt tbody tr").first.inner_text()
     assert "20대 →" in first and "주" in first
     assert not page.errors, page.errors
+
+
+def test_country_flow_card_reads_from_where_a_topic_started(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#card-flow:not([hidden]) #flow li")
+    text = page.locator("#flow").inner_text()
+    assert "먼저 뜬 주제는" in text and "주 뒤" in text
+    assert "처음 등장한 나라" in page.locator("#flow-note").inner_text()
+    assert not page.errors, page.errors

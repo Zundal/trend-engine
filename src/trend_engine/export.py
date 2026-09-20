@@ -158,6 +158,20 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             lines.append(f"diffusion: FAIL {e}")
             health.problem(f"세대 확산 분석 실패 — {str(e)[:160]}")
 
+    # --- 국가 간 전파 (같은 개체, 여러 언어) — weekly, budgeted like the other history views
+    try:
+        cc = await svc.crosscountry()
+        write("crosscountry", publish.public_crosscountry(cc) if cc else {})
+        if cc:
+            leads = [f for f in cc["flows"] if f["leads"]]
+            lines.append(f"crosscountry: {cc['entities']} entities, {len(cc['flows'])} flows, {len(leads)} with a lead"
+                         + (f" (+{cc['filling']} still to fetch)" if cc.get("filling") else ""))
+        else:
+            lines.append("crosscountry: not enough entities yet")
+    except Exception as e:  # noqa: BLE001
+        lines.append(f"crosscountry: FAIL {e}")
+        health.warn(f"국가 간 전파 실패 — {str(e)[:160]}")
+
     # --- 세대 전달 함수 (커널): needs the weekly series diffusion just fetched, so it runs after it
     if "KR" in regions:
         try:

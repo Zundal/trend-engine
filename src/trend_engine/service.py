@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
-from . import archive, diffusion, flux, kernel, pageviews, youth
+from . import archive, diffusion, entities, flux, kernel, pageviews, youth
 from . import shapes as shapes_mod
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
@@ -15,6 +15,7 @@ from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS
 from .shopping import ShoppingInsight
 from .store import Store
 
+ENTITY_BUDGET = 400  # uncached pageview requests one 국가 간 전파 pass may make
 DAY_BUDGET = 150  # uncached day-lists one 교체율 pass may fetch (~30s); the rest fills in next run
 RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
 SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
@@ -167,6 +168,50 @@ class TrendService:
         out["contrast"] = kernel.contrast(out["groups"])
         self.store.cache_set("transfer:v1", out)
         return out
+
+    async def crosscountry(self, langs: tuple[str, ...] = ("ko", "ja", "en"), per_day: int = 30,
+                           max_age: timedelta = timedelta(days=7)) -> dict[str, Any] | None:
+        """국가 간 전파: the same entity, read in several languages, run through the transfer kernel.
+
+        Entities are joined through Wikidata (entities.py) and tagged with the country whose list
+        they first showed up in, because the tag is what turns "Korea leads everything" (an artefact
+        of which topics we sampled) into "a topic leads from where it came from" (a measurement).
+        """
+        if (hit := self.store.cache_get("crosscountry:v1", max_age)) is not None:
+            return hit
+        origin: dict[str, str] = {}
+        links: dict[str, dict[str, str]] = {}
+        async with pageviews.History(self.settings, self.store, budget=ENTITY_BUDGET) as hist, \
+                entities.Entities(self.settings, self.store) as ent:
+            end = min(hist.latest_day(lang) for lang in langs)  # offline: whatever the fixture holds
+            start = end - timedelta(days=420)
+            for lang in langs:
+                titles: list[str] = []
+                for back in (2, 30, 60, 120, 200):
+                    titles += [a for a, _ in await hist.top(lang, end - timedelta(days=back), limit=per_day)]
+                found = await ent.align(list(dict.fromkeys(titles)), lang, list(langs))
+                for qid, sitelinks in found.items():
+                    links[qid] = sitelinks
+                    origin.setdefault(qid, lang)  # first list it appeared in
+            series: dict[str, dict[str, list[float]]] = {l: {} for l in langs}
+            for qid, sitelinks in links.items():
+                for lang in langs:
+                    title = sitelinks.get(lang)
+                    if not title:
+                        continue
+                    rows = await hist.article(lang, title, start, end)
+                    weeks = kernel.weekly_counts(rows) if rows else []
+                    if len(weeks) >= 30 and max(weeks) > 200:
+                        series[lang][qid] = kernel.normalise(weeks)
+            skipped = hist.skipped
+        # offline replays a handful of recorded entities; the production floor would reject them
+        flows = kernel.country_flows(series, origin, min_entities=3 if self.settings.offline else 8)
+        if not flows:
+            return None
+        result = {"langs": list(langs), "entities": len(links), "flows": flows,
+                  "measured": {l: len(v) for l, v in series.items()}, "filling": skipped}
+        self.store.cache_set("crosscountry:v1", result)
+        return result
 
     async def attention(self, region: str = "KR", days: int = 400,
                         max_age: timedelta = timedelta(hours=12)) -> dict[str, Any] | None:

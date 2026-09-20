@@ -302,3 +302,47 @@ def contrast(groups: dict[str, Any]) -> dict[str, Any] | None:
         out["ranges"] = {"유행": {f: fs[f] for f in ("gain", "instant_share")},
                          "일반": {f: ps[f] for f in ("gain", "instant_share")}}
     return out
+
+
+# --- countries ------------------------------------------------------------------------------
+def weekly_counts(series: list[tuple[Any, int]]) -> list[float]:
+    """Daily (day, views) -> complete-week sums. Pageviews are absolute, so no anchor is needed."""
+    from datetime import timedelta
+
+    acc: dict[Any, float] = {}
+    days: dict[Any, int] = {}
+    for d, v in series:
+        wk = d - timedelta(days=d.weekday())
+        acc[wk] = acc.get(wk, 0.0) + v
+        days[wk] = days.get(wk, 0) + 1
+    return [v for wk, v in sorted(acc.items()) if days[wk] == 7]
+
+
+def country_flows(series_by_lang: dict[str, dict[str, list[float]]], origin: dict[str, str],
+                  min_entities: int = 8) -> list[dict[str, Any]]:
+    """Transfer from the country a topic came from to each other country.
+
+    The origin tag is what keeps this honest. Fitted over everything, every pair says "Korea leads",
+    because the pool is full of Korean topics. Split by where the topic first showed up and the
+    direction flips — which is the test this measurement has to pass to mean anything.
+    """
+    out = []
+    langs = sorted(series_by_lang)
+    for src in langs:
+        pool = [q for q, lang in origin.items() if lang == src]
+        for dst in langs:
+            if dst == src:
+                continue
+            pairs = [(series_by_lang[src][q], series_by_lang[dst][q]) for q in pool
+                     if q in series_by_lang[src] and q in series_by_lang[dst]]
+            pairs = [(a, b) for a, b in pairs if len(a) >= MIN_WEEKS and len(b) >= MIN_WEEKS]
+            if len(pairs) < min_entities:
+                continue
+            fwd, back = fit(pairs), fit([(b, a) for a, b in pairs])
+            if not fwd or not back:
+                continue
+            out.append({"from": src, "to": dst, "entities": len(pairs),
+                        "forward": fwd.to_dict(), "backward": back.to_dict(),
+                        # a real lead shows up as a lag one way and a collapse to 0 the other
+                        "leads": fwd.mean_lag - back.mean_lag >= 0.5})
+    return out

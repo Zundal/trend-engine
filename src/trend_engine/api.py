@@ -85,6 +85,11 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def diffusion_view():
         return await svc.diffusion()
 
+    @app.get("/api/crosscountry")
+    async def crosscountry_view():
+        c = await svc.crosscountry()
+        return publish.public_crosscountry(c) if c else {}
+
     @app.get("/api/transfer")
     async def transfer_view():
         t = await svc.transfer()

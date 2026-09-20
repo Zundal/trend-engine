@@ -67,9 +67,12 @@ class Entities:
     async def align(self, titles: list[str], from_lang: str, langs: list[str]) -> dict[str, dict[str, str]]:
         """-> {qid: {lang: title}}, only entities that exist in at least two of `langs`."""
         if self.settings.offline:
-            fx = self._fixture().get(from_lang, {})
-            return {qid: links for qid, links in fx.items()
-                    if links.get(from_lang) in set(titles) and len(links) >= 2}
+            wanted = set(titles)
+            merged: dict[str, dict[str, str]] = {}
+            for by_qid in self._fixture().values():  # the fixture groups by origin; match on the title
+                merged |= by_qid
+            return {qid: links for qid, links in merged.items()
+                    if links.get(from_lang) in wanted and len(links) >= 2}
         out: dict[str, dict[str, str]] = {}
         for i in range(0, len(titles), BATCH):
             batch = [t for t in titles[i: i + BATCH] if t]

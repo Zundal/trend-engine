@@ -105,6 +105,58 @@ async def record(settings: Settings, regions: list[str]) -> list[str]:
                 written.append(f"OK   tests/fixtures/wiki_categories/{reg.lang}.json ({len(titles)} titles)")
 
     written += await record_pageviews(settings, regions)
+    written += await record_entities(settings, regions)
+    return written
+
+
+async def record_entities(settings: Settings, regions: list[str], langs: tuple[str, ...] = ("ko", "ja", "en"),
+                          want: int = 8) -> list[str]:
+    """A handful of entities that exist in several languages, plus their series — what 국가 간 전파
+    replays offline. Entities are picked for having data everywhere, not for being interesting."""
+    from datetime import date, timedelta
+
+    from .entities import Entities
+    from .kernel import weekly_counts
+    from .pageviews import History
+
+    written: list[str] = []
+    end = date.today() - timedelta(days=2)
+    start = end - timedelta(days=420)
+    async with History(settings) as hist, Entities(settings) as ent:
+        aligned: dict[str, dict[str, str]] = {}
+        origin: dict[str, str] = {}
+        for lang in langs:
+            titles = [a for a, _ in await hist.top(lang, end, limit=40)]
+            for qid, links in (await ent.align(titles, lang, list(langs))).items():
+                aligned.setdefault(qid, links)
+                origin.setdefault(qid, lang)
+        keep: dict[str, dict[str, str]] = {}
+        series: dict[str, dict[str, list]] = {lang: {} for lang in langs}
+        for qid, links in aligned.items():
+            rows = {lang: await hist.article(lang, links[lang], start, end) for lang in langs if links.get(lang)}
+            good = {lang: r for lang, r in rows.items() if r and len(weekly_counts(r)) >= 30 and max(v for _, v in r) > 200}
+            if len(good) < 2:
+                continue
+            keep[qid] = {lang: links[lang] for lang in good}
+            for lang, r in good.items():
+                series[lang][links[lang]] = r
+            if len(keep) >= want:
+                break
+        if not keep:
+            return ["SKIP entities: nothing aligned with data in two languages"]
+        p = settings.fixtures_dir / "entities" / "sitelinks.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        by_lang = {lang: {qid: links for qid, links in keep.items() if origin.get(qid) == lang} for lang in langs}
+        p.write_text(json.dumps(by_lang, ensure_ascii=False), encoding="utf-8")
+        written.append(f"OK   tests/fixtures/entities/sitelinks.json ({len(keep)} entities)")
+        for lang in langs:  # merge into the article fixtures the pageviews recorder wrote
+            q = settings.fixtures_dir / "pageviews" / f"{lang}-articles.json"
+            have = json.loads(q.read_text(encoding="utf-8")) if q.exists() else {}
+            for title, rows in series[lang].items():
+                have[title] = {"items": [{"timestamp": f"{d:%Y%m%d}00", "views": v} for d, v in rows if v]}
+            q.parent.mkdir(parents=True, exist_ok=True)
+            q.write_text(json.dumps(have, ensure_ascii=False), encoding="utf-8")
+            written.append(f"OK   tests/fixtures/pageviews/{lang}-articles.json (+{len(series[lang])} entity series)")
     return written
 
 

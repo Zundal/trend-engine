@@ -295,6 +295,11 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <h2>관심의 속도 <small>이 나라의 평소와 비교</small></h2>
       <div id="att"></div>
     </section>
+    <section class="card" id="card-flow" hidden>
+      <h2>국가 간 전파 <small>같은 주제가 나라를 건너는 데 걸리는 시간</small></h2>
+      <ul class="list" id="flow"></ul>
+      <div class="note" id="flow-note"></div>
+    </section>
     <section class="card" id="card-shape" hidden>
       <h2>유행의 모양 <small>정점 일주일 뒤부터 읽힙니다</small></h2>
       <ul class="list" id="shape"></ul>
@@ -395,7 +400,7 @@ async function api(path, opts) {
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
-    return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts", "transfer"].includes(name) ? name : `${name}-${r}`);
+    return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts", "transfer", "crosscountry"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -540,7 +545,7 @@ async function loadCountry(refresh = false) {
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
-    renderAttention(); renderShapes();
+    renderAttention(); renderShapes(); renderFlows();
     $("#gen").textContent = `${new Date(REPORT.generated_at).toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" })} 기준 · 매시간 갱신`;
     renderRank(); renderContent();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
@@ -570,6 +575,28 @@ async function renderAttention() {
   if (a.trend) rows.push(`<div class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</div>`);
   rows.push(`<div class="note">최근 ${a.days}일 기록 기준</div>`);
   box.innerHTML = rows.join("");
+}
+
+// 국가 간 전파: 같은 개체(언어별 이름을 공개 지식베이스로 이어 붙인)의 나라별 곡선을 전달 함수에 넣는다.
+// 개체를 "어느 나라 목록에서 먼저 나왔는지"로 태그해 그 나라발 주제만 쓴다 — 태그 없이 재면
+// 표본이 한국발 주제로 기울어 "한국이 항상 먼저"라는 착시가 나온다.
+const CNAME = { ko: "한국", ja: "일본", en: "영어권", zh: "중화권", vi: "베트남" };
+let FLOWS;
+async function renderFlows() {
+  const card = $("#card-flow");
+  if (FLOWS === undefined) { try { FLOWS = await api("api/crosscountry"); } catch (_) { FLOWS = null; } }
+  const rows = (FLOWS?.flows || []).filter((f) => f.leads);
+  if (!rows.length) { card.hidden = true; return; }
+  card.hidden = false;
+  const by = {};
+  for (const f of rows) (by[f.from] ??= []).push(f);
+  $("#flow").innerHTML = Object.entries(by).map(([src, list]) => `<li>
+      <a><b>${esc(CNAME[src] || src)}</b>에서 먼저 뜬 주제는</a>
+      <small>${list.sort((a, b) => a.lag - b.lag).map((f) =>
+        `${esc(CNAME[f.to] || f.to)}에 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
+    </li>`).join("");
+  $("#flow-note").textContent = `주제가 처음 등장한 나라를 기준으로만 잽니다 — 반대 방향은 ${
+    rows.every((f) => f.back_lag < 0.5) ? "모두 0주 근처로 무너집니다" : "일부만 무너집니다"}. 개체 ${FLOWS.entities}개 기준.`;
 }
 
 // 유행의 모양: 정점 앞뒤 일주일에 관심이 어떻게 갈렸는지로 네 가지 중 하나를 붙인다.

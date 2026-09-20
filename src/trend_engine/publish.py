@@ -95,6 +95,14 @@ def public_transfer(t: dict[str, Any]) -> dict[str, Any]:
                        for name, g in t["groups"].items()}}
 
 
+def public_crosscountry(c: dict[str, Any]) -> dict[str, Any]:
+    """Language codes and coefficients. Entity titles stay out — they are article names."""
+    return {"langs": c["langs"], "entities": c["entities"],
+            "flows": [{"from": f["from"], "to": f["to"], "entities": f["entities"], "leads": f["leads"],
+                       "lag": f["forward"]["mean_lag"], "gain": f["forward"]["gain"],
+                       "back_lag": f["backward"]["mean_lag"]} for f in c["flows"]]}
+
+
 def public_meta(m: dict[str, Any]) -> dict[str, Any]:
     return {"regions": m["regions"], "offline": m.get("offline", False), "static": m.get("static", False)}
 
