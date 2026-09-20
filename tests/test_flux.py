@@ -93,3 +93,52 @@ async def test_offline_history_reads_fixtures_and_never_touches_the_network(tmp_
         assert await h.top("ko", date(2026, 3, 9)) == [("A", 10)]  # 대문 filtered out
         assert await h.article("ko", "A", date(2026, 3, 9), date(2026, 3, 9)) == [(date(2026, 3, 9), 4)]
         assert await h.top("ko", date(2026, 3, 8)) == []  # no fixture for that day -> empty, not a crash
+
+
+# --- 유행의 모양 ------------------------------------------------------------------------
+def _series(shape: list[int], start=date(2026, 1, 1)) -> list[tuple[date, int]]:
+    return [(start + timedelta(days=i), v) for i, v in enumerate(shape)]
+
+
+def test_bursts_finds_each_flare_and_marks_an_unfinished_one():
+    from trend_engine import shapes
+
+    flat = [10] * 40
+    up = [10, 20, 40, 80, 200, 600, 2000, 600, 200, 80, 40, 20]
+    series = _series(flat + up + flat + up + flat[:10] + [10, 20, 40, 80, 200, 600, 2000])
+    found = shapes.bursts(series, min_side=3, min_peak=100)
+    assert len(found) == 3
+    assert [b.done for b in found] == [True, True, False]  # the last one is still going
+    assert found[0].rise_days == 5 and found[0].fall_days == 5
+    assert found[0].peak_views == 2000
+
+
+def test_shape_classes_match_how_the_attention_was_split():
+    from trend_engine import shapes
+
+    assert shapes.classify((0.20, 0.55, 0.25)) == "하루형"  # one dominant day
+    assert shapes.classify((0.51, 0.25, 0.24)) == "예고형"  # built up beforehand
+    assert shapes.classify((0.15, 0.28, 0.57)) == "여운형"  # tail is the story
+    assert shapes.classify((0.37, 0.21, 0.42)) == "대칭형"  # neither side dominates
+
+
+def test_triple_needs_a_full_week_on_both_sides():
+    from trend_engine import shapes
+
+    series = _series([10] * 5 + [900] + [10] * 20)
+    assert shapes.triple(series, 5) is None  # only 5 days before the peak
+    series = _series([10] * 10 + [900] + [10] * 10)
+    t = shapes.triple(series, 10)
+    assert t and round(sum(t), 6) == 1.0 and t[1] > 0.8
+
+
+def test_recurrence_looks_a_year_away_and_says_nothing_without_the_data():
+    from trend_engine import shapes
+
+    year = [10] * 365
+    series = _series([10] * 30 + [50, 900, 50] + year[:-33] + [10] * 30 + [50, 900, 50] + [10] * 40)
+    bursts = shapes.bursts(series, min_side=1, min_peak=100)
+    assert bursts and shapes.recurs(series, bursts[0]) is True
+    short = _series([10] * 30 + [50, 900, 50] + [10] * 60)
+    b = shapes.bursts(short, min_side=1, min_peak=100)
+    assert b and shapes.recurs(short, b[0]) is None  # no data a year out -> no claim

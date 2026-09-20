@@ -30,6 +30,7 @@ UA = "trend-engine/0.1 (https://github.com/Zundal/trend-engine)"
 CONCURRENCY = 6  # courtesy limit: stay well under Wikimedia's 100 req/s
 SETTLED = timedelta(days=3)  # older days never change -> cache them for a year
 FRESH = timedelta(hours=12)
+RETRY_WAIT = 3.0  # seconds; Wikimedia throttles a burst of requests with 429
 
 
 def _keep(article: str) -> bool:
@@ -62,6 +63,7 @@ class History:
         self.store = store
         self._client: httpx.AsyncClient | None = None
         self._sem = asyncio.Semaphore(CONCURRENCY)
+        self.errors: list[str] = []  # anything that wasn't a plain 404 — surfaced, never swallowed
 
     # --- plumbing ----------------------------------------------------------------
     def _fixture(self, name: str) -> dict[str, Any]:
@@ -73,14 +75,23 @@ class History:
             hit = self.store.cache_get(key, ttl)
             if hit is not None:
                 return hit
-        try:
-            async with self._sem:
-                raw = await get_text(self._client, url, headers={"User-Agent": UA})
-        except SourceError:
-            return None  # a missing day/article is normal (new article, not yet published)
-        if self.store is not None:
-            self.store.cache_set(key, raw)
-        return raw
+        for attempt in range(3):
+            try:
+                async with self._sem:
+                    raw = await get_text(self._client, url, headers={"User-Agent": UA})
+            except SourceError as e:
+                msg = str(e)
+                if "HTTP 404" in msg:
+                    return None  # normal: article too new, or that day was never published
+                if "HTTP 429" in msg and attempt < 2:
+                    await asyncio.sleep(RETRY_WAIT * (attempt + 1))
+                    continue
+                self.errors.append(msg[:160])  # never swallow: callers report this
+                return None
+            if self.store is not None:
+                self.store.cache_set(key, raw)
+            return raw
+        return None
 
     async def __aenter__(self) -> History:
         if not self.settings.offline:
@@ -115,6 +126,15 @@ class History:
                               f"{start:%Y%m%d}/{end:%Y%m%d}",
                               f"pv:art:{lang}:{name}:{start.isoformat()}:{end.isoformat()}", FRESH)
         return parse_article(raw, start, end) if raw else []
+
+    def latest_day(self, lang: str) -> date:
+        """The most recent day we can read. Offline that is the newest day in the fixture, so a
+        recorded snapshot keeps meaning the same thing however long it sits in the repo."""
+        if self.settings.offline:
+            days = sorted(self._fixture(f"{lang}-top"))
+            if days:
+                return date.fromisoformat(days[-1])
+        return date.today() - timedelta(days=1)
 
     async def articles(self, lang: str, names: list[str], start: date, end: date
                        ) -> dict[str, list[tuple[date, int]]]:

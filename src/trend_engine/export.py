@@ -66,8 +66,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         # 교체율·쏠림: years of past daily rank lists, so this works for every country from day one
         try:
             att = await svc.attention(code)
+            write(f"attention-{code}", publish.public_attention(att) if att else {})
             if att:
-                write(f"attention-{code}", publish.public_attention(att))
                 t = att["summary"].get("turnover")
                 lines.append(f"attention {code}: {att['days']}d, 쏠림 {att['summary']['concentration']['value']:.0%}"
                              + (f", 교체 {t['new_of_n']}/{t['n']}" if t else ""))
@@ -76,6 +76,19 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy
             lines.append(f"attention {code}: FAIL {e}")
             health.warn(f"[{code}] 교체율·쏠림 계산 실패 — {str(e)[:160]}")
+
+        try:  # 유행의 모양: how each riser got its attention (readable a week after its peak)
+            sh = await svc.shapes(code)
+            write(f"shapes-{code}", publish.public_shapes(sh) if sh else {})
+            if sh and sh["items"]:
+                lines.append(f"shapes {code}: {len(sh['items'])} items {sh['mix']}")
+                if sh.get("errors"):
+                    health.warn(f"[{code}] 유행의 모양: 일부 조회 실패 — {sh['errors'][0][:120]}")
+            else:
+                lines.append(f"shapes {code}: none readable yet")
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"shapes {code}: FAIL {e}")
+            health.warn(f"[{code}] 유행의 모양 계산 실패 — {str(e)[:160]}")
 
         # Korean search data only describes Korean users — skip foreign regions (saves quota).
         if code.startswith("KR"):

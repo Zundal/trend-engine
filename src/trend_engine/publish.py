@@ -79,6 +79,14 @@ def public_attention(a: dict[str, Any]) -> dict[str, Any]:
     return {"region": a["region"], "days": a["days"], "summary": s, "trend": a.get("trend")}
 
 
+def public_shapes(d: dict[str, Any]) -> dict[str, Any]:
+    """Item labels are content (article titles); everything about where they came from is dropped."""
+    return {"region": d["region"], "day": d["day"], "mix": d["mix"], "classes": d["classes"],
+            "items": [{k: i[k] for k in ("label", "shape", "peak", "rise_days", "fall_days",
+                                         "days_since_peak", "recurring", "before", "on", "after")}
+                      for i in d["items"]]}
+
+
 def public_meta(m: dict[str, Any]) -> dict[str, Any]:
     return {"regions": m["regions"], "offline": m.get("offline", False), "static": m.get("static", False)}
 

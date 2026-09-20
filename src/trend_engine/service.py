@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
 from . import archive, diffusion, flux, pageviews, youth
+from . import shapes as shapes_mod
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
 from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
 from .shopping import ShoppingInsight
 from .store import Store
+
+RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
+SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
 
 # Today's-issue profiling covers every age plus the 10·20대 splits and the 30대+ baseline.
 REPORT_SEGMENTS = [x.name for x in DEFAULT_SEGMENTS] + [g for g in YOUTH_GROUPS if g not in AGE_GROUPS] + [OLDER]
@@ -141,12 +145,45 @@ class TrendService:
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
         async with pageviews.History(self.settings, self.store) as hist:
-            by_day = await hist.top_days(lang, pageviews.days_back(days))
+            by_day = await hist.top_days(lang, pageviews.days_back(days, hist.latest_day(lang) + timedelta(days=1)))
         rows = flux.daily(by_day)
         summary = flux.summary(rows)
         if summary is None:
             return None
         result = {"region": region, "days": len(rows), "summary": summary, "trend": flux.trend(rows)}
+        self.store.cache_set(key, result)
+        return result
+
+    async def shapes(self, region: str = "KR", top: int = 40,
+                     max_age: timedelta = timedelta(hours=12)) -> dict[str, Any] | None:
+        """유행의 모양 (나라별): how each of today's risers got its attention. A shape can only be
+        read a week after the peak — fresher items are left unlabelled rather than guessed."""
+        lang = get_region(region).lang
+        key = f"shapes:v1:{lang}:{top}"
+        if (hit := self.store.cache_get(key, max_age)) is not None:
+            return hit
+        async with pageviews.History(self.settings, self.store) as hist:
+            end = hist.latest_day(lang)
+            rows = await hist.top(lang, end, limit=top)
+            series = await hist.articles(lang, [a for a, _ in rows], end - timedelta(days=540), end)
+            errors = list(hist.errors)
+        items = []
+        for name, s in series.items():
+            shaped = [x for x in ((b, shapes_mod.shape_of(s, b)) for b in shapes_mod.bursts(s)) if x[1]]
+            if not shaped:
+                continue
+            burst, shape = shaped[-1]  # the most recent burst we can actually read
+            since = (end - burst.peak).days
+            if since > RECENT_DAYS or burst.rise_days > SLOW_RISE:
+                continue  # old news, or a slow evergreen drift rather than a burst
+            items.append({"label": name.replace("_", " ")} | shape
+                         | {"days_since_peak": since, "recurring": shapes_mod.recurs(s, burst)})
+        items.sort(key=lambda i: i["days_since_peak"])
+        mix: dict[str, int] = {}
+        for i in items:
+            mix[i["shape"]] = mix.get(i["shape"], 0) + 1
+        result = {"region": region, "day": end.isoformat(), "items": items[:12], "mix": mix,
+                  "classes": shapes_mod.CLASSES, "errors": errors[:3]}
         self.store.cache_set(key, result)
         return result
 

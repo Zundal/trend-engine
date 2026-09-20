@@ -176,3 +176,12 @@ def test_attention_card_shows_each_country_against_its_own_normal(page, site):
     page.wait_for_function("ATT.JP !== undefined")
     page.wait_for_function("document.querySelector('#att').innerText !== " + repr(kr).replace("'", '"'))
     assert not page.errors, page.errors
+
+
+def test_shape_card_labels_how_each_riser_got_its_attention(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#card-shape:not([hidden]) #shape li")
+    labels = page.locator("#shape li .st").all_inner_texts()
+    assert labels and set(labels) <= {"예고형", "하루형", "대칭형", "여운형"}
+    assert "정점" in page.locator("#shape li").first.inner_text()
+    assert not page.errors, page.errors

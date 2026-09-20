@@ -111,6 +111,8 @@ async def record(settings: Settings, regions: list[str]) -> list[str]:
 async def record_pageviews(settings: Settings, regions: list[str], days: int = 40, top: int = 25) -> list[str]:
     """Past daily rank lists per language — what the 교체율·쏠림 view replays offline.
     Kept small on purpose: enough days for a summary (needs 14), not a copy of the archive."""
+    from datetime import timedelta
+
     from .pageviews import History, days_back
 
     written: list[str] = []
@@ -126,6 +128,26 @@ async def record_pageviews(settings: Settings, regions: list[str], days: int = 4
             p.write_text(json.dumps({d.isoformat(): rows for d, rows in sorted(by_day.items())},
                                     ensure_ascii=False), encoding="utf-8")
             written.append(f"OK   tests/fixtures/pageviews/{lang}-top.json ({len(by_day)} days)")
+
+            # a few article series so 유행의 모양 can be replayed offline (shapes needs >= 60 days).
+            # Pick ones that actually carry a readable recent burst, else the offline card is empty.
+            from . import shapes as shapes_mod
+
+            latest = max(by_day)
+            start = latest - timedelta(days=219)
+            pool = await hist.articles(lang, [a for a, _ in by_day[latest][:15]], start, latest)
+            scored = []
+            for name, rows in pool.items():
+                bs = [b for b in shapes_mod.bursts(rows) if shapes_mod.triple(rows, b.peak_i)]
+                if bs:
+                    scored.append(((latest - bs[-1].peak).days, name, rows))
+            series = {n: rows for _, n, rows in sorted(scored)[:5]}
+            if series:
+                q = settings.fixtures_dir / "pageviews" / f"{lang}-articles.json"
+                q.write_text(json.dumps({n: {"items": [{"timestamp": f"{d:%Y%m%d}00", "views": v}
+                                                       for d, v in rows if v]}
+                                         for n, rows in series.items()}, ensure_ascii=False), encoding="utf-8")
+                written.append(f"OK   tests/fixtures/pageviews/{lang}-articles.json ({len(series)} articles)")
     return written
 
 

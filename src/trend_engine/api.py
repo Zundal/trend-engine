@@ -64,6 +64,11 @@ def create_app(service: TrendService | None = None) -> FastAPI:
         a = await svc.attention(region)
         return publish.public_attention(a) if a else {}
 
+    @app.get("/api/shapes")
+    async def shapes_view(region: str = "KR"):
+        sh = await svc.shapes(region)
+        return publish.public_shapes(sh) if sh else {}
+
     @app.get("/api/period")
     def period(region: str = "KR"):
         return svc.period(region)

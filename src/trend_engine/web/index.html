@@ -287,6 +287,11 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <h2>관심의 속도 <small>이 나라의 평소와 비교</small></h2>
       <div id="att"></div>
     </section>
+    <section class="card" id="card-shape" hidden>
+      <h2>유행의 모양 <small>정점 일주일 뒤부터 읽힙니다</small></h2>
+      <ul class="list" id="shape"></ul>
+      <div class="note" id="shape-note"></div>
+    </section>
     <section class="card">
       <h2>인기 동영상</h2>
       <ul class="list" id="yt"></ul>
@@ -527,7 +532,7 @@ async function loadCountry(refresh = false) {
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
-    renderAttention();
+    renderAttention(); renderShapes();
     $("#gen").textContent = `${new Date(REPORT.generated_at).toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" })} 기준 · 매시간 갱신`;
     renderRank(); renderContent();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
@@ -557,6 +562,27 @@ async function renderAttention() {
   if (a.trend) rows.push(`<div class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</div>`);
   rows.push(`<div class="note">최근 ${a.days}일 기록 기준</div>`);
   box.innerHTML = rows.join("");
+}
+
+// 유행의 모양: 정점 앞뒤 일주일에 관심이 어떻게 갈렸는지로 네 가지 중 하나를 붙인다.
+// 라벨이 보지 못한 데이터(1년 뒤 재등장 여부)로 교차 검증했다 — 예고형 39% vs 여운형 17%.
+const SHAPES = {};
+const SHAPE_TONE = { "예고형": "steady", "하루형": "falling", "대칭형": "rising", "여운형": "new" };
+async function renderShapes() {
+  const card = $("#card-shape"), code = region;
+  try {
+    SHAPES[code] ??= await api(`api/shapes?region=${code}`);
+  } catch { card.hidden = true; return; }
+  const d = SHAPES[code];
+  if (!d?.items?.length) { card.hidden = true; return; }
+  card.hidden = false;
+  $("#shape").innerHTML = d.items.slice(0, 8).map((i) => `<li>
+      <span class="st ${SHAPE_TONE[i.shape] || ""}">${esc(i.shape)}</span>
+      <a title="${esc(d.classes[i.shape] || "")}">${esc(i.label)}</a>
+      <small>정점 ${i.days_since_peak === 0 ? "어제" : `${i.days_since_peak}일 전`}${i.recurring ? " · 해마다 돌아옴" : ""}</small>
+    </li>`).join("");
+  const mix = Object.entries(d.mix).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(" · ");
+  $("#shape-note").textContent = `${mix} — ${d.classes[Object.entries(d.mix).sort((a, b) => b[1] - a[1])[0][0]]}`;
 }
 
 // ---- 연령별 --------------------------------------------------------------------------
