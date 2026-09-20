@@ -70,7 +70,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             if att:
                 t = att["summary"].get("turnover")
                 lines.append(f"attention {code}: {att['days']}d, 쏠림 {att['summary']['concentration']['value']:.0%}"
-                             + (f", 교체 {t['new_of_n']}/{t['n']}" if t else ""))
+                             + (f", 교체 {t['new_of_n']}/{t['n']}" if t else "")
+                             + (f" (+{att['filling']}d still to fetch)" if att.get("filling") else ""))
             else:
                 lines.append(f"attention {code}: not enough days yet")
         except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy

@@ -15,6 +15,7 @@ from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS
 from .shopping import ShoppingInsight
 from .store import Store
 
+DAY_BUDGET = 150  # uncached day-lists one 교체율 pass may fetch (~30s); the rest fills in next run
 RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
 SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
 
@@ -144,13 +145,17 @@ class TrendService:
         key = f"attention:v1:{lang}:{days}"
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
-        async with pageviews.History(self.settings, self.store) as hist:
-            by_day = await hist.top_days(lang, pageviews.days_back(days, hist.latest_day(lang) + timedelta(days=1)))
+        async with pageviews.History(self.settings, self.store, budget=DAY_BUDGET) as hist:
+            # newest first: a capped run always has the recent days, and reaches further back each time
+            wanted = pageviews.days_back(days, hist.latest_day(lang) + timedelta(days=1))
+            by_day = await hist.top_days(lang, list(reversed(wanted)))
+            skipped = hist.skipped
         rows = flux.daily(by_day)
         summary = flux.summary(rows)
         if summary is None:
             return None
-        result = {"region": region, "days": len(rows), "summary": summary, "trend": flux.trend(rows)}
+        result = {"region": region, "days": len(rows), "summary": summary, "trend": flux.trend(rows),
+                  "filling": skipped}  # > 0 = still working back through the history
         self.store.cache_set(key, result)
         return result
 
@@ -162,7 +167,7 @@ class TrendService:
         key = f"shapes:v1:{lang}:{top}"
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
-        async with pageviews.History(self.settings, self.store) as hist:
+        async with pageviews.History(self.settings, self.store, budget=top + 10) as hist:
             end = hist.latest_day(lang)
             rows = await hist.top(lang, end, limit=top)
             series = await hist.articles(lang, [a for a, _ in rows], end - timedelta(days=540), end)

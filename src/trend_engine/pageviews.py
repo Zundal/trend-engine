@@ -27,10 +27,11 @@ from .store import Store
 
 REST = "https://wikimedia.org/api/rest_v1/metrics/pageviews"
 UA = "trend-engine/0.1 (https://github.com/Zundal/trend-engine)"
-CONCURRENCY = 6  # courtesy limit: stay well under Wikimedia's 100 req/s
+CONCURRENCY = 2  # measured: 6 in parallel earns 429s from a datacenter IP, 2 with pacing does not
+PACE = 0.12  # seconds between requests, per slot
 SETTLED = timedelta(days=3)  # older days never change -> cache them for a year
 FRESH = timedelta(hours=12)
-RETRY_WAIT = 3.0  # seconds; Wikimedia throttles a burst of requests with 429
+RETRY_WAIT = 4.0  # seconds; Wikimedia throttles a burst of requests with 429
 
 
 def _keep(article: str) -> bool:
@@ -58,9 +59,14 @@ def parse_article(raw: str, start: date, end: date) -> list[tuple[date, int]]:
 class History:
     """Cached reader for past pageviews. Offline mode reads tests/fixtures/pageviews/."""
 
-    def __init__(self, settings: Settings, store: Store | None = None):
+    def __init__(self, settings: Settings, store: Store | None = None, budget: int | None = None):
+        """`budget` caps how many *uncached* requests one pass may make. Past days are cached for a
+        year, so a capped run simply fills in more history next time instead of blocking a deploy
+        for twenty minutes on a cold cache."""
         self.settings = settings
         self.store = store
+        self.budget = budget
+        self.skipped = 0
         self._client: httpx.AsyncClient | None = None
         self._sem = asyncio.Semaphore(CONCURRENCY)
         self.errors: list[str] = []  # anything that wasn't a plain 404 — surfaced, never swallowed
@@ -75,10 +81,16 @@ class History:
             hit = self.store.cache_get(key, ttl)
             if hit is not None:
                 return hit
+        if self.budget is not None:
+            if self.budget <= 0:
+                self.skipped += 1
+                return None
+            self.budget -= 1
         for attempt in range(3):
             try:
                 async with self._sem:
                     raw = await get_text(self._client, url, headers={"User-Agent": UA})
+                    await asyncio.sleep(PACE)
             except SourceError as e:
                 msg = str(e)
                 if "HTTP 404" in msg:
