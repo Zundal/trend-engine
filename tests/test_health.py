@@ -42,3 +42,14 @@ def test_missing_health_file_is_a_problem(tmp_path, monkeypatch):
     monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
     ok, body = check(tmp_path / "nope.json")
     assert not ok and "export" in body
+
+
+def test_optional_source_failure_is_a_warning_not_a_problem():
+    """커뮤니티 피드(ettoday 등)는 차단·개편이 잦다 — 알려는 주되 배포를 빨갛게 만들지는 않는다."""
+    h = Health()
+    h.check_report("TW", report({"google_trends": {"ok": True, "error": None},
+                                 "google_news": {"ok": True, "error": None},
+                                 "wikipedia": {"ok": True, "error": None},
+                                 "ettoday": {"ok": False, "error": "HTTP 403 from https://..."}}))
+    assert h.ok and not h.problems
+    assert any("ettoday" in w for w in h.warnings)

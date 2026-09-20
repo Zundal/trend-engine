@@ -12,6 +12,7 @@ class GoogleNews(Source):
     name = "google_news"
     label = "Google 뉴스"
     kind = "content"
+    optional = False
     weight = 0.5
     fixture_ext = "xml"
 

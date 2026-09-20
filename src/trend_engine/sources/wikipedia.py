@@ -19,6 +19,7 @@ _SKIP_EXACT = {"대문", "-", "Main_Page", "Wikipedia"}
 class Wikipedia(Source):
     name = "wikipedia"
     label = "위키백과 조회"
+    optional = False
     weight = 0.4  # evergreen pages (방송사, 국가) add noise; low weight
 
     async def fetch(self, client, region, settings):

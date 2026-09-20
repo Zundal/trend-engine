@@ -13,6 +13,7 @@ KOREA = frozenset({"KR", "KR-11"})
 class SignalBz(Source):
     name = "signal_bz"
     label = "시그널 실시간"
+    optional = False
     weight = 0.9
     regions = KOREA
     family = "portal_realtime"

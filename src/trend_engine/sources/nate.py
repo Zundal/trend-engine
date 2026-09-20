@@ -16,6 +16,7 @@ from .signal_bz import KOREA
 class Nate(Source):
     name = "nate"
     label = "네이트 실시간"
+    optional = False
     weight = 0.9
     regions = KOREA
     family = "portal_realtime"

@@ -19,6 +19,7 @@ class YouTube(Source):
     name = "youtube"
     label = "YouTube 인기"
     kind = "content"
+    optional = False
     weight = 0.6
     requires = ("youtube_api_key",)
 

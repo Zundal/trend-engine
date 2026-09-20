@@ -22,7 +22,8 @@ E2E=1 uv run --group e2e pytest -m e2e tests/e2e
 ```
 
 ## 1c. 배포 점검·알림
-export 가 `health.json` 에 문제(소스 실패, 정상 소스 < 2, 랭킹 < 10, 연령·쇼핑·10·20대·세대 확산 실패)와 경고(예비 경로 사용 등)를 남김 →
+export 가 `health.json` 에 문제(핵심 소스 실패, 정상 소스 < 2, 랭킹 < 10, 연령·쇼핑·10·20대·세대 확산 실패)와
+경고(예비 경로 사용, **부가 소스**(`Source.optional=True` — 커뮤니티 피드·차트) 실패 등)를 남김 →
 `trend-engine health-check` → 배포 워크플로의 `alert` 잡이 **빨간불 + "⚠ 트렌드 수집 경고" 이슈**(열린 동안은 본문만 갱신),
 복구되면 자동으로 닫음. 사이트는 성공한 데이터로 계속 배포. 알림 경로 테스트: Actions → Deploy dashboard → Run workflow → simulate_problem.
 

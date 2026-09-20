@@ -29,6 +29,7 @@ class Source(ABC):
     regions: frozenset[str] | None = None  # None = any Google geo code
     fixture_ext: str = "json"
     subregion_aware: bool = False  # True if fetch() differs for KR-11 vs KR (only Google Trends today)
+    optional: bool = True  # False = a failure is a real problem (alerts); True = nice-to-have extra
 
     def fixture_code(self, region: Region) -> str:
         return region.code if self.subregion_aware else region.country

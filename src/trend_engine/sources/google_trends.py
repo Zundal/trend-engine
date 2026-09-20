@@ -25,6 +25,7 @@ def parse_traffic(text: str | None) -> float | None:
 class GoogleTrends(Source):
     name = "google_trends"
     label = "Google 트렌드"
+    optional = False
     weight = 1.0
     fixture_ext = "xml"
     subregion_aware = True

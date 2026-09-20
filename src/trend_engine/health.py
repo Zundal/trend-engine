@@ -29,10 +29,14 @@ class Health:
         self.warnings.append(msg)
 
     def check_report(self, region: str, report: dict[str, Any]) -> None:
+        from .sources import REGISTRY
+
         status = report.get("source_status", {})
         broken = {n: s["error"] for n, s in status.items() if not s["ok"] and not str(s.get("error", "")).startswith(IGNORED)}
         for name, err in broken.items():
-            self.problem(f"[{region}] 소스 실패: {name} — {str(err)[:160]}")
+            # extras (community feeds, charts) come and go — worth knowing, not worth a red build
+            report_it = self.warn if getattr(REGISTRY.get(name), "optional", True) else self.problem
+            report_it(f"[{region}] 소스 실패: {name} — {str(err)[:160]}")
         ok = sum(1 for s in status.values() if s["ok"])
         if ok < 2:
             self.problem(f"[{region}] 정상 소스가 {ok}개뿐")
