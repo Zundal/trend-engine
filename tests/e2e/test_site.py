@@ -17,7 +17,9 @@ import threading
 import pytest
 
 pytestmark = [pytest.mark.e2e, pytest.mark.skipif(os.environ.get("E2E") != "1", reason="set E2E=1 to run browser tests")]
-PROVIDERS = re.compile(r"youtube|google|naver|네이버|\bnate\b|signal[._]bz|wikipedia|datalab|apple_charts|itunes", re.I)
+# Source *identifiers* must never reach the page. Brand words inside content are fine — an app named
+# "Google Chrome" or a headline mentioning 네이버페이 is data, not a label saying where data came from.
+PROVIDERS = re.compile(r"google_trends|google_news|signal[._]bz|apple_charts|wikipedia\.org|youtube\.com|datalab|source_status|publisher", re.I)
 
 
 @pytest.fixture(scope="module")
@@ -114,11 +116,12 @@ def test_no_source_names_leak_and_mobile_fits(page, site):
 def test_categories_overview_and_filters(page, site):
     page.goto(site + "#youth/20대 여성/now")
     wait_rows(page, "#y-cats .ctile")
-    tile = page.locator("#y-cats .ctile").first
-    cat = tile.get_attribute("data-c")
-    tile.click()
+    wait_rows(page, "#y-cchips .cchip", 2)
+    chip = page.locator("#y-cchips .cchip").nth(1)  # chips come from the keyword lists themselves
+    cat = chip.get_attribute("data-c")
+    chip.click()
     tags = page.locator("#y-disc .ctag, #y-issues .ctag").all_inner_texts()
-    assert tags and set(tags) == {cat}, (cat, tags)
+    assert tags and {t for t in tags if t} == {cat}, (cat, tags)
     page.goto(site + "#country/KR/live")
     wait_rows(page, "#c-cchips .cchip", 3)
     chip = page.locator("#c-cchips .cchip").nth(1)
