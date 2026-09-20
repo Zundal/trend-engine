@@ -142,7 +142,7 @@ class TrendService:
         """교체율·쏠림 (나라별). Reads past most-read lists, which go back years — unlike our own
         archive, so this works from day one and for countries with no age data."""
         lang = get_region(region).lang
-        key = f"attention:v1:{lang}:{days}"
+        key = f"attention:v2:{lang}:{days}"
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
         async with pageviews.History(self.settings, self.store, budget=DAY_BUDGET) as hist:
@@ -164,7 +164,7 @@ class TrendService:
         """유행의 모양 (나라별): how each of today's risers got its attention. A shape can only be
         read a week after the peak — fresher items are left unlabelled rather than guessed."""
         lang = get_region(region).lang
-        key = f"shapes:v1:{lang}:{top}"
+        key = f"shapes:v2:{lang}:{top}"
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
         async with pageviews.History(self.settings, self.store, budget=top + 10) as hist:
