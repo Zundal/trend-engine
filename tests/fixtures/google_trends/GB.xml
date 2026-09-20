@@ -21,18 +21,18 @@
 				<ht:news_item_source>ABC News - Breaking News, Latest News and Videos</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
+				<ht:news_item_title>Airlines might cut less profitable flights amid rising fuel costs</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.10tv.com/article/news/nation-world/airlines-might-cut-flights-rising-fuel-costs/507-fa8f6741-e697-4167-844e-7f18c360b0b9</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSYoaBbAdHvYzp6eA9we0B9w4LGul-C3xg71Sg22QdP_A_2fX6jqmniQLO1DqE</ht:news_item_picture>
+				<ht:news_item_source>10TV</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
 				<ht:news_item_title>American, United, Southwest scale back schedules as fuel shock reshapes flying</ht:news_item_title>
 				<ht:news_item_snippet/>
 				<ht:news_item_url>https://www.reuters.com/business/american-airlines-warns-high-fuel-prices-could-force-capacity-adjustments-2026-09-16/</ht:news_item_url>
 				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS88J4OYH0Om_HxePqb63CGCiLy7f0l9aybzNCQgFpJ3GpziERbRdWo3LWEJ2s</ht:news_item_picture>
 				<ht:news_item_source>Reuters</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>Fuel prices could mean higher flight prices</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.fox9.com/news/major-airlines-adjust-flight-schedules-jet-fuel-prices-surge</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKBgMrCHYj56G-Y8Dih7svse3quxFReZfnjs1myOS7ZWfxBqKP392noPUzYLY</ht:news_item_picture>
-				<ht:news_item_source>FOX 9 Minneapolis-St. Paul</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -161,13 +161,13 @@
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=GB</link>
 			<pubDate>Sat, 19 Sep 2026 18:50:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQiFaOFN_RiBRLQoQX6hOMxrnApZLG7cEArEiWllIE46mYfDsrBUb03xzyREGM</ht:picture>
+			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS9KBJ-BsVcmC1mvHamjtGrLR4TOj44j-DbMImIR-6lg3oQ0u5bDdJ55lY0RI0</ht:picture>
 			<ht:picture_source>MMA Fighting</ht:picture_source>
 			<ht:news_item>
 				<ht:news_item_title>UFC 331 live blog: Patricio Pitbull vs. Doo Ho Choi</ht:news_item_title>
 				<ht:news_item_snippet/>
 				<ht:news_item_url>https://www.mmafighting.com/ufc/511057/ufc-331-live-blog-patricio-pitbull-vs-doo-ho-choi</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQiFaOFN_RiBRLQoQX6hOMxrnApZLG7cEArEiWllIE46mYfDsrBUb03xzyREGM</ht:news_item_picture>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS9KBJ-BsVcmC1mvHamjtGrLR4TOj44j-DbMImIR-6lg3oQ0u5bDdJ55lY0RI0</ht:news_item_picture>
 				<ht:news_item_source>MMA Fighting</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
@@ -178,11 +178,11 @@
 				<ht:news_item_source>Yahoo Sports</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Asked and received: Dooho Choi happy UFC callout of &apos;Pitbull&apos; materialized</ht:news_item_title>
+				<ht:news_item_title>[Breaking News] Ah! &quot;Shocking defeat&quot; Choi Doo-ho suffers 1st-round TKO loss to Pitbull; a clean shot landed squarely on his chin. The wall of the UFC ranked fighter was too high.</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.centraloregondaily.com/sports/asked-and-received-dooho-choi-happy-ufc-callout-of-pitbull-materialized/article_759318ab-ec26-5eb9-be35-458bde0c0530.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTtvarWUxQ3BIAX7v-D3EL7JxEVivBnA5ACVtuDsvRY54XXLN36S5bIckkXMMg</ht:news_item_picture>
-				<ht:news_item_source>Central Oregon Daily</ht:news_item_source>
+				<ht:news_item_url>https://www.starnewskorea.com/en/sports/2026/09/20/2026092011082422292</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRllrD70xK40juE6WbrpW9ZLUVMiwL-iQ9SFRB4Bseyk3VOyh4cVv8GNNbM76E</ht:news_item_picture>
+				<ht:news_item_source>스타뉴스</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -216,11 +216,11 @@
 			</ht:news_item>
 		</item>
 		<item>
-			<title>draftkings promo code</title>
+			<title>draftkings bonus</title>
 			<ht:approx_traffic>1000+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=GB</link>
-			<pubDate>Sat, 19 Sep 2026 18:10:00 -0700</pubDate>
+			<pubDate>Sat, 19 Sep 2026 18:20:00 -0700</pubDate>
 			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdleYuadVtxUFa4STsvnDnSPTVOQqDL_U_2fUpG8LxEAz9VajePflo1WPy5q8</ht:picture>
 			<ht:picture_source>eciks.org</ht:picture_source>
 			<ht:news_item>
@@ -272,37 +272,37 @@
 				<ht:news_item_snippet/>
 				<ht:news_item_url>https://moneywise.com/life/entertainment/disneyland-ticket-prices-1955-cost-tiers</ht:news_item_url>
 				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQlX0VB0bfUtDGlW7iC6FDxNtUbVPlr9zu5TCqc3h9B17bT6-A9xUGER4sohbQ</ht:news_item_picture>
-				<ht:news_item_source>moneywise.com</ht:news_item_source>
+				<ht:news_item_source>MoneyWise.com</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
-			<title>iwo baraniewski</title>
-			<ht:approx_traffic>200+</ht:approx_traffic>
+			<title>cryptocurrency trading</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=GB</link>
 			<pubDate>Sat, 19 Sep 2026 17:50:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSbmN584M_kEtoZBN4TmJWFPSkcQ5PFZolg4pYfXcoJV04raR01uJgMmKUJjN0</ht:picture>
-			<ht:picture_source>MMA Fighting</ht:picture_source>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ7Cea_F0qVWc0siG6B28_zINQF2f8u7Dd-AkGqwXX9DSPPYREuR43qzUWDgOY</ht:picture>
+			<ht:picture_source>Reuters</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>UFC 331 live blog: Alonzo Menifield vs. Iwo Baraniewski</ht:news_item_title>
+				<ht:news_item_title>UK watchdog targets three London sites suspected of illegal crypto trading</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.mmafighting.com/ufc/511060/ufc-331-live-blog-alonzo-menifield-vs-iwo-baraniewski</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSbmN584M_kEtoZBN4TmJWFPSkcQ5PFZolg4pYfXcoJV04raR01uJgMmKUJjN0</ht:news_item_picture>
-				<ht:news_item_source>MMA Fighting</ht:news_item_source>
+				<ht:news_item_url>https://www.reuters.com/world/uk-watchdog-targets-three-london-sites-latest-crackdown-illegal-crypto-trading-2026-09-17/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ7Cea_F0qVWc0siG6B28_zINQF2f8u7Dd-AkGqwXX9DSPPYREuR43qzUWDgOY</ht:news_item_picture>
+				<ht:news_item_source>Reuters</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Menifield Suffers Gnarly Thumb Injury, Ends Baraniewski&apos;s 0</ht:news_item_title>
+				<ht:news_item_title>FCA steps up crypto enforcement with raids on illegal London P2P trading sites</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.mmanews.com/article/menifield-thumb-injury-ends-baraniewskis-0</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRJo9_3JT3z4W5euryLngGoLf4r6I-dtlp_D-p8EKXg1HQwHJaIob7-RB0ix0E</ht:news_item_picture>
-				<ht:news_item_source>MMANews.com</ht:news_item_source>
+				<ht:news_item_url>https://www.coindesk.com/policy/2026/09/17/uk-signals-end-of-light-touch-era-with-multi-agency-raid-on-peer-to-peer-crypto-hubs</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQCtOrwAluxEAfkdmiNqofrVlkhFp3J2GvOldc34bjazaL0cefKJfSYO9mPyE</ht:news_item_picture>
+				<ht:news_item_source>CoinDesk</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Alonzo Menifield vs Iwo Baraniewski Prediction - 9/19/2026</ht:news_item_title>
+				<ht:news_item_title>FCA cracks down on illegal crypto trading</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://ats.io/mma/alonzo-menifield-vs-iwo-baraniewski-prediction-preview-9-19-2026/</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRl-pc0mbdIWKlBbEAoFcEWFyMHt9EdILh_ju0CtG33h9pVX3dLloKObnf2WF0</ht:news_item_picture>
-				<ht:news_item_source>ATS.io</ht:news_item_source>
+				<ht:news_item_url>https://www.solicitorsjournal.com/sjarticle/fca-cracks-down-on-illegal-crypto-trading--?category=none</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdn2FAKQp5NO6X5P6DOxjSJNVMJApEkCHfgUZWFLwpcRXd9nBBIneAJ7aeavg</ht:news_item_picture>
+				<ht:news_item_source>Solicitors Journal</ht:news_item_source>
 			</ht:news_item>
 		</item>
 	</channel>

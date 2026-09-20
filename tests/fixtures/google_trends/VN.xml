@@ -6,11 +6,11 @@
 		<link>https://trends.google.com/trending/rss?geo=VN</link>
 		<atom:link href="https://trends.google.com/trending/rss?geo=VN" rel="self" type="application/rss+xml"/>
 		<item>
-			<title>ufc</title>
-			<ht:approx_traffic>200+</ht:approx_traffic>
+			<title>ufc 331</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=VN</link>
-			<pubDate>Sat, 19 Sep 2026 17:10:00 -0700</pubDate>
+			<pubDate>Sat, 19 Sep 2026 17:50:00 -0700</pubDate>
 			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcT4IdbdmtPRmPYPooHM2Y9ZLErJcNyJj6QEiJYLYYbqHaeapRBxEszN7Jcgb0g</ht:picture>
 			<ht:picture_source>MMA Fighting</ht:picture_source>
 			<ht:news_item>
@@ -21,18 +21,48 @@
 				<ht:news_item_source>MMA Fighting</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Joshua Van Talks With Megan Olivi | Crypto.com UFC 331</ht:news_item_title>
+				<ht:news_item_title>Video: UFC 331 post-fight press conference live stream</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.ufc.com/video/160258</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRstLnDg6isE-XYzdby5RCSzNIpRqNS3KQfBYB3OBgvjOXrmQGq4D9Q6z0DCn4</ht:news_item_picture>
-				<ht:news_item_source>UFC.com</ht:news_item_source>
+				<ht:news_item_url>https://mmajunkie.usatoday.com/story/sports/ufc/2026/09/19/video-ufc-331-live-stream-post-fight-press-conference/91805857007/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRMNNJ6DDzmnjceP071ndVcN_kIKA62ayRs8_RNDH9nhzJTKBkTLsTQiHypNmU</ht:news_item_picture>
+				<ht:news_item_source>MMA Junkie</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Kalshi promo code MLIVE for UFC 331 offers $25 bonus for trading Van vs. Pantoja tonight</ht:news_item_title>
+				<ht:news_item_title>NEW Kalshi Promo Code SI60: Claim Exclusive $60 Bonus for UFC 331 Prediction Markets</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.mlive.com/sports-betting/2026/09/kalshi-promo-code-mlive-for-ufc-331-offers-25-bonus-for-trading-van-vs-pantoja-tonight.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTdpLN14Xm_AjInvXubFVp8lUZitrlrDc7ZBmjQQziuvHuT6xcJwonLbyLP9MA</ht:news_item_picture>
-				<ht:news_item_source>MLive.com</ht:news_item_source>
+				<ht:news_item_url>https://www.si.com/prediction-markets/new-kalshi-promo-code-si60-claim-exclusive-60-bonus-for-ufc-331-prediction-markets-01m2x3vn22wp-dp</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTxaUzqVQixnsS33RWr3z5B7Pnv003VAgbphakPIoGwt1hwGQrX7cz_sR6bBCg</ht:news_item_picture>
+				<ht:news_item_source>Sports Illustrated</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>ufc</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=VN</link>
+			<pubDate>Sat, 19 Sep 2026 17:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSHKbknoetv5DOVLgGWDCsuwNC0Ju1YBSyevkYTvL9KuFQ1DBq_dVEP78QAIcQ</ht:picture>
+			<ht:picture_source>MMA Fighting</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>Ciryl Gane vs. Josh Hokit, Kayla Harrison vs. Amanda Nunes title fights set for UFC 334</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.mmafighting.com/ufc/511102/ciryl-gane-vs-josh-hokit-kayla-harrison-vs-amanda-nunes-title-fights-set-for-ufc-334</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSHKbknoetv5DOVLgGWDCsuwNC0Ju1YBSyevkYTvL9KuFQ1DBq_dVEP78QAIcQ</ht:news_item_picture>
+				<ht:news_item_source>MMA Fighting</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>UFC 334 Card Announced With 2 Title Fights And A Retirement Bout</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.forbes.com/sites/brianmazique/2026/09/19/ufc-334-card-announced-with-2-title-fights-and-a-retirement-bout/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU3GxsfnjMtiyjx-S_jllYtrN4YDHWTByXO37cTZg-5BFBotrnu0fjYGBbAyM</ht:news_item_picture>
+				<ht:news_item_source>Forbes</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>Dana White&apos;s ear issue blamed for Ciryl Gane miscommunication as Frenchman is handed UFC heavyweight title</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://bloodyelbow.com/2026/09/19/dana-whites-ear-issue-blamed-for-ciryl-gane-miscommunication-as-frenchman-is-handed-ufc-heavyweight-title/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQhF8IDmDMcmahfdJGgUd9OnK8TjeKkYfGNX4k-dwNUoQvK1QhhYFgEIL-Jzmo</ht:news_item_picture>
+				<ht:news_item_source>Bloody Elbow</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -101,21 +131,21 @@
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=VN</link>
 			<pubDate>Sat, 19 Sep 2026 15:30:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQo0VeVR1a9Wq37gfDuyR6dyyPOn3k73PcxMLkFOeScKBjMQ8qegAN_dqWt34o</ht:picture>
-			<ht:picture_source>Báo VietNamNet</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>Bộ Nội vụ đề xuất Ngày Văn hóa Việt Nam 2026 không hoán đổi ngày nghỉ</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://vietnamnet.vn/bo-noi-vu-de-xuat-ngay-van-hoa-viet-nam-2026-khong-hoan-doi-ngay-nghi-2555543.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQo0VeVR1a9Wq37gfDuyR6dyyPOn3k73PcxMLkFOeScKBjMQ8qegAN_dqWt34o</ht:news_item_picture>
-				<ht:news_item_source>Báo VietNamNet</ht:news_item_source>
-			</ht:news_item>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRzLLLhZIoRh-WADjkhx1th5l6qv7Q-u42oFajS46l3Ezk7NAcB2FlIkqrUrhY</ht:picture>
+			<ht:picture_source>VnExpress</ht:picture_source>
 			<ht:news_item>
 				<ht:news_item_title>Trình bổ sung nghỉ một ngày dịp Văn hóa Việt Nam, không hoán đổi làm việc</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.24h.com.vn/tin-tuc-trong-ngay/trinh-bo-sung-nghi-mot-ngay-dip-van-hoa-viet-nam-khong-hoan-doi-lam-viec-c46a1796218.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSOUSmGimmo_eRihqgirgg0kiyUcDZOPHcQaqTNT211vsiSaadk8Uxs27zKeSc</ht:news_item_picture>
-				<ht:news_item_source>Tin tức 24h</ht:news_item_source>
+				<ht:news_item_url>https://vnexpress.net/trinh-bo-sung-nghi-mot-ngay-dip-van-hoa-viet-nam-khong-hoan-doi-lam-viec-5122382.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRzLLLhZIoRh-WADjkhx1th5l6qv7Q-u42oFajS46l3Ezk7NAcB2FlIkqrUrhY</ht:news_item_picture>
+				<ht:news_item_source>VnExpress</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>Bộ Nội vụ tiếp thu: Đề xuất nghỉ 1 ngày dịp Ngày Văn hóa Việt Nam 2026, không hoán đổi làm việc</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tuoitre.vn/de-xuat-bo-sung-nghi-1-ngay-dip-ngay-van-hoa-viet-nam-2026-khong-hoan-doi-lam-viec-100260920074133185.htm</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtRskqBFgCjFFEDfAwb8SN_abNTnvj2ol-juTbYF_ieAz4mH1EgvAmN2boUXA</ht:news_item_picture>
+				<ht:news_item_source>Tuổi Trẻ</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
 				<ht:news_item_title>Bộ Nội vụ thay đổi đề xuất Ngày Văn hóa Việt Nam nghỉ 1 ngày, không hoán đổi</ht:news_item_title>
@@ -131,15 +161,8 @@
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=VN</link>
 			<pubDate>Sat, 19 Sep 2026 14:30:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRSZ8xN1J3khCyuPqi5-fj6Uwk-q1WedVKh4jVG7XRLX8xUo9LarLiBCLPxQqg</ht:picture>
-			<ht:picture_source>La Nuova Venezia</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>Venezia Lazio finisce 0-2, crisi senza fine: Stroppa sempre più in bilico</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.nuovavenezia.it/sport/venezia-lazio-0-2-crisi-stroppa-ultimo-posto-partita-risultato-fbi72pvw</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRSZ8xN1J3khCyuPqi5-fj6Uwk-q1WedVKh4jVG7XRLX8xUo9LarLiBCLPxQqg</ht:news_item_picture>
-				<ht:news_item_source>La Nuova Venezia</ht:news_item_source>
-			</ht:news_item>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTHAi2VyvH_X0BWpQhccJuKd1cHBGFQFpgJWXGQsSrIO1IGB-a_zWa6jtVazoI</ht:picture>
+			<ht:picture_source>OneFootball</ht:picture_source>
 			<ht:news_item>
 				<ht:news_item_title>Lo stadio Pier Luigi Penzo si colora di bianco e celeste, il commento di Caicedo: &quot;Bella Lazio...&quot;</ht:news_item_title>
 				<ht:news_item_snippet/>
@@ -153,6 +176,13 @@
 				<ht:news_item_url>https://www.eurosport.it/calcio/serie-a/2026-2027/le-pagelle-di-venezia-lazio-0-2-zaccagni-leader-mandas-saracinesca-e-noslin-cinico-deludono-john-yeboah-e-akor-adams_sto23338342/story.shtml</ht:news_item_url>
 				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ5C6MAJLHWdqZVALtrNcJ16TbwWgiQpRshJ8bSVhhqxC4IjNZUbwfH3i_UY7o</ht:news_item_picture>
 				<ht:news_item_source>Eurosport.it</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>Juventus-Atalanta: dove vederla in tv (Sky o Dazn), probabili formazioni e orario della sfida di Serie A</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.ilmessaggero.it/sport/schede/juventus_atalanta_dove_vederla_sky_dazn_probabili_formazioni_orario_serie_a-dove_vederla_in_tv_e_streaming-3-9771227.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt5iwdG9MpPpKHL14HegAMpj6NVCG9qULH_mWsjT7v91blAfrrTJ-YXnVGnNc</ht:news_item_picture>
+				<ht:news_item_source>Il Messaggero</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -191,28 +221,28 @@
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=VN</link>
 			<pubDate>Sat, 19 Sep 2026 12:00:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKJb6MHXezSC8XfGt1PItfIYQlhRaDNNPIHGM1CEPoyqYuh_xPi05NBfE-Zq4</ht:picture>
-			<ht:picture_source>Excélsior</ht:picture_source>
+			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcvUpk901GIr1LAug_zL-WBgtr-sdCz7kjVUfKxPSiqrdeg9r927K5f_ToBx4</ht:picture>
+			<ht:picture_source>Mundo Deportivo</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>Raphinha y Barcelona igualan marca del Real Madrid de Hugo Sánchez</ht:news_item_title>
+				<ht:news_item_title>Raphinha, un libro abierto: sus confesiones</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.excelsior.com.mx/deportes/raphinha-y-barcelona-igualan-marca-real-madrid-hugo-sanchez</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKJb6MHXezSC8XfGt1PItfIYQlhRaDNNPIHGM1CEPoyqYuh_xPi05NBfE-Zq4</ht:news_item_picture>
-				<ht:news_item_source>Excélsior</ht:news_item_source>
+				<ht:news_item_url>https://www.mundodeportivo.com/futbol/fc-barcelona/20260919/1004228871/raphinha-libro-abierto-confesiones-fc-barccelona.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcvUpk901GIr1LAug_zL-WBgtr-sdCz7kjVUfKxPSiqrdeg9r927K5f_ToBx4</ht:news_item_picture>
+				<ht:news_item_source>Mundo Deportivo</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Un Balón de Oro para Raphinha</ht:news_item_title>
+				<ht:news_item_title>HAY BRASILEÑO PARA LARGO: Barça llega a un principio acuerdo para la renovación de Raphinha</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.marca.com/futbol/primera-division/cronica/2026/09/19/balon-oro-raphinha.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRoR4UtvuvoZVaqfB4Yuz1or17lMhegsUFpp5UfR7jpJclr4FTxFYl_E1XknUg</ht:news_item_picture>
-				<ht:news_item_source>MARCA</ht:news_item_source>
+				<ht:news_item_url>https://kchcomunicacion.com/2026/09/19/hay-brasileno-para-largo-barca-llega-a-un-principio-acuerdo-para-la-renovacion-de-raphinha/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQdiKekRLu4LSD3pG3lMw6zVhvO3s7BcxTHQ3D6J1u9l_wyL7Yz1yIRTVddhGE</ht:news_item_picture>
+				<ht:news_item_source>KCH FM</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Dobles rupturas del goleador</ht:news_item_title>
+				<ht:news_item_title>Deco anuncia las renovaciones de Raphinha, Marc Bernal y Xavi Espart</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.lavanguardia.com/deportes/20260920/11639446/dobles-rupturas-goleador.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS5FoWyArMMc0xTc-mvmZfhzZ-EMCtvMSYxl43ZWymoSfipz_7N-E1Sr_-R_3o</ht:news_item_picture>
-				<ht:news_item_source>La Vanguardia</ht:news_item_source>
+				<ht:news_item_url>https://cadenaser.com/nacional/2026/09/19/deco-anuncia-las-renovaciones-de-raphinha-marc-bernal-y-xavi-espart-cadena-ser/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQHEPP4WgMY64sJfl_sIen3MEN2KHhYu1v4y2hx2P88_A2VToYcqniEMRBvpzY</ht:news_item_picture>
+				<ht:news_item_source>Cadena SER</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -221,14 +251,14 @@
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=VN</link>
 			<pubDate>Sat, 19 Sep 2026 11:40:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZO99zhFkUGKBfcu4Cwl0UOsSGsCxla0E8BMv6T6W-iQzEQk-xXlmSNMfgSOw</ht:picture>
-			<ht:picture_source>Tạp chí Bóng đá</ht:picture_source>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS0zKx6g3WU6BbhN3BWcu94VdZV2tirQa8vB0KN5k_N3OBMYnKI6355wEflEF8</ht:picture>
+			<ht:picture_source>Vietnam.vn</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>Nhận định bóng đá Stuttgart vs Dortmund, 23h30 ngày 19/9: &apos;Thiên nga&apos; khó làm nên bất ngờ</ht:news_item_title>
+				<ht:news_item_title>LIVE VfB Stuttgart gegen Borussia Dortmund: Ein Spiel mit ständig wechselnder Führung in den ersten Minuten, bisher keine Tore.</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://bongdaplus.vn/bundesliga/nhan-dinh-bong-da-stuttgart-vs-dortmund-23h30-ngay-19-9-5167142609.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZO99zhFkUGKBfcu4Cwl0UOsSGsCxla0E8BMv6T6W-iQzEQk-xXlmSNMfgSOw</ht:news_item_picture>
-				<ht:news_item_source>Tạp chí Bóng đá</ht:news_item_source>
+				<ht:news_item_url>https://www.vietnam.vn/de/truc-tieptruc-tiep-vfb-stuttgart-vs-borussia-dortmund-the-tran-giang-co-trong-nhung-phut-dau-chua-co-ban-thang</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS0zKx6g3WU6BbhN3BWcu94VdZV2tirQa8vB0KN5k_N3OBMYnKI6355wEflEF8</ht:news_item_picture>
+				<ht:news_item_source>Vietnam.vn</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
 				<ht:news_item_title>Nhận định bóng đá Stuttgart vs Dortmund tại Bundesliga</ht:news_item_title>
@@ -238,11 +268,11 @@
 				<ht:news_item_source>Laodong.vn</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>Nhận định bóng đá Stuttgart vs Dortmund (23h30 ngày 19/9): Chờ mưa bàn thắng</ht:news_item_title>
+				<ht:news_item_title>Nhận định Tỷ số Stuttgart vs Dortmund, 23h30 ngày 19/9</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://bongda24h.vn/nhan-dinh-bong-da/du-doan-stuttgart-vs-dortmund-hom-nay-344-460178.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQIsKE3mmm52Y3wMTwLJXhvp0wayxHi1aijbnltBFLBorCeeZxcxl2lCzePLqw</ht:news_item_picture>
-				<ht:news_item_source>Bongda24h</ht:news_item_source>
+				<ht:news_item_url>https://bongdaplus.vn/bundesliga/nhan-dinh-ty-so-stuttgart-vs-dortmund-23h30-ngay-19-9-5169372609.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVAVSTJULFPhp17IL9Cb_V2Uz3FYj-Thz9-ErUT1rQUfvtbR24KunWsZDsodU</ht:news_item_picture>
+				<ht:news_item_source>Tạp chí Bóng đá</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
@@ -268,41 +298,11 @@
 				<ht:news_item_source>ESPN</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>‘Outstanding’ – Rodri singles out three Barcelona players after Sevilla win</ht:news_item_title>
+				<ht:news_item_title>Raphinha hat-trick maintains Barcelona’s perfect LaLiga start</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://sports.yahoo.com/articles/outstanding-rodri-singles-three-barcelona-010000151.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQXjQl1uHTLce2FfXCg9H45_oHKthV6HMpQoGC2_F747GIwYI23UVyRB6ZOEp4</ht:news_item_picture>
-				<ht:news_item_source>Yahoo Sports</ht:news_item_source>
-			</ht:news_item>
-		</item>
-		<item>
-			<title>dortmund</title>
-			<ht:approx_traffic>100+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=VN</link>
-			<pubDate>Sat, 19 Sep 2026 11:30:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTsYwHQA2So-WP3arRrFA2WzSKCnIAAMLtG2yIkmkmpqX9NcR0JNjq5-TA7iac</ht:picture>
-			<ht:picture_source>Kicker</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>Kovac freut sich für Beier: &quot;Leben schreibt die schönsten Geschichten&quot; | Nach Nicht-Nominierung beim DFB | Video</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.kicker.de/kovac-freut-sich-fuer-beier-leben-schreibt-die-schoensten-geschichten-1254373/video</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTsYwHQA2So-WP3arRrFA2WzSKCnIAAMLtG2yIkmkmpqX9NcR0JNjq5-TA7iac</ht:news_item_picture>
-				<ht:news_item_source>Kicker</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>Borussia Dortmund: Top-Spiel-Sieg in Stuttgart! Note 2 für diese BVB-Stars</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.bild.de/sport/fussball/borussia-dortmund-top-spiel-sieg-in-stuttgart-note-2-fuer-diese-bvb-stars-6aaeebbe18c6b34d08d00e23</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSIRKMehpIO7ZI6OCrkPF6Pw9PWfXCYAuEnBOfz3xR-eTpj08i4GH6MAc0D1Ew</ht:news_item_picture>
-				<ht:news_item_source>BILD</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>Dortmunds Minimalisten: Die Anti-Bayern</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.rnd.de/sport/dortmunds-minimalisten-der-bvb-gruesst-im-anti-bayern-stil-von-der-tabellenspitze-5ZKJLECB3ZHSRG352LWZNOI3GA.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQtA-kh0E502FSkhkROZrLLNxHrdDTh5prUqiFRfvRtqunPRGDbmlptTk5EeJY</ht:news_item_picture>
-				<ht:news_item_source>RND.de</ht:news_item_source>
+				<ht:news_item_url>https://www.reuters.com/sports/soccer/raphinha-hat-trick-maintains-barcelonas-perfect-laliga-start-2026-09-19/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRbL5_z9jOxnVYSO-VKUPHbhY2MnjEwZABMFdqkHJXglg8wAc1knGPodL8uDL0</ht:news_item_picture>
+				<ht:news_item_source>Reuters</ht:news_item_source>
 			</ht:news_item>
 		</item>
 	</channel>

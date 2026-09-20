@@ -9,13 +9,15 @@ from .apple import AppleCharts
 from .base import Source, SourceError
 from .google_news import GoogleNews
 from .google_trends import GoogleTrends
+from .local import PTT, Kenh14, Pixiv, Reddit, Steam
 from .nate import Nate
 from .signal_bz import SignalBz
 from .wikipedia import Wikipedia
 from .youtube import YouTube
 
 REGISTRY: dict[str, Source] = {
-    s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews(), AppleCharts()]
+    s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews(), AppleCharts(),
+                       Pixiv(), PTT(), Reddit(), Kenh14(), Steam()]
 }
 
 __all__ = ["REGISTRY", "Source", "SourceError"]

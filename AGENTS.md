@@ -47,6 +47,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 7. 점수 공식을 바꾸면 `scoring.py` docstring, `docs/ARCHITECTURE.md`, `tests/test_scoring.py` 골든 값을 함께 갱신.
 
 ## 자주 하는 작업
+- **새 소스는 키 없이 되는 것만** (사용자 방침). 나라별 후보·차단 목록은 docs/SOURCES.md 하단 참고.
 - **새 소스 추가**: `docs/ADDING_A_SOURCE.md` (Claude Code 는 `.claude/skills/add-trend-source` 스킬).
 - **업스트림 포맷 변경 대응**: `doctor` 로 확인 → `record` → 실패하는 contract 테스트를 보고 `parse()` 수정.
 - **새 지역**: Google geo 코드면 `config.REGIONS` 에 추가만 하면 된다 (없어도 `-r` 로 동작).

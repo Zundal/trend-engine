@@ -148,6 +148,36 @@
 			</ht:news_item>
 		</item>
 		<item>
+			<title>漢斯季默</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=TW</link>
+			<pubDate>Sat, 19 Sep 2026 04:20:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSXuWE8K9EilBFvaCSkgjC2NoAi_jIe7CJzJxojnPeArCYBscVFQxNjLjz0c0Y</ht:picture>
+			<ht:picture_source>噓！星聞</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>配樂大師漢斯季默首來台！「神鬼奇航」「星際效應」經典配樂巨蛋重現</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://stars.udn.com/star/story/10092/9765705</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSXuWE8K9EilBFvaCSkgjC2NoAi_jIe7CJzJxojnPeArCYBscVFQxNjLjz0c0Y</ht:news_item_picture>
+				<ht:news_item_source>噓！星聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>電影配樂大師漢斯·季默率電影神曲轟高雄 《獅子王》《神鬼戰士》原唱全來了</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://tw.news.yahoo.com/%E9%9B%BB%E5%BD%B1%E9%85%8D%E6%A8%82%E5%A4%A7%E5%B8%AB%E6%BC%A2%E6%96%AF-%E5%AD%A3%E9%BB%98%E7%8E%87%E9%9B%BB%E5%BD%B1%E7%A5%9E%E6%9B%B2%E8%BD%9F%E9%AB%98%E9%9B%84-%E7%8D%85%E5%AD%90%E7%8E%8B-%E7%A5%9E%E9%AC%BC%E6%88%B0%E5%A3%AB-%E5%8E%9F%E5%94%B1%E5%85%A8%E4%BE%86%E4%BA%86-160300603.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH3nYzU5Zaon6mqBCZ5BI-irqDvd77BNQb12quG5sfAzcMcPYJSlOJKdU9KUE</ht:news_item_picture>
+				<ht:news_item_source>Yahoo新聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>金獎配樂大師來了！漢斯季默首度來台 震撼重現《星際效應》《全面啟動》經典配樂</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://ent.ltn.com.tw/news/breakingnews/5579789</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1vJAy_4kPHpc35iGd-Kb2wF8r_8ycGoA5EHriLjTsU-Cjky6gbABzfCpIgdA</ht:news_item_picture>
+				<ht:news_item_source>自由娛樂</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
 			<title>539</title>
 			<ht:approx_traffic>5000+</ht:approx_traffic>
 			<description/>
@@ -176,15 +206,6 @@
 				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSc9MwJ6G_fbOmNvRT_gsiSijc_A1Jt3S45VklVzxqHwW2FN8ubaHqs5odLUUs</ht:news_item_picture>
 				<ht:news_item_source>東森新聞</ht:news_item_source>
 			</ht:news_item>
-		</item>
-		<item>
-			<title>cpbl</title>
-			<ht:approx_traffic>1000+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=TW</link>
-			<pubDate>Sat, 19 Sep 2026 03:30:00 -0700</pubDate>
-			<ht:picture/>
-			<ht:picture_source/>
 		</item>
 	</channel>
 </rss>

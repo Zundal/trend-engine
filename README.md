@@ -53,6 +53,7 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 |---|---|---|
 | Google 트렌드(국가·서울), 시그널/네이트 실시간, 위키백과, Google 뉴스 | 불필요 | — |
 | YouTube 국가별 인기 영상 | `YOUTUBE_API_KEY` | YouTube 패널 비활성 |
+| 나라별 커뮤니티·차트 (일본 pixiv · 대만 PTT · 미국 Reddit · 베트남 Kenh14 · 전 국가 음악/앱/게임 차트) | 불필요 | — |
 | **연령·성별** 관심도 (네이버 검색어 트렌드) | 불필요 — 키 없으면 데이터랩 웹 사용, 키(`NAVER_CLIENT_ID/SECRET`) 있으면 공식 API | — |
 | **연령·성별 쇼핑 인기 검색어** (네이버 쇼핑인사이트) | 불필요 | — |
 
