@@ -11,9 +11,9 @@ from trend_engine.sources import REGISTRY
 
 KEY_HEX = "11" * 32
 # Anything that would reveal where the data came from. Page source: any mention at all.
-PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|source_status|publisher", re.I)
+PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|source_status|publisher", re.I)
 # Data files: source identifiers as JSON keys/values (headline text may legitimately say "네이버페이").
-SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|sources|source_status|publisher|channel|mode|anchor|errors)"')
+SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|sources|source_status|publisher|channel|mode|anchor|errors)"')
 
 
 @pytest.fixture(autouse=True)

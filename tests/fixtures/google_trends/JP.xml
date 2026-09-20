@@ -6,261 +6,282 @@
 		<link>https://trends.google.com/trending/rss?geo=JP</link>
 		<atom:link href="https://trends.google.com/trending/rss?geo=JP" rel="self" type="application/rss+xml"/>
 		<item>
-			<title>澤穂希</title>
+			<title>警察官</title>
 			<ht:approx_traffic>200+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 05:00:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShPjUQlRIAUhQmENla9TLm7JgzzvSTq-9Rt2cDSzOjB0KPr6EubMJG8T58Eys</ht:picture>
+			<pubDate>Sat, 19 Sep 2026 19:30:00 -0700</pubDate>
+			<ht:picture/>
+			<ht:picture_source/>
+		</item>
+		<item>
+			<title>郵便</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=JP</link>
+			<pubDate>Sat, 19 Sep 2026 19:30:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRrQsHm47IBZTqaz6GnxkmKyH03YYT82CPwH9TBg2E_eIO5FE1tLV-q01PQQKQ</ht:picture>
 			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>２４時間マラソン完走の城島茂 「誰も見てへん」夜中、中継なし、カメラマン休憩時間帯に禁断の質問→スタッフに怒られるｗｗ</ht:news_item_title>
+				<ht:news_item_title>客から受け取った郵便料金６万２千円を窃取、３０歳代期間雇用社員を懲戒解雇…日本郵便九州支社（読売新聞オンライン）</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/d694123ebfa9e1bea2e59f8301a8f8c65fc2d2f2</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShPjUQlRIAUhQmENla9TLm7JgzzvSTq-9Rt2cDSzOjB0KPr6EubMJG8T58Eys</ht:news_item_picture>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/1021bd0243969115dbed297f7bd40d487851306f</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRrQsHm47IBZTqaz6GnxkmKyH03YYT82CPwH9TBg2E_eIO5FE1tLV-q01PQQKQ</ht:news_item_picture>
 				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>元日向坂46佐々木久美「特に上下関係が厳しくて」グループ内のルールを告白「そうです…」</ht:news_item_title>
+				<ht:news_item_title>客から受け取った郵便料金６万２千円を窃取、３０歳代期間雇用社員を懲戒解雇…日本郵便九州支社</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/nikkangeinou/entertainment/f-et-tp0-260917-202609170000529?utm_source=dnews&amp;utm_medium=article&amp;utm_campaign=contentsmatch1</ht:news_item_url>
+				<ht:news_item_url>https://www.yomiuri.co.jp/local/kyushu/news/20260919-GYS1T00090/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRndf3NjvxZwpMnXgchzxls7bwXDHe14Smb5kAoIoPrw3F0K1rC06HIIBCZY_4</ht:news_item_picture>
+				<ht:news_item_source>読売新聞</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>郵便局限定ミッフィーのショルダーポシェットが可愛くって実用的！キーホルダーもおすすめ《実物レビュー》（写真 1/27）</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://ure.pia.co.jp/articles/gallery/3465789</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTGnLD2Kr3CVdWv0kAbPDJQb7V0LD4T_ThXE0alcSkJ9DlBB6QdfVCwPGiQcHI</ht:news_item_picture>
+				<ht:news_item_source>ウレぴあ総研</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>パンサー尾形</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=JP</link>
+			<pubDate>Sat, 19 Sep 2026 19:30:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTatVrzqkgzTsLNsQCqgbb55uI4dlmAFbyXGwTA2TEmcVdXSqmsii8A-raZpMI</ht:picture>
+			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>パンサー尾形の妻＆モデルデビューした娘「パパに似てますね」「可愛い」と反響！娘は「パパより有名になりたい！！」</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/e944eb5fe3b00c9654846c36225d2173abb70a2f</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTatVrzqkgzTsLNsQCqgbb55uI4dlmAFbyXGwTA2TEmcVdXSqmsii8A-raZpMI</ht:news_item_picture>
+				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>パンサー尾形の娘がモデルに　なぜ芸能人の子どもは「親の七光り」と言われるのか</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/npn/entertainment/npn-300501453</ht:news_item_url>
 				<ht:news_item_picture></ht:news_item_picture>
 				<ht:news_item_source>ｄメニューニュース</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>澤穂希さん、生粋の体育会系出身者の特徴を吐露「すごい周りが見えてるから配置を気にしてるし、視野が広いです」</ht:news_item_title>
+				<ht:news_item_title>カジサック、パンサー尾形の娘も芸能界へ…芸人の子ども続々タレント化&quot;親子ビジネス&quot;と2世予備軍の顔ぶれ</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.yomiuri.co.jp/culture/hochi/20260916064-OHT1T51379/</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTPmu1E4DI2CPiXGheR_rlz-JcrQ2sO8i5woR-riDWg2eMpN9q9PRPxSWOXGFs</ht:news_item_picture>
-				<ht:news_item_source>読売新聞</ht:news_item_source>
+				<ht:news_item_url>https://portal.uqmobile.jp/detail/1/5/9/10402_9_r_20260914_1789351907466836</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRT1u3Gw4hZ43Uo2krBtzkwxZPS9afEkxGHRLqx49mTah_gYMfKVyhmsz9N7-U</ht:news_item_picture>
+				<ht:news_item_source>UQライフ</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
-			<title>新しいカギ</title>
-			<ht:approx_traffic>100+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 05:00:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQsZ0IcyeXL-U0js528_vt4kiKqJipNWIisSYqwCL8115M1ixenbVR2qK34Xp8</ht:picture>
-			<ht:picture_source>TVer</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>新しいカギ 9月26日 リアルタイム配信 ＜配信は19時から＞｜フジテレビ｜見逃し無料配信はTVer！人気の動画見放題</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://tver.jp/live/simul/lej4c89ads</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQsZ0IcyeXL-U0js528_vt4kiKqJipNWIisSYqwCL8115M1ixenbVR2qK34Xp8</ht:news_item_picture>
-				<ht:news_item_source>TVer</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>『新しいカギ』志田未来が「ティーチャーをさがせ！」に参戦 ファインプレー連発でカギ探検隊も大興奮（TV LIFE web）</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/fb828f0ef2a3f5089c4e9bf4d427c68bf46e0435</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTajQ-b3EibI3Bkobbyg8nbu8CU5rbybfNC5kDCEOpld1hXwDkAg3q18yXdqBc</ht:news_item_picture>
-				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>「14才の母」から20年ぶりの母親役…共演者と群れない「志田未来」謎めいた私生活と孤高の女優道〈新しいカギきょう出演〉</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://dot.asahi.com/articles/-/292962</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTg1CTcRSqOd7ZwZYqN1H2QB_1JLrqhgREKZaGApDjoce9wA2PyLWxdWxBKl2w</ht:news_item_picture>
-				<ht:news_item_source>AERA DIGITAL</ht:news_item_source>
-			</ht:news_item>
-		</item>
-		<item>
-			<title>平愛梨</title>
-			<ht:approx_traffic>100+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 05:00:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSoPtAV902FMWRHdoQfp24OfLVRRwILuZw7f8VJwJ8riIqBG6HLnOQ8d4xktQg</ht:picture>
-			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>40歳・長友佑都はなぜ現役を続けるのか。W杯後に一度は傾いた「引退」と「FC東京で優勝」の情熱（REAL SPORTS）</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/3d199f955315d52da63bee4c8c4cc03e4357839a?page=4</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSoPtAV902FMWRHdoQfp24OfLVRRwILuZw7f8VJwJ8riIqBG6HLnOQ8d4xktQg</ht:news_item_picture>
-				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>長友佑都が小池百合子都知事を表敬訪問…W杯の戦績、FC東京での現役続行を報告「お会いすると毎回大きなエネルギーをいただけます」</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.soccer-king.jp/news/japan/national/20260916/2205538.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZxKzwpxUT1tLpB_vvUKHQWJoK1WOaeutoXs0baoNxWYC-i-X2I3Wl6R-aF_w</ht:news_item_picture>
-				<ht:news_item_source>サッカーキング</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>【アジア大会】大学生アタッカー古谷柊介「まずは優勝。数字では3G3Aを目指したい」</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.nikkansports.com/soccer/japan/photonews/photonews_nsInc_202609150002113-2.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRZ2rkXqdprfuz0B19zq2jG5csA8tc3q08zvFgzbluzhP42_FwV8swBXD1Qmeg</ht:news_item_picture>
-				<ht:news_item_source>日刊スポーツ</ht:news_item_source>
-			</ht:news_item>
-		</item>
-		<item>
-			<title>ららぽーと福岡</title>
+			<title>高橋一生 ドラマ</title>
 			<ht:approx_traffic>500+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 05:00:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTx57mkQxEzUwkedJxrcckZpyljWe5Rf0OCjxxMv4r9MX1qvGgUrtis8wu8jOg</ht:picture>
-			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
+			<pubDate>Sat, 19 Sep 2026 19:20:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRqI4rd70mazKEaKfIz4IPca8zYFxF-kNHRcoLmO7fGm931zEwuhhmUgWV2t_g</ht:picture>
+			<ht:picture_source>NHK</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>ソフトバンクの残り11試合にも“消化試合”なし 今季からCSルール変更（日刊スポーツ）</ht:news_item_title>
+				<ht:news_item_title>高橋一生・主演 ドラマ「この味もまたいつか恋しくなる」放送日時＆追加出演者決定！</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/8bbb679ab80f9655098f7a8482db6d6ec7f59519</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTx57mkQxEzUwkedJxrcckZpyljWe5Rf0OCjxxMv4r9MX1qvGgUrtis8wu8jOg</ht:news_item_picture>
-				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
+				<ht:news_item_url>https://www.nhk.jp/g/blog/0gwagsyqxesy/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRqI4rd70mazKEaKfIz4IPca8zYFxF-kNHRcoLmO7fGm931zEwuhhmUgWV2t_g</ht:news_item_picture>
+				<ht:news_item_source>NHK</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>【侍ジャパン】井口資仁監督「パワフル系の選手呼べたらいいな」“初陣”OA枠のヒント明かす</ht:news_item_title>
+				<ht:news_item_title>「初演技となる２人に…」原作者・燃え殻さんも期待の声！『この味もまたいつか恋しくなる』ドラマ化【キャスト発表】</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.nikkansports.com/baseball/photonews/photonews_nsInc_202609190001056-0.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQWN6WXDHoYQVxQ6PHyIr0TWKQ16Z5GMQQ5WkCxe4wHeFN5329GXdaP2oB_MzA</ht:news_item_picture>
-				<ht:news_item_source>日刊スポーツ</ht:news_item_source>
+				<ht:news_item_url>https://prtimes.jp/main/html/rd/p/000001330.000072639.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQvjs_u6SQp2J7MfeOlixaL6l4xrlu_DODcDC6CYhp27yH81T2QXj758fytCU0</ht:news_item_picture>
+				<ht:news_item_source>PR TIMES</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>10ゲーム差以上が“最優先” 前田悠伍のタイトルは「無理くりにはいかせない」…小久保監督コメント</ht:news_item_title>
+				<ht:news_item_title>BE:FIRST・LEO、高橋一生主演ドラマに出演！燃え殻原作「この味もまたいつか恋しくなる」放送日・追加キャスト発表</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://taka.full-count.jp/2026/09/18/post1320410/</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTMvPT5u6KUH2iWcrMCGqN7IhbtMVyLc2mJoI3tHpcqPvHzrG9iQY_q1kyJVB0</ht:news_item_picture>
-				<ht:news_item_source>鷹フル</ht:news_item_source>
-			</ht:news_item>
-		</item>
-		<item>
-			<title>室伏広治</title>
-			<ht:approx_traffic>1000+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:50:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRyArRgTng3rlaVaTEyyesc0VurmbEjNZNfdZxSZImUBNuNXzZ2-b6VZ4_KoSE</ht:picture>
-			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>“アジアの鉄人”室伏親子が聖火に点火、日本選手団は旗手の藤波朱理、中村輪夢を先頭に大トリで入場…アジア大会開会式</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/5d7ed52ad65db34d4ba0fa975b0664b6623c9be5</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRyArRgTng3rlaVaTEyyesc0VurmbEjNZNfdZxSZImUBNuNXzZ2-b6VZ4_KoSE</ht:news_item_picture>
-				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>室伏親子で聖火を点火</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.okinawatimes.co.jp/articles/-/1927934</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSZlMZUdJPMBpcnCDIP9XdhN-A3VRmi2cer4m7fenkuP0Gn1YYxyL_UeWJ3NIU</ht:news_item_picture>
-				<ht:news_item_source>沖縄タイムス社</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>室伏親子で聖火を点火</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.iwate-np.co.jp/article/kyodo/2026/9/19/1645215</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRo7xFZibC0dqKCyKMDY8y2_hFr2lKCzme94hWb7YmPuewcx6OqZhxP8R0ehKs</ht:news_item_picture>
-				<ht:news_item_source>岩手日報</ht:news_item_source>
+				<ht:news_item_url>https://www.cinematoday.jp/news/N0157007</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjQlZt0e8ysBk79fWEu_Qc7v8K25VepsJQ046qRUkHkCckYkVqkxSrpME3TTs</ht:news_item_picture>
+				<ht:news_item_source>シネマトゥデイ</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
-			<title>武井壮</title>
-			<ht:approx_traffic>200+</ht:approx_traffic>
+			<title>若林アナ</title>
+			<ht:approx_traffic>2000+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:50:00 -0700</pubDate>
-			<ht:picture/>
-			<ht:picture_source/>
-		</item>
-		<item>
-			<title>トッテナム</title>
-			<ht:approx_traffic>200+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:50:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM9jN_W6dvs50FB5AwBBvF8tBqBkJTfmI4SzwCrr2Q-xYWH8U_Xw3NHET_SW4</ht:picture>
+			<pubDate>Sat, 19 Sep 2026 19:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTIjkpJmrkwPMDLkKLf7LdLcFSkW5aUr39zJI3q51mEOb3ZKjkRGZ_sCGlqceE</ht:picture>
 			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>トッテナムは待望の初勝利なるか 今節の相手は同じくプレミア未勝利続くアストン・ヴィラ 「早い段階で得点する必要がある」</ht:news_item_title>
+				<ht:news_item_title>若林有子アナ、太田光の「パンサー向井です」に困り顔「サンジャポ」で熱愛イジられる（日刊スポーツ）</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/e1429d0c979d6b1cd4aaa9d3d0978fb26ba8687e</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM9jN_W6dvs50FB5AwBBvF8tBqBkJTfmI4SzwCrr2Q-xYWH8U_Xw3NHET_SW4</ht:news_item_picture>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/c7accbc140ecb9290252987c3e47c550fc832214</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTIjkpJmrkwPMDLkKLf7LdLcFSkW5aUr39zJI3q51mEOb3ZKjkRGZ_sCGlqceE</ht:news_item_picture>
 				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>スパーズに朗報！…ポロら主力3選手がアストン・ヴィラ戦で起用可能に…練習復帰のクルゼフスキにも言及</ht:news_item_title>
+				<ht:news_item_title>向井と若林アナ、どっちから告白？</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://web.ultra-soccer.jp/news/all/36751/</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQbC0XM4hoszz9lhcXXRWsqpULRpyEob27IIe1hI4ox4az4peFQUtqFX8_JZlc</ht:news_item_picture>
-				<ht:news_item_source>超ワールドサッカー！</ht:news_item_source>
+				<ht:news_item_url>https://www.asahi.com/and/entertainment/16905232</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcREL18twYCHRKaXVzp29azHndDduhqU4JARJbKLM-ePU6Iy9Yw1FdobRXalddk</ht:news_item_picture>
+				<ht:news_item_source>朝日新聞</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>アストン・ヴィラのビクトル・リンデロフ、プレミアリーグでの巻き返しを目指す中で「タフ」なトッテナム戦を心待ちに</ht:news_item_title>
+				<ht:news_item_title>パンサー向井、TBS若林アナと同棲報道！5カ月前の“意味深発言”と公言していた好みと「真逆の選択」にツッコミ</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.goal.com/jp/%E3%83%AA%E3%82%B9%E3%83%88/%E3%83%92%E3%82%99%E3%82%AF%E3%83%88%E3%83%AB-%E3%83%AA%E3%83%B3%E3%83%86%E3%82%99%E3%83%AD%E3%83%95-%E3%82%A2%E3%82%B9%E3%83%88%E3%83%B3-%E3%82%A6%E3%82%99%E3%82%A3%E3%83%A9%E3%81%AE%E3%83%95%E3%82%9A%E3%83%AC%E3%83%9F%E3%82%A2%E3%83%AA%E3%83%BC%E3%82%AF%E3%82%99%E3%81%A6%E3%82%99%E3%81%AE%E5%B7%BB%E3%81%8D%E8%BF%94%E3%81%97%E3%82%92%E7%9B%AE%E6%8C%87%E3%81%99%E4%B8%AD%E3%81%A6%E3%82%99-%E3%82%BF%E3%83%95-%E3%81%AA%E3%83%88%E3%83%83%E3%83%86%E3%83%8A%E3%83%A0%E6%88%A6%E3%82%92%E6%AD%93%E8%BF%8E%E3%81%B8/bltaee753af6817dd50</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQzc2mGfBQDP3UggnwT7P8DstYaY7tcje1QYgwyjCPu04kTrAJliGI7gyb3Obc</ht:news_item_picture>
-				<ht:news_item_source>Goal.com</ht:news_item_source>
-			</ht:news_item>
-		</item>
-		<item>
-			<title>阪神タイガース 今日の試合 甲子園</title>
-			<ht:approx_traffic>100+</ht:approx_traffic>
-			<description/>
-			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:50:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTeWQ3GuK36aSk62OjAyt6Zioeyi0zTLIQJ9mo69dc307_Ck72b6w91xBULh_U</ht:picture>
-			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
-			<ht:news_item>
-				<ht:news_item_title>甲子園に響いた大きなため息 阪神・木浪が痛恨の落球…マウンドのドリス呆然、2戦連続スタメンも（Full-Count）</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/e77c40d3757f4e612a68b4f1d58b193f998e2aeb</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTeWQ3GuK36aSk62OjAyt6Zioeyi0zTLIQJ9mo69dc307_Ck72b6w91xBULh_U</ht:news_item_picture>
-				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>渋野日向子が予選落ち、泣きはらした表情で「悔しいんで、また来週から頑張ります」言葉絞り出す</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://www.nikkansports.com/sports/golf/photonews/photonews_nsInc_202609190000662-5.html</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQFfMqraRiKfUbWDLsUfriVe0Dh-NUh4p0YmpNP60qYCafG3KuVMNTAaR9bgOw</ht:news_item_picture>
-				<ht:news_item_source>日刊スポーツ</ht:news_item_source>
-			</ht:news_item>
-			<ht:news_item>
-				<ht:news_item_title>【阪神】ルーキー立石「６番左翼」で先発！広島栗林に打率３割３分３厘　遊撃は熊谷／スタメン</ht:news_item_title>
-				<ht:news_item_snippet/>
-				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/nikkansports/sports/f-bb-tp0-260919-202609190001143</ht:news_item_url>
-				<ht:news_item_picture></ht:news_item_picture>
+				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/jprime/entertainment/jprime-43727</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWgHSKuxDAjee7LYlK4Akx0eovDkCoEptYRRTsoyawQs4KMfyqeK3IF_NO5ck</ht:news_item_picture>
 				<ht:news_item_source>ｄメニューニュース</ht:news_item_source>
 			</ht:news_item>
 		</item>
 		<item>
-			<title>栗林良吏</title>
+			<title>ufc331</title>
 			<ht:approx_traffic>100+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:40:00 -0700</pubDate>
-			<ht:picture/>
-			<ht:picture_source/>
+			<pubDate>Sat, 19 Sep 2026 19:00:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROrZH1MKnWTutaYpCfVAsNIMsS3lZQ1Fed8F2gKq0kJk7GUoE07VMFkDC7R-o</ht:picture>
+			<ht:picture_source>Bloody Elbow</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>Gable Steveson explains decision to avoid intense UFC 331 face-off with &apos;normal Jon Jones protocol&apos;</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://bloodyelbow.com/2026/09/19/gable-steveson-explains-decision-to-avoid-intense-ufc-331-face-off-with-normal-jon-jones-protocol/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROrZH1MKnWTutaYpCfVAsNIMsS3lZQ1Fed8F2gKq0kJk7GUoE07VMFkDC7R-o</ht:news_item_picture>
+				<ht:news_item_source>Bloody Elbow</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>GABLE STEVESON IS KNOCKED OUT BY SEAN SHARAF IN 12 SECONDS - BIGGEST UPSET IN MMA HISTORY</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.barstoolsports.com/blog/3577486/gable-steveson-is-knocked-out-by-sean-sharaf-in-12-seconds-biggest-upset-in</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsIN1XiGrPqivSVDHE4mXyq7SYcKajCC-S5b5Dd9wxIz7nNflxL-iJ7mnySDI</ht:news_item_picture>
+				<ht:news_item_source>Barstool Sports</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>Gable Steveson willing to forgo more gold at 2028 Olympics to fulfill &apos;destiny&apos; as UFC champion</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.cbssports.com/ufc/news/gable-steveson-2028-olympics-ufc-champion/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcT-JEwxOMLWY53EU0O9ULmO8ADtLzWm1zu4hsBqHMhwxpS3W2RIrfnbab4SmLg</ht:news_item_picture>
+				<ht:news_item_source>CBS Sports</ht:news_item_source>
+			</ht:news_item>
 		</item>
 		<item>
-			<title>ワールドカップ</title>
+			<title>狩野英孝</title>
 			<ht:approx_traffic>200+</ht:approx_traffic>
 			<description/>
 			<link>https://trends.google.com/trending/rss?geo=JP</link>
-			<pubDate>Sat, 19 Sep 2026 04:40:00 -0700</pubDate>
-			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf2ZYrVyuJqw3-aNIdKlUvk9MGZQP05rHOG1g8lHh1RXlQH2mgmRl_TSmk7hY</ht:picture>
+			<pubDate>Sat, 19 Sep 2026 19:00:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdIxogKfZLvX097UWKwpIAW_UT4ZxhYjiJMJp7GtXJk3gvsbUFtXv4XNJyGZk</ht:picture>
 			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
 			<ht:news_item>
-				<ht:news_item_title>スペイン代表が最新メンバー26人発表 W杯優勝メンバーから4人入れ替え、22選手が続投 DFハイセン、MFフェルミンが復帰</ht:news_item_title>
+				<ht:news_item_title>「脳梗塞」サンド伊達、生ラジオの近況報告で毎日メール中の女性を実名告白「付き合ってるかも」（日刊スポーツ）</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://news.yahoo.co.jp/articles/d69bdf17bdb1599ab8eca507009708991ec0c166</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf2ZYrVyuJqw3-aNIdKlUvk9MGZQP05rHOG1g8lHh1RXlQH2mgmRl_TSmk7hY</ht:news_item_picture>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/07248be3c73b3d0c25676790772196d310a73ac5</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdIxogKfZLvX097UWKwpIAW_UT4ZxhYjiJMJp7GtXJk3gvsbUFtXv4XNJyGZk</ht:news_item_picture>
 				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>世界王者スペインが欧州ネーションズリーグのメンバー発表　ロベルト・フェルナンデスが初招集</ht:news_item_title>
+				<ht:news_item_title>狩野英孝が投稿「サンド富澤とのロケ写真」左手側の余白に集まる注目…脳梗塞で療養3週間、切望される伊達みきおの復帰</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/nikkansports/sports/f-sc-tp4-260918-202609180001782</ht:news_item_url>
+				<ht:news_item_url>https://topics.smt.docomo.ne.jp/article/smartflash/entertainment/smartflash-429299?page=2</ht:news_item_url>
 				<ht:news_item_picture></ht:news_item_picture>
 				<ht:news_item_source>ｄメニューニュース</ht:news_item_source>
 			</ht:news_item>
 			<ht:news_item>
-				<ht:news_item_title>王者・スペイン代表のW杯明け初陣メンバー発表!! アルゼンチン戦で出場停止処分のガビら4人が外れる</ht:news_item_title>
+				<ht:news_item_title>脳梗塞で休養中のサンド伊達みきお、ユーモアあふれる近況報告 メールや手紙をもらった著名人を紹介</ht:news_item_title>
 				<ht:news_item_snippet/>
-				<ht:news_item_url>https://web.gekisaka.jp/news/world/detail/?459110-459110-fl</ht:news_item_url>
-				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTgVw7h5MI_qmskE4CT2RMg854o7jxnY9sOnNRx4N0KHRotKnKKjXojEvBUCWs</ht:news_item_picture>
-				<ht:news_item_source>ゲキサカ</ht:news_item_source>
+				<ht:news_item_url>https://www.sankei.com/article/20260919-H35TFRKGQNKKTCSGGZFVELMWP4/?outputType=theme_oriconnews</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSlMQX-Hp4TRJJ6j-CsewOcvyErghowpW7DzGmdohTEtbwszDY2EO7al3rnmSQ</ht:news_item_picture>
+				<ht:news_item_source>産経ニュース</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>多摩川競艇</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=JP</link>
+			<pubDate>Sat, 19 Sep 2026 18:40:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3ivIWiH5ljewgqp6Jbmk4HGjmiTvrGfwNJMnZmofzcz9Y2Rio-Pr9Xf0snn8</ht:picture>
+			<ht:picture_source>スポーツナビ</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>多摩川G1ウェイキーカップ準優12R 「舟が向く」竹田和哉がG1初優出を狙う！</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://sports.yahoo.co.jp/official/detail/2026092000023-spnaviow</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3ivIWiH5ljewgqp6Jbmk4HGjmiTvrGfwNJMnZmofzcz9Y2Rio-Pr9Xf0snn8</ht:news_item_picture>
+				<ht:news_item_source>スポーツナビ</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>【ボートレース】原田篤志が予選１位「予選トップ通過はうれしいし準優も楽しんで」／多摩川G1</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.nikkansports.com/public_race/news/202609190001523.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRu0NP6x1NEGSA9cDwA0lpYcNBu3hCEkXtwuldFa9srfSPcIM91xeAcuvyAZOw</ht:news_item_picture>
+				<ht:news_item_source>日刊スポーツ</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>予選ラストで丸野一樹が待望の今節初白星「いい調整が日に日にできている。乗り心地が良くて、しっかり舟も向いてくれました」～多摩川Ｇ１</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://boatnavi.hochi.co.jp/articles/20260919-OHT1T51220.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRxACsbmTPeiexGsMtKhQ5jovcH4uQ8U32gUjq-c8w5wKbehE0GjAODTwSUA-4</ht:news_item_picture>
+				<ht:news_item_source>BOATNAVI報知</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>長嶋一茂</title>
+			<ht:approx_traffic>200+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=JP</link>
+			<pubDate>Sat, 19 Sep 2026 18:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWqbVFU1zadnd3JeXuT4WIDyA2YnxLhpuy5ZQYb5sVwg73v-wLDG4RHovm82g</ht:picture>
+			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>「本当にデリカシーがない」長嶋一茂 急逝した中村ゆりさんが秘めていた「抗がん剤治療中のカツラ姿」を明かし批判続出</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/f1f14e0a2a7e4cebc76df8615e8b3a6b4bae1588</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWqbVFU1zadnd3JeXuT4WIDyA2YnxLhpuy5ZQYb5sVwg73v-wLDG4RHovm82g</ht:news_item_picture>
+				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>『大腸がん』立花理佐さん明かす闘病生活 検査で早期発見がカギ 負担少ない方法も</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.tv-asahi.co.jp/news_society/articles/900199968.html</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRoYNcBGYZ2yiGyVfAgSMOHQYXJdvUuTaldj55-P7py7rCRKfE14__OKmXx27k</ht:news_item_picture>
+				<ht:news_item_source>テレ朝NEWS</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>中村ゆりさん死去…「久米島の旅」で見せた姿 読テレ『遠くへ行きたい』に反響「ずっと残してほしい」「優しい笑顔が素敵すぎて…」</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://www.oricon.co.jp/news/2481376/full/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSq1cZbtaiMMdnYKsKl0kn3QDhhVyq-B2ZPU_Wl-uwNZ9sS3zoQDd0cq8GigNs</ht:news_item_picture>
+				<ht:news_item_source>オリコンニュース</ht:news_item_source>
+			</ht:news_item>
+		</item>
+		<item>
+			<title>唐田えりか</title>
+			<ht:approx_traffic>100+</ht:approx_traffic>
+			<description/>
+			<link>https://trends.google.com/trending/rss?geo=JP</link>
+			<pubDate>Sat, 19 Sep 2026 18:10:00 -0700</pubDate>
+			<ht:picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSyfmfCPaj66abfDHLsR9X7vcEV_9TfAKo0R36V04J7Qx3qdz5YNuRlNo14Ndw</ht:picture>
+			<ht:picture_source>Yahoo!ニュース</ht:picture_source>
+			<ht:news_item>
+				<ht:news_item_title>「いつから私は間違ってしまったのだろうか」活動を休止した日、女優・唐田えりかが見た母の涙（FRaU）</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/4de0fbd0195d325fe3e07367d14d8a4ce4174070</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSyfmfCPaj66abfDHLsR9X7vcEV_9TfAKo0R36V04J7Qx3qdz5YNuRlNo14Ndw</ht:news_item_picture>
+				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>唐田えりかさんが活動休止の日に母を泣かせた後悔と感謝をつづる (2026年9月20日掲載)</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.livedoor.com/topics/detail/32372182/</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQQi_ne3FDkAUjxWWpvv3QaPCERsmaohF3CRYDJ6MzESW6fDfCK20iOKMTLSjc</ht:news_item_picture>
+				<ht:news_item_source>ライブドアニュース</ht:news_item_source>
+			</ht:news_item>
+			<ht:news_item>
+				<ht:news_item_title>「父がいないことを、私は遅れて理解した」女優・唐田えりかが綴る、女手ひとつで育ててくれた母への想い（FRaU）</ht:news_item_title>
+				<ht:news_item_snippet/>
+				<ht:news_item_url>https://news.yahoo.co.jp/articles/284ddacc7a35c5c6e626fb8c8535567849d0ea93</ht:news_item_url>
+				<ht:news_item_picture>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZpySjMa_DpsEpeDhs5xypSYh8Y8ZB53Zk8RFlGYJWe-SFwkb-krfMs98gDzo</ht:news_item_picture>
+				<ht:news_item_source>Yahoo!ニュース</ht:news_item_source>
 			</ht:news_item>
 		</item>
 	</channel>

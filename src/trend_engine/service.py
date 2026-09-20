@@ -132,6 +132,10 @@ class TrendService:
                 await alerts_mod.notify_slack(self.settings.slack_webhook, new, self.settings.site_url, client)
         return {"new": [a.to_dict() for a in new], "recent": merged, "watchlist": dif.get("watchlist", [])}
 
+    def youth_trend(self, days: int = 30) -> dict[str, Any]:
+        """Category mix of each youth group over time (needs daily youth snapshots to accumulate)."""
+        return archive.category_shares(self.store, self.archive_root, days)
+
     def youth_period(self) -> dict[str, Any]:
         return {name: archive.period_segments(self.store, self.archive_root, n, kind="youth", top_n=8, limit=15)
                 for name, n in archive.PERIODS.items()}

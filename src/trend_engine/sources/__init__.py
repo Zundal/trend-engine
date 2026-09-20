@@ -5,6 +5,7 @@ See docs/ADDING_A_SOURCE.md.
 
 from __future__ import annotations
 
+from .apple import AppleCharts
 from .base import Source, SourceError
 from .google_news import GoogleNews
 from .google_trends import GoogleTrends
@@ -14,7 +15,7 @@ from .wikipedia import Wikipedia
 from .youtube import YouTube
 
 REGISTRY: dict[str, Source] = {
-    s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews()]
+    s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews(), AppleCharts()]
 }
 
 __all__ = ["REGISTRY", "Source", "SourceError"]

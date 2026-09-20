@@ -154,6 +154,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     write("age-period", ages)
     write("youth-period", {name: archive.period_segments(svc.store, root, n, today, kind="youth", top_n=8, limit=15)
                            for name, n in archive.PERIODS.items()})
+    write("youth-trend", archive.category_shares(svc.store, root, 30, today))
     lines.append(f"periods: week {ages['week']['days_available']}d / month {ages['month']['days_available']}d of 연령 history")
     svc.store.prune()
 

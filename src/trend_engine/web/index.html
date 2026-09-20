@@ -79,6 +79,16 @@ ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
 .tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
 svg.spark { width: 100%; height: 40px; }
+/* 매트릭스 · 추이 */
+table.matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.matrix th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+table.matrix td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.matrix td.cat { font-weight: 700; white-space: nowrap; color: var(--c); border-left: 3px solid var(--c); }
+table.matrix .kw { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.matrix .kw b { font-weight: 600; } table.matrix .kw span { color: var(--muted); }
+.matrix-wrap { overflow-x: auto; }
+svg.mini { width: 54px; height: 14px; vertical-align: middle; margin-left: 6px; }
+.trend-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
 /* 카테고리 */
 .ctag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px;
   color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); white-space: nowrap; }
@@ -185,6 +195,14 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
 
 <!-- 10·20대 -->
 <main id="view-youth">
+  <section class="card wide">
+    <h2>카테고리 × 성별 <small>10·20대 남녀가 분야별로 유독 찾는 것 (30대 이상 대비 배수) · 한국 실측</small></h2>
+    <div class="matrix-wrap"><table class="matrix" id="y-matrix"><tbody><tr><td class="empty">불러오는 중…</td></tr></tbody></table></div>
+  </section>
+  <section class="card wide" id="y-trend-card">
+    <h2>관심 분야 이동 <small id="y-trend-sub">그룹의 관심이 어느 분야로 옮겨가는지 (매일 기록)</small></h2>
+    <div id="y-trend"><div class="empty">불러오는 중…</div></div>
+  </section>
   <section class="card wide">
     <h2><span id="y-cat-title">10대 카테고리별 한눈에</span> <small>분야별로 이 그룹이 유독 찾는 것 · 누르면 아래 목록을 그 분야로 거름</small></h2>
     <div class="ctiles" id="y-cats"><div class="empty">불러오는 중…</div></div>
@@ -309,7 +327,8 @@ let META = null, REPORT = null, SEG = null;
 let view = "youth", region = "KR", group = "20대", selected = null, showAll = false;
 let cperiod = "live", aperiod = "week", yperiod = "now", ygroup = "10대";
 const YGROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"];
-let YOUTH = null, YPER = null, DIF = null, ALERTS = null;
+let YOUTH = null, YPER = null, DIF = null, ALERTS = null, YTREND = null;
+const GENDER_COLS = ["10대 여성", "10대 남성", "20대 여성", "20대 남성"];
 // ---- 카테고리 (engine: categories.py) ----
 const CATS = ["연예·방송", "음악", "게임", "스포츠", "패션·뷰티", "음식", "테크·IT", "경제·재테크", "정치·사회", "생활·건강", "기타"];
 const CAT_COLOR = { "연예·방송": "#d6336c", "음악": "#ae3ec9", "게임": "#7048e8", "스포츠": "#1c7ed6", "패션·뷰티": "#e8590c",
@@ -355,7 +374,7 @@ async function api(path, opts) {
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
-    return staticGet(["meta", "age-period", "youth", "youth-period", "diffusion", "alerts"].includes(name) ? name : `${name}-${r}`);
+    return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -600,7 +619,7 @@ function barsHTML(rows, empty) {
   const max = Math.max(...rows.map((r) => r.vs_older || 0), 1);
   return rows.map((r, i) => `<li>
       <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(r.keyword)}${r.kind ? " · " + esc(r.kind) : ""}">${esc(r.keyword)}${catTag(r.category)}</span>
+      <span class="label" title="${esc(r.keyword)}${r.kind ? " · " + esc(r.kind) : ""}">${esc(r.keyword)}${catTag(r.category)}${miniSpark(stripFor(r.keyword, ygroup))}</span>
       <span class="bar-bg"><i style="width:${((r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span>
       <span class="x">${r.days ? `${r.days}일·` : ""}${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="empty">${empty}</li>`;
 }
@@ -624,6 +643,8 @@ function renderYouth() {
   $("#y-disc").innerHTML = barsHTML(byCat(disc, ycat), ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
   $("#y-issues").innerHTML = barsHTML(byCat(iss, ycat), "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
   renderCatTiles(disc, iss);
+  renderMatrix();
+  renderYouthTrend();
   const rising = (DIF?.tracked?.items || []).filter((it) => it.rising_now);
   $("#y-rise-card").hidden = !rising.length;
   $("#y-rise").innerHTML = rising.map((it, i) => {
@@ -637,6 +658,57 @@ function renderYouth() {
       const dist = new Set(v.distinctive);
       return `<div><h4>${esc(cat)}</h4><ol>${v.top.slice(0, 6).map((k) => `<li class="${dist.has(k) ? "dist" : ""}">${esc(k)}</li>`).join("")}</ol></div>`;
     }).join("")}</div>`;
+}
+function miniSpark(strip) {
+  if (!strip?.length) return "";
+  const w = 54, h = 14, n = strip.length;
+  const pts = strip.map((v, i) => `${(i / (n - 1) * w).toFixed(1)},${(h - 1 - v * (h - 2)).toFixed(1)}`).join(" ");
+  return `<svg class="mini" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <polyline points="${pts}" fill="none" stroke="rgb(var(--hot))" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function stripFor(keyword, group) {  // weekly shape of this keyword's search in that age (세대 확산 데이터 재사용)
+  const it = (DIF?.tracked?.items || []).find((x) => x.keyword === keyword);
+  const age = group.startsWith("10") ? "10대" : "20대";
+  return it?.ages?.[age]?.strip;
+}
+function renderMatrix() {
+  const rows = {};
+  for (const g of GENDER_COLS) {
+    for (const r of (YOUTH?.discover.groups[g] || [])) {
+      const c = r.category || "기타";
+      ((rows[c] ||= {})[g] ||= []).push(r);
+    }
+  }
+  const cats = CATS.filter((c) => rows[c]);
+  const head = `<tr><th>분야</th>${GENDER_COLS.map((g) => `<th>${esc(g)}</th>`).join("")}</tr>`;
+  const body = cats.map((c) => `<tr><td class="cat" style="--c:${CAT_COLOR[c]}">${esc(c)}</td>${
+    GENDER_COLS.map((g) => `<td>${(rows[c][g] || []).slice(0, 2).map((r) =>
+      `<span class="kw"><b>${esc(r.keyword)}</b> <span>${(r.vs_older || 0).toFixed(1)}배</span>${miniSpark(stripFor(r.keyword, g))}</span>`).join("") || `<span class="muted">–</span>`}</td>`).join("")}</tr>`).join("");
+  $("#y-matrix").innerHTML = cats.length ? `<thead>${head}</thead><tbody>${body}</tbody>`
+    : `<tbody><tr><td class="empty">성별 데이터가 아직 없습니다</td></tr></tbody>`;
+}
+function renderYouthTrend() {
+  const t = YTREND;
+  const card = $("#y-trend-card");
+  if (!t) return;
+  const g = GENDER_COLS.includes(ygroup) ? ygroup : ygroup;
+  const cats = t.by_group?.[g] || {};
+  const names = CATS.filter((c) => cats[c]?.some((v) => v > 0));
+  $("#y-trend-sub").textContent = `${ygroup} · 기록 ${t.days_available}일` + (t.days_available < 7 ? " — 며칠 더 쌓이면 이동이 보입니다" : "");
+  if (!names.length || t.days_available < 2) {
+    $("#y-trend").innerHTML = `<div class="empty">기록이 2일 이상 쌓이면 표시됩니다 (현재 ${t.days_available}일)</div>`;
+    return;
+  }
+  const w = 600, h = 120, n = t.dates.length;
+  const x = (i) => (i / Math.max(n - 1, 1) * w).toFixed(1);
+  const y = (v) => (h - 4 - v * (h - 12)).toFixed(1);
+  const lines = names.map((c) => `<polyline points="${cats[c].map((v, i) => `${x(i)},${y(v)}`).join(" ")}" fill="none"
+      stroke="${CAT_COLOR[c]}" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join("");
+  const delta = (c) => { const v = cats[c]; return Math.round((v[v.length - 1] - v[0]) * 100); };
+  $("#y-trend").innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:120px" role="img"
+      aria-label="${esc(ygroup)} 분야 비중 추이">${lines}</svg>
+    <div class="trend-legend">${names.map((c) => `<span><span class="sw" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${CAT_COLOR[c]}"></span> ${esc(c)} ${delta(c) >= 0 ? "+" : ""}${delta(c)}%p</span>`).join("")}
+      <span style="margin-left:auto">${esc(t.dates[0].slice(5))} → ${esc(t.dates[n - 1].slice(5))}</span></div>`;
 }
 function renderCatTiles(disc, iss) {
   $("#y-cat-title").textContent = `${ygroup} 카테고리별 한눈에 (${yperiod === "now" ? "지금" : "최근 " + PLABEL[yperiod]})`;
@@ -671,6 +743,7 @@ async function loadYouth() {
     if (yperiod !== "now" && !YPER) jobs.push(api("api/youth-period").then((d) => { YPER = d; }));
     if (!SHOPS[sp]) jobs.push(api(`api/shopping?days=${sp === "month" ? 30 : 7}`).then((d) => { SHOPS[sp] = d; }));
     if (!DIF) jobs.push(api("api/diffusion").then((d) => { DIF = d; }).catch(() => {}));
+    if (!YTREND) jobs.push(api("api/youth-trend").then((d) => { YTREND = d; }).catch(() => { YTREND = { days_available: 0, dates: [], by_group: {} }; }));
     await Promise.all(jobs);
   } catch (e) { $("#y-disc").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
   renderYouth();

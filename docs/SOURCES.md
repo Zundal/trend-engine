@@ -7,6 +7,7 @@
 | `nate` | keyword | 한국 | 불필요 | `nate.com/js/data/jsonLiveKeywordDataV1.js` | **비공식**, EUC-KR. 짧은 검색어 필드 제공(DataLab 에 사용) |
 | `wikipedia` | keyword | 언어별 | 불필요 | Wikimedia pageviews top (전일) | 상시 인기 문서 섞임 → 가중치 0.4 |
 | `youtube` | content | 국가 | `YOUTUBE_API_KEY` | YouTube Data API v3 `videos.list chart=mostPopular` | 일 할당량 10,000 unit, 호출당 1 unit |
+| `apple_charts` | content | 모든 나라 | 불필요 | `itunes.apple.com/{국가}/rss/topsongs · topfreeapplications` | 나라별 인기 음악·무료 앱 20개씩. 해외 10·20대 신호가 약한 곳을 보완하고 카테고리(음악/테크) 근거로 쓰임 |
 | `google_news` | content | 국가·언어 | 불필요 | `news.google.com/rss` | 개인·비상업 용도 조건 명시됨 |
 
 ## 세그먼트/지역 전용 (랭킹 소스 아님)

@@ -32,7 +32,8 @@ NEWS_TOPICS = {  # Google News section -> category
     "ENTERTAINMENT": "연예·방송", "SPORTS": "스포츠", "BUSINESS": "경제·재테크",
     "TECHNOLOGY": "테크·IT", "HEALTH": "생활·건강", "NATION": "정치·사회",
 }
-VIDEO_CATEGORIES = {  # YouTube category label (sources/youtube.py) -> category
+VIDEO_CATEGORIES = {  # content item category (YouTube label, Apple chart) -> our category
+    "테크·IT": "테크·IT",
     "음악": "음악", "게임": "게임", "스포츠": "스포츠", "엔터테인먼트": "연예·방송", "영화/애니": "연예·방송",
     "코미디": "연예·방송", "뉴스/정치": "정치·사회", "노하우/스타일": "패션·뷰티", "과학기술": "테크·IT",
     "자동차": "테크·IT", "교육": "생활·건강", "여행": "생활·건강", "동물": "생활·건강",

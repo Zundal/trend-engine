@@ -104,3 +104,28 @@ async def test_engine_novelty_uses_past_days():
     fresh = [c for c in rep.clusters if c.days_seen == 0]
     assert fresh and all(c.novelty == 1.0 for c in fresh)
     assert rep.clusters.index(regular) > len(rep.clusters) // 3  # pushed out of the top third
+
+
+def test_category_shares_tracks_the_mix_moving(tmp_path):
+    s = Store(":memory:")
+    day = lambda i: TODAY - timedelta(days=i)
+    rows = lambda game, fashion: {"top_by_segment": {"10대":
+        [{"keyword": f"g{i}", "affinity": 200, "category": "게임"} for i in range(game)]
+        + [{"keyword": f"f{i}", "affinity": 200, "category": "패션·뷰티"} for i in range(fashion)]}, "labels": {}}
+    for i, (g, f) in enumerate([(8, 2), (5, 5), (2, 8)]):
+        archive.record_daily(s, day(2 - i), "youth", rows(g, f))
+    out = archive.category_shares(s, tmp_path, days=7, today=TODAY)
+    assert out["days_available"] == 3 and out["dates"][-1] == TODAY.isoformat()
+    assert out["by_group"]["10대"]["게임"] == [0.8, 0.5, 0.2]
+    assert out["by_group"]["10대"]["패션·뷰티"] == [0.2, 0.5, 0.8]
+
+
+def test_category_shares_backfills_missing_categories(tmp_path):
+    s = Store(":memory:")
+    archive.record_daily(s, TODAY - timedelta(days=1), "youth",
+                         {"top_by_segment": {"20대": [{"keyword": "a", "category": "게임"}]}})
+    archive.record_daily(s, TODAY, "youth",
+                         {"top_by_segment": {"20대": [{"keyword": "b", "category": "음악"}]}})
+    out = archive.category_shares(s, tmp_path, days=7, today=TODAY)
+    assert out["by_group"]["20대"]["게임"] == [1.0, 0.0]
+    assert out["by_group"]["20대"]["음악"] == [0.0, 1.0]

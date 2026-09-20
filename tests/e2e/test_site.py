@@ -17,7 +17,7 @@ import threading
 import pytest
 
 pytestmark = [pytest.mark.e2e, pytest.mark.skipif(os.environ.get("E2E") != "1", reason="set E2E=1 to run browser tests")]
-PROVIDERS = re.compile(r"youtube|google|naver|네이버|\bnate\b|signal[._]bz|wikipedia|datalab", re.I)
+PROVIDERS = re.compile(r"youtube|google|naver|네이버|\bnate\b|signal[._]bz|wikipedia|datalab|apple_charts|itunes", re.I)
 
 
 @pytest.fixture(scope="module")
@@ -151,4 +151,14 @@ def test_alerts_card_and_feed(page, site):
         assert "RSS" in page.locator("#alert-sub").inner_text()
     feed = urllib.request.urlopen(site + "feed.xml").read().decode()
     assert feed.startswith("<?xml") and "<rss" in feed
+    assert not page.errors, page.errors
+
+
+def test_youth_matrix_and_trend(page, site):
+    page.goto(site + "#youth/20대/now")
+    page.wait_for_selector("#y-matrix tbody tr td.cat")
+    heads = page.locator("#y-matrix thead th").all_inner_texts()
+    assert heads[1:] == ["10대 여성", "10대 남성", "20대 여성", "20대 남성"]
+    assert page.locator("#y-matrix td.cat").count() >= 3
+    assert page.locator("#y-trend").inner_text().strip()  # chart or "기록이 쌓이면" note
     assert not page.errors, page.errors

@@ -155,6 +155,34 @@ def period_trends(store: Store, root: Path, region: str, days: int, today: date 
     return {"days": days, "days_available": len(daily), "dates": [d["date"] for d in daily], "items": items}
 
 
+def category_shares(store: Store, root: Path, days: int = 30, today: date | None = None,
+                    kind: str = "youth") -> dict[str, Any]:
+    """Per group, how the mix of categories moved over the last `days` days: share of that group's
+    keywords in each category, per day. Answers "요즘 10대는 게임에서 패션으로 옮겨가나"."""
+    today = today or kst_today()
+    dates: list[str] = []
+    by_group: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for i in range(days - 1, -1, -1):
+        day = today - timedelta(days=i)
+        d = _load(root, day, f"{kind}.json") or store.cache_get(f"daily:{kind}:{day.isoformat()}", timedelta(days=3650))
+        if not d:
+            continue
+        dates.append(day.isoformat())
+        for group, rows in d.get("top_by_segment", {}).items():
+            counts: dict[str, int] = defaultdict(int)
+            for r in rows:
+                counts[r.get("category") or "기타"] += 1
+            total = sum(counts.values()) or 1
+            seen = by_group[group]
+            for cat, n in counts.items():
+                seen[cat] += [0.0] * (len(dates) - 1 - len(seen[cat]))  # backfill days without this category
+                seen[cat].append(round(n / total, 3))
+    out: dict[str, dict[str, list[float]]] = {}
+    for group, cats in by_group.items():
+        out[group] = {c: v + [0.0] * (len(dates) - len(v)) for c, v in cats.items()}
+    return {"days": days, "days_available": len(dates), "dates": dates, "by_group": out}
+
+
 def period_segments(store: Store, root: Path, days: int, today: date | None = None, limit: int = 10,
                     kind: str = "segments", top_n: int = 5) -> dict[str, Any]:
     """Per group: keywords that over-indexed on the most days in the period.
