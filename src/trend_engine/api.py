@@ -85,6 +85,11 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def diffusion_view():
         return await svc.diffusion()
 
+    @app.get("/api/transfer")
+    async def transfer_view():
+        t = await svc.transfer()
+        return publish.public_transfer(t) if t else {}
+
     @app.get("/api/alerts")
     async def alerts_view():
         return await svc.alerts()

@@ -375,10 +375,13 @@ async def track(settings, store, keywords: list[str], weeks: int = 17, today: da
     groups = {k: [k] for k in dict.fromkeys(k for k in keywords if k.strip())}
     series, vol = await _with_client(prof, lambda: fetch_series(prof, groups, hist_start.isoformat(), end.isoformat()))
     items, records, raw_records, m_records = [], [], [], []
+    weeklies: dict[str, dict[str, list[float]]] = {}  # raw weekly per age — kernel.py's input
     for name, by_age in series.items():
         if not by_age:
             continue
         full = {a: weekly(pts) for a, pts in by_age.items() if pts}
+        thin = {a for a, pct in (vol.get(name) or {}).items() if pct < THIN_PCT}
+        weeklies[name] = {a: [v for _, v in ws] for a, ws in full.items() if a not in thin}
         adj = {a: seasonal_adjust(ws) for a, ws in full.items()}
         raw = {a: full[a][-len(adj[a]):] if adj[a] else full[a][-history_weeks:] for a in full}
         adj = {a: adj[a] or raw[a] for a in full}
@@ -412,6 +415,7 @@ async def track(settings, store, keywords: list[str], weeks: int = 17, today: da
     order = {"확산 중": 0, "윗세대 상승": 1, "확산 대기": 2, "전 연령 동시": 3, "지나감": 4, "상시 관심": 5}
     items.sort(key=lambda x: (order[x["stage"]], x.get("old_lag_weeks") or 99, x["keyword"]))
     return {"period": [start.isoformat(), end.isoformat()], "items": items, "synthetic": prof.synthetic,
+            "weeklies": weeklies,  # popped off before publishing: big, and only the kernel reads it
             "accuracy": accuracy(records) | {"history": [(end - timedelta(weeks=history_weeks)).isoformat(), end.isoformat()],
                                              "keywords": len(series), "seasonal_adjusted": True},
             "accuracy_unadjusted": accuracy(raw_records),
@@ -428,6 +432,9 @@ async def cases(settings, store) -> dict[str, Any]:
             series, vol = await fetch_series(prof, {name: c["keywords"]}, *c["window"])
             if series.get(name):
                 a = analyze(series[name], bins=40, volume_pct=vol.get(name))
+                thin = {x for x, pct in (vol.get(name) or {}).items() if pct < THIN_PCT}
+                a["weeklies"] = {x: [v for _, v in weekly(pts)] for x, pts in series[name].items()
+                                 if pts and x not in thin}
                 # cases are finished booms: describe the diffusion that happened, not today's state
                 a["stage"] = "확산형" if any((a["lags"].get(o) or 0) >= LAG_WEEKS for o in OLD) else "동시형"
                 a["keyword"], a["window"] = name, list(c["window"])

@@ -50,6 +50,10 @@ h1 span { color: var(--accent); }
 .attrow b { font-size: 20px; font-variant-numeric: tabular-nums; min-width: 62px; }
 .attrow span { flex: 1; font-size: 13px; line-height: 1.45; }
 .attrow small { color: var(--muted); }
+.xt { width: 100%; border-collapse: collapse; font-size: 13px; }
+.xt th, .xt td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+.xt thead th { color: var(--muted); font-weight: 600; text-align: center; }
+.xt tbody th { text-align: left; font-weight: 600; }
 button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
 button:disabled { opacity: .5; cursor: progress; }
 .banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); font-size: 13px; }
@@ -251,6 +255,10 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <span><span class="badge b-flat">상시 관심</span> 꾸준함 (유행 아님)</span>
     </div>
   </section>
+  <section class="card wide" id="transfer-card" hidden>
+    <h2>세대 전달 함수 <small>20대의 관심 곡선이 윗세대에 <b>얼마나</b>, <b>몇 주 뒤에</b> 도착하는지</small></h2>
+    <div id="transfer"></div>
+  </section>
   <section class="card wide" id="alert-card" hidden>
     <h2>🔔 알림 <small id="alert-sub">변화가 생겼을 때만 — <a href="feed.xml" id="feed-link">RSS 구독</a> · watchlist.txt 에 키워드를 적으면 고정 추적</small></h2>
     <ul class="list" id="alerts"></ul>
@@ -387,7 +395,7 @@ async function api(path, opts) {
     if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
-    return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts"].includes(name) ? name : `${name}-${r}`);
+    return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts", "transfer"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
@@ -882,8 +890,39 @@ async function loadDiffusion() {
     catch (e) { $("#dif-now").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
   }
   if (!ALERTS) { try { ALERTS = await api("api/alerts"); } catch (_) { ALERTS = { recent: [] }; } }
-  renderDiffusion();
+  if (TRANSFER === undefined) { try { TRANSFER = await api("api/transfer"); } catch (_) { TRANSFER = null; } }
+  renderDiffusion(); renderTransfer();
   $("#gen").textContent = `검색 ${DIF.tracked.period[0]} ~ ${DIF.tracked.period[1]} · 매일 갱신`;
+}
+
+// 세대 전달 함수: 윗세대 곡선을 20대 곡선의 필터링 결과로 보고 그 필터 h(k)를 추정한다(kernel.py).
+// 시차만 보던 것을 "얼마나(전달) · 몇 주 뒤(시차) · 같은 주 반응(동시분)"로 분해한다.
+let TRANSFER;
+function renderTransfer() {
+  const card = $("#transfer-card");
+  const t = TRANSFER;
+  const names = ["유행", "일반"].filter((n) => t?.groups?.[n]);
+  if (!names.length) { card.hidden = true; return; }
+  card.hidden = false;
+  const pct = (v) => `${Math.round(v * 100)}%`;
+  const label = { "유행": "유행", "일반": "일반 이슈" };
+  const rows = t.ages.map((age) => {
+    const cells = names.map((n) => {
+      const k = t.groups[n].ages[age];
+      return k ? `<td>${k.mean_lag.toFixed(1)}주</td><td>${k.gain.toFixed(2)}</td><td>${pct(k.instant_share)}</td>`
+               : `<td>-</td><td>-</td><td>-</td>`;
+    }).join("");
+    return `<tr><th>20대 → ${esc(age)}</th>${cells}</tr>`;
+  }).join("");
+  const c = t.contrast;
+  $("#transfer").innerHTML = `
+    <table class="xt"><thead>
+      <tr><th></th>${names.map((n) => `<th colspan="3">${label[n]} (${t.groups[n].n_keywords}건)</th>`).join("")}</tr>
+      <tr><th></th>${names.map(() => `<th>시차</th><th>전달</th><th>같은 주</th>`).join("")}</tr>
+    </thead><tbody>${rows}</tbody></table>
+    ${c ? `<div class="note">유행은 ${pct(c.fad_instant)}만 같은 주에 함께 움직이고 나머지는 시차를 두고 넘어갑니다 —
+      일반 이슈는 ${pct(c.plain_instant)}가 같은 주입니다. <b>전달</b>은 20대 파도의 모양이 그 연령에서 얼마나 재현되는지로,
+      시차와 달리 단계 판정에 쓰이지 않은 정보입니다.</div>` : ""}`;
 }
 
 // ---- init ---------------------------------------------------------------------------

@@ -158,6 +158,21 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             lines.append(f"diffusion: FAIL {e}")
             health.problem(f"세대 확산 분석 실패 — {str(e)[:160]}")
 
+    # --- 세대 전달 함수 (커널): needs the weekly series diffusion just fetched, so it runs after it
+    if "KR" in regions:
+        try:
+            tr = await svc.transfer()
+            if tr:
+                write("transfer", publish.public_transfer(tr))
+                c = tr.get("contrast")
+                lines.append("transfer: " + ", ".join(f"{n} {g['n_keywords']}개" for n, g in tr["groups"].items())
+                             + (f", 동시분 유행 {c['fad_instant']:.0%} vs 일반 {c['plain_instant']:.0%}" if c else ""))
+            else:
+                lines.append("transfer: not enough series yet")
+        except Exception as e:  # noqa: BLE001
+            lines.append(f"transfer: FAIL {e}")
+            health.warn(f"세대 전달 함수 실패 — {str(e)[:160]}")
+
     # --- 알림 (watchlist + 변화 감지) → 암호화 카드 + 공개 RSS 피드
     if "KR" in regions:
         try:

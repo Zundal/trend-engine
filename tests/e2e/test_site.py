@@ -185,3 +185,13 @@ def test_shape_card_labels_how_each_riser_got_its_attention(page, site):
     assert labels and set(labels) <= {"예고형", "하루형", "대칭형", "여운형"}
     assert "정점" in page.locator("#shape li").first.inner_text()
     assert not page.errors, page.errors
+
+
+def test_transfer_kernel_card_breaks_a_handover_into_lag_strength_and_same_week(page, site):
+    page.goto(site + "#diffusion")
+    page.wait_for_selector("#transfer-card:not([hidden]) .xt tbody tr")
+    heads = page.locator("#transfer .xt thead tr").nth(1).all_inner_texts()[0]
+    assert "시차" in heads and "전달" in heads and "같은 주" in heads
+    first = page.locator("#transfer .xt tbody tr").first.inner_text()
+    assert "20대 →" in first and "주" in first
+    assert not page.errors, page.errors

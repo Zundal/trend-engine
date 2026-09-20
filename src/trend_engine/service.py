@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
-from . import archive, diffusion, flux, pageviews, youth
+from . import archive, diffusion, flux, kernel, pageviews, youth
 from . import shapes as shapes_mod
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
@@ -111,6 +111,12 @@ class TrendService:
         known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
         for it in tracked["items"]:
             it["category"] = known.get(it["keyword"]) or "기타"
+        # raw weekly series are the kernel's input: keep them, but out of the published payload
+        weeklies = {"tracked": tracked.pop("weeklies", {}),
+                    "cases": {c["keyword"]: c.pop("weeklies", {}) for c in cases.get("items", [])},
+                    "stages": {i["keyword"]: i["stage"] for i in tracked["items"]},
+                    "case_stages": {c["keyword"]: c.get("stage") for c in cases.get("items", [])}}
+        self.store.cache_set("age-weeklies:v1", weeklies)
         result = {"tracked": tracked, "cases": cases, "watchlist": watchlist}
         self.store.cache_set("diffusion:v7", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
@@ -136,6 +142,30 @@ class TrendService:
             async with httpx.AsyncClient(timeout=self.settings.timeout) as client:
                 await alerts_mod.notify_slack(self.settings.slack_webhook, new, self.settings.site_url, client)
         return {"new": [a.to_dict() for a in new], "recent": merged, "watchlist": dif.get("watchlist", [])}
+
+    async def transfer(self, max_age: timedelta = timedelta(days=3)) -> dict[str, Any] | None:
+        """세대 전달 함수: the shape of the handover from 20대 to each older age, estimated over many
+        keywords at once (kernel.py). Two populations are fitted separately because they answer
+        different questions — trends that actually spread, and everything else."""
+        if (hit := self.store.cache_get("transfer:v1", max_age)) is not None:
+            return hit
+        data = self.store.cache_get("age-weeklies:v1", timedelta(days=2))
+        if data is None:
+            await self.diffusion()
+            data = self.store.cache_get("age-weeklies:v1", timedelta(days=2)) or {}
+        groups = kernel.split_populations(data)
+        out: dict[str, Any] = {"groups": {}, "ages": kernel.OLDER_AGES, "young": kernel.YOUNG_AGE}
+        for name, pairs_by_age in groups.items():
+            names = sorted(pairs_by_age.pop("_names", []))
+            fitted = {age: kernel.fit(pairs) for age, pairs in pairs_by_age.items() if pairs}
+            rows = {age: k.to_dict() for age, k in fitted.items() if k}
+            if rows:
+                out["groups"][name] = {"ages": rows, "keywords": names[:40], "n_keywords": len(names)}
+        if not out["groups"]:
+            return None
+        out["contrast"] = kernel.contrast(out["groups"])
+        self.store.cache_set("transfer:v1", out)
+        return out
 
     async def attention(self, region: str = "KR", days: int = 400,
                         max_age: timedelta = timedelta(hours=12)) -> dict[str, Any] | None:
