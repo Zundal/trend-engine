@@ -920,9 +920,15 @@ function renderTransfer() {
       <tr><th></th>${names.map((n) => `<th colspan="3">${label[n]} (${t.groups[n].n_keywords}건)</th>`).join("")}</tr>
       <tr><th></th>${names.map(() => `<th>시차</th><th>전달</th><th>같은 주</th>`).join("")}</tr>
     </thead><tbody>${rows}</tbody></table>
+    ${names.map((n) => { const st = t.groups[n].stability; return st
+      ? `<div class="note">${label[n]}: 키워드를 하나씩 빼고 다시 재면 40대 전달이 ${st.gain[0]}~${st.gain[1]},
+         같은 주 비율이 ${pct(st.instant_share[0])}~${pct(st.instant_share[1])} 사이에서 움직입니다 (표본 ${t.groups[n].n_keywords}건)</div>` : ""; }).join("")}
     ${c ? `<div class="note">유행은 ${pct(c.fad_instant)}만 같은 주에 함께 움직이고 나머지는 시차를 두고 넘어갑니다 —
       일반 이슈는 ${pct(c.plain_instant)}가 같은 주입니다. <b>전달</b>은 20대 파도의 모양이 그 연령에서 얼마나 재현되는지로,
-      시차와 달리 단계 판정에 쓰이지 않은 정보입니다.</div>` : ""}`;
+      시차와 달리 단계 판정에 쓰이지 않은 정보입니다.
+      ${c.separated ? (c.separated.gain
+        ? " 키워드를 하나씩 빼봐도 두 집단의 전달 범위는 겹치지 않습니다."
+        : " 다만 키워드를 하나 빼면 두 집단의 전달 범위가 겹칩니다 — 아직 표본이 얇습니다.") : ""}</div>` : ""}`;
 }
 
 // ---- init ---------------------------------------------------------------------------

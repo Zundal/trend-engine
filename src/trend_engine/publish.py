@@ -91,7 +91,7 @@ def public_transfer(t: dict[str, Any]) -> dict[str, Any]:
     """Counts and coefficients only. The keyword list stays private — a tracked keyword can happen
     to be a platform's name, and nothing downstream can tell that apart from a source label."""
     return {"young": t["young"], "ages": t["ages"], "contrast": t.get("contrast"),
-            "groups": {name: {"ages": g["ages"], "n_keywords": g["n_keywords"]}
+            "groups": {name: {"ages": g["ages"], "n_keywords": g["n_keywords"], "stability": g.get("stability")}
                        for name, g in t["groups"].items()}}
 
 

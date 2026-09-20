@@ -158,8 +158,10 @@ class TrendService:
             names = sorted(pairs_by_age.pop("_names", []))
             fitted = {age: kernel.fit(pairs) for age, pairs in pairs_by_age.items() if pairs}
             rows = {age: k.to_dict() for age, k in fitted.items() if k}
-            if rows:
-                out["groups"][name] = {"ages": rows, "keywords": names[:40], "n_keywords": len(names)}
+            if rows and len(names) >= kernel.MIN_KEYWORDS:
+                middle = pairs_by_age.get("40대") or next(iter(pairs_by_age.values()))
+                out["groups"][name] = {"ages": rows, "keywords": names[:40], "n_keywords": len(names),
+                                       "stability": kernel.jackknife(middle)}
         if not out["groups"]:
             return None
         out["contrast"] = kernel.contrast(out["groups"])

@@ -220,6 +220,27 @@ def evaluate(train: list[tuple[list[float], list[float]]], test: list[tuple[list
             "lag_baseline": {"lag_weeks": lag, "gain": round(gain, 3)}}
 
 
+def jackknife(pairs: list[tuple[list[float], list[float]]], max_drops: int = 12,
+              k_max: int = K_MAX, lam: float = SMOOTH) -> dict[str, Any] | None:
+    """Refit with one keyword left out at a time: how much of the headline is one keyword's doing?
+    Small samples move a lot, and a card that hides that is lying by omission."""
+    if len(pairs) < 4:
+        return None
+    gains, lags, instants = [], [], []
+    for i in range(min(len(pairs), max_drops)):
+        k = fit(pairs[:i] + pairs[i + 1:], k_max, lam)
+        if k:
+            gains.append(k.gain)
+            lags.append(k.mean_lag)
+            instants.append(k.instant_share)
+    if len(gains) < 3:
+        return None
+    return {"drops": len(gains),
+            "gain": [round(min(gains), 2), round(max(gains), 2)],
+            "mean_lag": [round(min(lags), 1), round(max(lags), 1)],
+            "instant_share": [round(min(instants), 2), round(max(instants), 2)]}
+
+
 # --- two populations ------------------------------------------------------------------------
 YOUNG_AGE = "20대"
 OLDER_AGES = ["30대", "40대", "50대", "60대+"]
@@ -228,6 +249,7 @@ OLDER_AGES = ["30대", "40대", "50대", "60대+"]
 SPREADING = {"확산형", "확산 중", "윗세대 상승"}
 EVERYDAY = {"전 연령 동시", "상시 관심", "동시형", "지나감"}
 MIN_WEEKS = 20
+MIN_KEYWORDS = 4  # a 'population' profile from three keywords is one keyword with company
 
 
 def split_populations(data: dict[str, Any]) -> dict[str, dict[str, list]]:
@@ -268,6 +290,15 @@ def contrast(groups: dict[str, Any]) -> dict[str, Any] | None:
                          "fad_gain": f["gain"], "plain_gain": p["gain"]})
     if not rows:
         return None
-    return {"ages": rows,
-            "fad_instant": round(statistics.fmean(r["fad_instant"] for r in rows), 3),
-            "plain_instant": round(statistics.fmean(r["plain_instant"] for r in rows), 3)}
+    out = {"ages": rows,
+           "fad_instant": round(statistics.fmean(r["fad_instant"] for r in rows), 3),
+           "plain_instant": round(statistics.fmean(r["plain_instant"] for r in rows), 3)}
+    # the contrast is only worth stating if dropping any single keyword can't erase it
+    fs, ps = groups.get("유행", {}).get("stability"), groups.get("일반", {}).get("stability")
+    if fs and ps:
+        out["separated"] = {
+            field: max(fs[field][0], ps[field][0]) > min(fs[field][1], ps[field][1])
+            for field in ("gain", "instant_share")}
+        out["ranges"] = {"유행": {f: fs[f] for f in ("gain", "instant_share")},
+                         "일반": {f: ps[f] for f in ("gain", "instant_share")}}
+    return out
