@@ -118,6 +118,23 @@ def _load(root: Path, day: date, name: str) -> dict[str, Any] | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
+def diffusion_sequences(store: Store, root: Path, days: int = 400, today: date | None = None) -> list[list[int]]:
+    """Weekly verdict sequences per keyword out of the archived daily 세대 확산 stages — the POMDP's
+    accumulating training data (pomdp.weekly_sequences)."""
+    from . import pomdp
+
+    today = today or kst_today()
+    daily: dict[str, list[tuple[date, str]]] = {}
+    for i in range(days, -1, -1):
+        day = today - timedelta(days=i)
+        d = _load(root, day, "diffusion.json") or store.cache_get(f"daily:diffusion:{day.isoformat()}", timedelta(days=3650))
+        for kw, st in (d or {}).get("stages", {}).items():
+            stage = st.get("stage") if isinstance(st, dict) else st
+            if stage in pomdp.VERDICTS:
+                daily.setdefault(kw, []).append((day, stage))
+    return pomdp.weekly_sequences(daily)
+
+
 # --- period views ---------------------------------------------------------------------------
 def period_trends(store: Store, root: Path, region: str, days: int, today: date | None = None,
                   limit: int = 40) -> dict[str, Any]:

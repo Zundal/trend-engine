@@ -66,7 +66,7 @@ score           = (Σ family_score + content_boost) × consensus × 100
 ## 저장소
 - `reports`: 리포트 JSON 전체 (재현·디버깅용).
 - `clusters`: (report_id, rank, key) — `/api/history` 순위 추이.
-- `cache`: DataLab 응답(6h), 세그먼트·쇼핑·10·20대(3h)·세대 확산(20h) 결과, 일별 스냅샷(`daily:*`, 기록되면 archive 로).
+- `cache`: DataLab 응답(6h), 세그먼트·쇼핑·10·20대(3h)·세대 확산(20h) 결과, 국면 믿음(`belief:v1`, 60일), 일별 스냅샷(`daily:*`, 기록되면 archive 로).
 - 이전 스냅샷 기준: 30분 이상 지난 최신 리포트 (없으면 직전 리포트).
 
 ## 확장 지점

@@ -1,7 +1,9 @@
 """Watchlist + alerts: the engine watches for you instead of waiting to be opened.
 
 Rules fire only on a *change* versus the previous run (state kept in the store), so a trend that
-stays 확산 중 for a week does not alert every hour. Output:
+stays 확산 중 for a week does not alert every hour. A stage alert also waits for the keyword's
+belief (pomdp.py) to agree with the verdict, so a stage that flickers on a threshold is not
+announced until it has held long enough to be believed. Output:
   - `feed.xml` (plain RSS at the site root — readers can't decrypt, and it carries keywords only)
   - `alerts.dat` (encrypted, for the dashboard card)
   - optional Slack POST when SLACK_WEBHOOK_URL is set
@@ -16,6 +18,8 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from . import pomdp
 
 VS_OLDER_ALERT = 2.0  # 10·20대가 30대 이상보다 2배 이상 찾기 시작하면
 STAGE_ALERTS = ("확산 대기", "확산 중", "윗세대 상승")
@@ -56,16 +60,21 @@ def evaluate(tracked: dict[str, Any], youth: dict[str, Any] | None, previous: di
     """-> (new alerts, state to store for next time)."""
     prev = previous or {}
     prev_stage, prev_youth = prev.get("stages", {}), prev.get("youth", {})
+    prev_gated = prev.get("gated", prev_stage)  # states saved before beliefs existed: fall back to the raw stage
     watched = {w.strip() for w in watchlist}
     alerts: list[Alert] = []
     stages: dict[str, str] = {}
+    gated: dict[str, str] = {}  # stage per keyword, only while the belief backs it
     youth_max: dict[str, float] = {}
 
     for it in tracked.get("items", []):
         kw, stage = it["keyword"], it["stage"]
         stages[kw] = stage
         is_watched = kw in watched
-        if stage in STAGE_ALERTS and prev_stage.get(kw) != stage:
+        believed = pomdp.gate(pomdp.Belief.from_dict(it["belief"]) if it.get("belief") else None)
+        if believed:
+            gated[kw] = stage
+        if stage in STAGE_ALERTS and believed and prev_gated.get(kw) != stage:
             msg = {"확산 대기": "10·20대에서 뜨는 중 — 윗세대는 아직 조용",
                    "확산 중": f"윗세대로 번지는 중{f' (40대+ {it['old_lag_weeks']}주 차이)' if it.get('old_lag_weeks') else ''}",
                    "윗세대 상승": "윗세대에서 오르기 시작"}[stage]
@@ -89,7 +98,7 @@ def evaluate(tracked: dict[str, Any], youth: dict[str, Any] | None, previous: di
             alerts.append(Alert(today, "watchlist", kw, "", "관심 키워드가 추적 목록에 들어옴", True))
 
     alerts.sort(key=lambda a: (not a.watched, a.kind, a.keyword))
-    return alerts, {"stages": stages, "youth": youth_max}
+    return alerts, {"stages": stages, "youth": youth_max, "gated": gated}
 
 
 def merge_recent(new: list[Alert], history: list[dict[str, Any]], keep_days: int = KEEP_DAYS) -> list[dict[str, Any]]:

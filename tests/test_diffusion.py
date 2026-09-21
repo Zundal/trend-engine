@@ -175,3 +175,45 @@ def test_half_year_gap_is_not_called_diffusion():
             "40대": curve(40, weeks=60), "50대": curve(99), "60대+": curve(99)}
     r = dif.analyze({a: curve(5, weeks=60) if a in ("10대", "20대") else v for a, v in late.items()})
     assert r["stage"] != "확산 중" or (r["old_lag_weeks"] or 0) <= dif.MAX_LAG_WEEKS
+
+
+def test_belief_backtest_scores_like_the_raw_verdict_and_counts_flips():
+    young, old = curve(20, weeks=34), curve(24, weeks=34)
+    series = {a: (young if a in ("10대", "20대") else old) for a in dif.AGE_NAMES}
+    recs = [r | {"keyword": "k"} for r in dif.backtest(series, window=17, horizons=(4, 8))]
+    # inject one noisy week so the raw verdict flips and the belief has something to smooth
+    noisy = [dict(r) for r in recs]
+    i = next(i for i, r in enumerate(noisy) if r["stage"] == "확산 대기") + 1
+    noisy[i]["stage"] = "상시 관심"
+    out = dif.belief_backtest(noisy)
+    assert set(out) >= {"waiting", "4w", "8w", "flips", "model"}
+    assert out["flips"]["verdict"] > out["flips"]["belief"]
+    assert out["8w"]["precision"] == 1.0 and out["waiting"] >= 1
+    assert out["model"]["sequences"] == 1 and len(out["model"]["transition"]) == 5
+
+
+def test_belief_backtest_handles_no_records():
+    out = dif.belief_backtest([])
+    assert out["waiting"] == 0 and out["model"]["sequences"] == 0
+
+
+def test_belief_backtest_scores_the_alert_policies_and_takes_extra_sequences():
+    young, old = curve(20, weeks=34), curve(24, weeks=34)
+    series = {a: (young if a in ("10대", "20대") else old) for a in dif.AGE_NAMES}
+    recs = [r | {"keyword": "k"} for r in dif.backtest(series, window=17, horizons=(4, 8))]
+    out = dif.belief_backtest(recs, extra_sequences=[[5, 5, 0, 0, 0, 1, 1]] * 3)
+    assert out["model"]["sequences"] == 4
+    pol = out["alerts"]
+    assert set(pol) == {"verdict", "belief"} and set(pol["verdict"]) >= {"alerts", "hits", "precision"}
+    assert pol["belief"]["alerts"] <= pol["verdict"]["alerts"]
+
+
+def test_detection_delay_measures_weeks_after_older_takeoff():
+    young, old = curve(20, weeks=40), curve(24, weeks=40)
+    series = {a: (young if a in ("10대", "20대") else old) for a in dif.AGE_NAMES}
+    recs = dif.backtest(series, window=17, horizons=(4, 8))
+    d = dif.detection_delay(recs)
+    assert d["old_takeoff"] and d["verdict"] is not None and d["belief"] is not None
+    assert 0 <= d["verdict"] <= d["belief"] <= 8  # the filter is never earlier than the verdict, and not absurdly late
+    flat = {a: curve(99, weeks=40) for a in dif.AGE_NAMES}
+    assert dif.detection_delay(dif.backtest(flat, window=17))["old_takeoff"] is None
