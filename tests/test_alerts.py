@@ -64,3 +64,18 @@ def test_rss_is_valid_and_source_free():
     assert items[0].findtext("title") and items[0].findtext("guid")
     assert "example.test" in items[0].findtext("link")
     assert not al.SOURCE_WORDS.search(xml)
+
+
+def test_stage_alert_waits_for_the_belief_to_agree():
+    from trend_engine import pomdp
+
+    low = pomdp.Belief.initial().to_dict()  # first day: mostly 휴면
+    first, state = al.evaluate(tracked("확산 중", belief=low), None, None, [], "2026-09-20")
+    assert not any(a.kind == "stage" for a in first)
+    b = pomdp.Belief.initial()
+    for _ in range(3):
+        b = b.update("확산 중", days=7)
+    sure, state2 = al.evaluate(tracked("확산 중", belief=b.to_dict()), None, state, [], "2026-09-23")
+    assert [a.kind for a in sure] == ["stage"]  # same raw stage, but now the belief agrees -> fires once
+    again, _ = al.evaluate(tracked("확산 중", belief=b.to_dict()), None, state2, [], "2026-09-24")
+    assert again == []

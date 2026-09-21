@@ -254,6 +254,8 @@ table.heat th.on { color: var(--accent); font-weight: 700; }
       <span><span class="badge b-flat">전 연령 동시</span> 뉴스처럼 한꺼번에</span>
       <span><span class="badge b-flat">상시 관심</span> 꾸준함 (유행 아님)</span>
     </div>
+    <div class="note" style="margin-top:8px">🎯 <b>누적 판단</b>은 매일의 판정을 잡음 섞인 관측으로 보고 며칠에 걸쳐 확률을 갱신한 것(부분관측 마르코프 결정과정).
+      판정이 경계에서 오락가락해도 믿음은 천천히 움직이고, 알림은 믿음이 판정에 동의할 때만 나갑니다.</div>
   </section>
   <section class="card wide" id="transfer-card" hidden>
     <h2>세대 전달 함수 <small>20대의 관심 곡선이 윗세대에 <b>얼마나</b>, <b>몇 주 뒤에</b> 도착하는지</small></h2>
@@ -860,19 +862,32 @@ const STAGE_NOTE = { "확산 대기": "아직 10·20대만 — 윗세대는 조�
 function difRow(it, from, to) {
   // Only 40대+ lags answer "did it spread?"; 30대 sits in between and is noisy on long windows.
   const lags = ["40대", "50대", "60대+"].filter((a) => it.lags?.[a] != null).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
+  const det = it.detection?.old_takeoff ? ` · 검출 지연: 판정 ${it.detection.verdict == null ? "못 함" : `+${it.detection.verdict}주`} / 누적 판단 ${it.detection.belief == null ? "못 함" : `+${it.detection.belief}주`}` : "";
   const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
-    : it.stage === "확산형" ? `20대보다 늦게: ${lags}`
+    : it.stage === "확산형" ? `20대보다 늦게: ${lags}${det}`
+    : it.stage === "동시형" ? `${STAGE_NOTE[it.stage]}${det}`
     : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
   const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 증가 (설명용 — 예측력은 아래 '예측이 맞았나'에서 매일 측정)">📈 3주 연속 증가</span>`
     : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 갑자기 튐 (설명용)">⚡ 반짝 급등</span>` : "";
   const fc = Object.entries(it.forecast?.ages || {}).map(([a, f]) => `${a} ${f.weeks_from_now === 0 ? "이번 주" : `약 ${f.weeks_from_now}주 뒤`}`).join(" · ");
+  const bl = it.belief ? beliefBadge(it.belief, it.stage) : "";
   return `<div class="dif"><div><h3>${esc(it.keyword)}${catTag(it.category)}</h3>
-      <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span> ${mom}<div class="why">${esc(why)}</div>
+      <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span> ${bl}${mom}<div class="why">${esc(why)}</div>
       ${fc ? `<div class="why" title="윗세대도 시작이 늦은 만큼 늦게 정점 — 과거 유행 검증 오차 평균 약 2.7주"><b>예상 정점</b> ${esc(fc)}</div>` : ""}</div>
     <div class="strip">${DIF_AGES.map((a) => {
       const g = it.ages?.[a]; if (!g) return "";
       return `<span>${a}${g.thin ? "·" : ""}</span>${stripSVG(g.strip, g.thin)}`;
     }).join("")}<div class="axis"><span>${esc(from)}</span><span>${esc(to)}</span></div></div></div>`;
+}
+// 누적 판단(POMDP): 오늘 판정과 같은 국면이면 확신만, 다르면 "판정은 X 인데 믿음은 Y" 를 드러낸다.
+const PHASE_OF = { "확산 대기": "청년 상승", "확산 중": "확산", "윗세대 상승": "확산", "전 연령 동시": "전 연령", "지나감": "퇴조", "상시 관심": "휴면" };
+const PHASE_BADGE = { "청년 상승": "b-wait", "확산": "b-spread" };
+function beliefBadge(b, stage) {
+  const pct = Math.round((b.confidence || 0) * 100);
+  const agrees = PHASE_OF[stage] === b.phase;
+  const days = b.streak ? `${b.streak}회 연속` : "첫 관측";
+  const tip = `며칠에 걸쳐 갱신한 국면 확률 — ${b.phase} ${pct}% (${days}). ${agrees ? "오늘 판정과 같은 국면" : "오늘 판정과 다름: 아직 며칠 더 봐야 함"}`;
+  return `<span class="badge ${agrees ? "b-flat" : (PHASE_BADGE[b.phase] || "b-flat")}" title="${esc(tip)}">🎯 ${esc(b.phase)} ${pct}%${agrees ? "" : " ≠ 판정"}</span> `;
 }
 function renderAccuracy(a) {
   if (!a || !a.waiting) { $("#dif-acc").innerHTML = `<div class="empty">채점할 "확산 대기" 판정이 아직 없습니다</div>`; return; }
@@ -883,7 +898,13 @@ function renderAccuracy(a) {
   const mk = m?.steady?.precision != null ? `<div class="kpi"><div class="vs">"3주 연속 증가" 후 2주 안에 20%+ 더 오름 (매일 재측정)</div>
     <div class="big">${pct(m.steady.precision)}</div><div class="vs">${m.steady.flagged}건 · 평균 ${pct(m.base_rate)} → <b>${m.steady.lift}배</b> · 반짝 급등은 ${m.spike.lift ?? "–"}배 — 1배 근처면 예측력 없음</div></div>` : "";
   const un = DIF?.tracked?.accuracy_unadjusted?.["8w"];
-  $("#dif-acc").innerHTML = `<div class="acc">${kpi(4)}${kpi(8)}${mk}</div>
+  const ba = DIF?.tracked?.belief_accuracy, b8 = ba?.["8w"];
+  const pa = ba?.alerts, det = DIF?.cases?.detection;
+  const polTxt = pa?.verdict?.alerts ? ` · 조기 알림(40대+ 조용할 때): 원판정 ${pa.verdict.alerts}건 중 ${pa.verdict.hits} 적중 → 게이트 <b>${pa.belief.alerts}건 중 ${pa.belief.hits}</b>` : "";
+  const detTxt = det?.cases ? ` · 과거 사례 ${det.cases}건 검출 지연 중앙값: 판정 +${det.verdict ?? "–"}주 / 누적 판단 +${det.belief ?? "–"}주` : "";
+  const bk = ba && ba.waiting ? `<div class="kpi"><div class="vs">누적 판단이 "청년 상승"일 때 8주 안에 40대+가 실제로 오름 (같은 백테스트)</div>
+    <div class="big">${pct(b8?.precision)}</div><div class="vs">${b8?.hits ?? 0}/${ba.waiting}건 → <b>${b8?.lift ?? "–"}배</b> · 주간 판정 흔들림 키워드당 ${ba.flips?.verdict}회 → 믿음 <b>${ba.flips?.belief}회</b>${polTxt}${detTxt}${DIF?.tracked?.model?.label_locked ? " · 모델 재학습 보류(초기값 유지)" : ""} · 모델 학습 수열 ${DIF?.tracked?.model?.sequences ?? 0}개</div></div>` : "";
+  $("#dif-acc").innerHTML = `<div class="acc">${kpi(4)}${kpi(8)}${mk}${bk}</div>
     <div class="legend" style="margin-top:8px">키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}) —
     "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}. 표본이 작아 참고용.</div>`;
 }

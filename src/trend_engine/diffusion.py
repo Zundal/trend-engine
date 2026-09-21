@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any
 
+from . import pomdp
 from .segments import SegmentProfiler
 
 AGES: list[tuple[str, tuple[str, ...]]] = [
@@ -314,6 +315,58 @@ def accuracy(records: list[dict[str, Any]], horizons: tuple[int, ...] = HORIZONS
     return out
 
 
+def belief_backtest(records: list[dict[str, Any]], model: pomdp.Model | None = None,
+                    horizons: tuple[int, ...] = HORIZONS, extra_sequences: list[list[int]] | None = None) -> dict[str, Any]:
+    """The same walk-forward, seen through the POMDP filter (pomdp.py): the weekly verdict sequence
+    of each keyword is (1) used to re-estimate the phase model, (2) filtered causally into a phase per
+    week. "Belief = 청년 상승" is scored exactly like the raw "확산 대기" verdict, and the number of
+    week-to-week changes is counted for both — fewer flips is what the filter promises."""
+    by_kw: dict[str, list[dict[str, Any]]] = {}
+    for r in records:
+        by_kw.setdefault(r.get("keyword", ""), []).append(r)
+    seqs = [[pomdp.VERDICTS.index(r["stage"]) for r in rs] for rs in by_kw.values()] + list(extra_sequences or [])
+    fitted = pomdp.fit(seqs) if model is None else model
+    scored: list[dict[str, Any]] = []
+    raw_flips = belief_flips = 0
+    policy = {"verdict": {"alerts": 0, "hits": 0}, "belief": {"alerts": 0, "hits": 0}}
+    h = f"spread_{max(horizons)}w"
+    for rs in by_kw.values():
+        verdicts = [r["stage"] for r in rs]
+        phases = pomdp.filter_sequence(verdicts, fitted)
+        raw_flips += pomdp.flips(verdicts)
+        belief_flips += pomdp.flips(phases)
+        scored += [r | {"stage": "확산 대기" if p == "청년 상승" else p} for r, p in zip(rs, phases)]
+        # the two alert policies, scored as early warnings: an alert while 40대+ are still quiet
+        # is a hit if they take off within the horizon (the reward in docs/POMDP.md, minus request cost)
+        for name, weeks in zip(policy, pomdp.simulate_alerts(verdicts, fitted)):
+            for t in weeks:
+                if not rs[t]["old_active"]:
+                    policy[name]["alerts"] += 1
+                    policy[name]["hits"] += int(bool(rs[t].get(h)))
+    for pol in policy.values():
+        pol["precision"] = round(pol["hits"] / pol["alerts"], 3) if pol["alerts"] else None
+    n = max(len(by_kw), 1)
+    return accuracy(scored, horizons) | {"flips": {"verdict": round(raw_flips / n, 2), "belief": round(belief_flips / n, 2),
+                                                   "keywords": len(by_kw)},
+                                         "alerts": policy, "model": fitted.to_dict()}
+
+
+def detection_delay(records: list[dict[str, Any]], model: pomdp.Model | None = None) -> dict[str, Any]:
+    """On one keyword's walk-forward: weeks from the first cut-off where a 40대+ age is active to
+    (a) the first 확산 중 / 윗세대 상승 verdict and (b) the first week the belief puts ≥ GATE on 확산.
+    The price of smoothing, in weeks — measured on the past cases (cases())."""
+    takeoff = next((i for i, r in enumerate(records) if r["old_active"]), None)
+    if takeoff is None:
+        return {"old_takeoff": None, "verdict": None, "belief": None}
+    verdicts = [r["stage"] for r in records]
+    v = next((i for i in range(takeoff, len(records)) if verdicts[i] in ("확산 중", "윗세대 상승")), None)
+    beliefs = pomdp.filter_beliefs(verdicts, model)
+    spread = pomdp.PHASES.index("확산")
+    b = next((i for i in range(takeoff, len(records)) if beliefs[i].b[spread] >= pomdp.GATE), None)
+    return {"old_takeoff": records[takeoff]["week"], "verdict": None if v is None else v - takeoff,
+            "belief": None if b is None else b - takeoff}
+
+
 # --- data -----------------------------------------------------------------------------------
 async def fetch_series(profiler: SegmentProfiler, groups: dict[str, list[str]], start: str, end: str
                        ) -> tuple[dict[str, dict[str, list]], dict[str, dict[str, float]]]:
@@ -365,7 +418,8 @@ def typical_lags(cases_result: dict[str, Any] | None) -> dict[str, float]:
 
 
 async def track(settings, store, keywords: list[str], weeks: int = 17, today: date | None = None,
-                history_weeks: int = 42, typical_lag: dict[str, float] | None = None) -> dict[str, Any]:
+                history_weeks: int = 42, typical_lag: dict[str, float] | None = None,
+                extra_sequences: list[list[int]] | None = None) -> dict[str, Any]:
     """Current stage for each tracked keyword over the last `weeks` weeks, plus a walk-forward
     backtest over `history_weeks` (same number of requests — only the date range is longer)."""
     end = (today or date.today()) - timedelta(days=1)  # search data lags ~1 day
@@ -419,7 +473,8 @@ async def track(settings, store, keywords: list[str], weeks: int = 17, today: da
             "accuracy": accuracy(records) | {"history": [(end - timedelta(weeks=history_weeks)).isoformat(), end.isoformat()],
                                              "keywords": len(series), "seasonal_adjusted": True},
             "accuracy_unadjusted": accuracy(raw_records),
-            "momentum_accuracy": momentum_accuracy(m_records)}
+            "momentum_accuracy": momentum_accuracy(m_records),
+            "belief_accuracy": (ba := belief_backtest(records, extra_sequences=extra_sequences)), "model": ba.pop("model")}
 
 
 async def cases(settings, store) -> dict[str, Any]:
@@ -438,12 +493,17 @@ async def cases(settings, store) -> dict[str, Any]:
                 # cases are finished booms: describe the diffusion that happened, not today's state
                 a["stage"] = "확산형" if any((a["lags"].get(o) or 0) >= LAG_WEEKS for o in OLD) else "동시형"
                 a["keyword"], a["window"] = name, list(c["window"])
+                # how many weeks after 40대+ actually rose did the verdict, and the belief, say so
+                a["detection"] = detection_delay(backtest_weekly({x: weekly(pts) for x, pts in series[name].items()
+                                                                  if pts and x not in thin}, vol.get(name)))
                 out.append(a)
         return out
 
     items = await _with_client(prof, run)
     items.sort(key=lambda x: -max((v or 0) for v in x["lags"].values()))
-    return {"items": items, "synthetic": prof.synthetic}
+    delays = {k: sorted(i["detection"][k] for i in items if i.get("detection", {}).get(k) is not None) for k in ("verdict", "belief")}
+    return {"items": items, "synthetic": prof.synthetic,
+            "detection": {k: (v[len(v) // 2] if v else None) for k, v in delays.items()} | {"cases": len(delays["belief"])}}
 
 
 PER_CATEGORY = 4  # keep the watch list spread across categories, not just whatever 게임 dominates

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
-from . import archive, diffusion, entities, flux, kernel, pageviews, youth
+from . import archive, diffusion, entities, flux, kernel, pageviews, pomdp, youth
 from . import shapes as shapes_mod
 from .config import REGIONS, Settings, get_region
 from .engine import TrendEngine
@@ -19,6 +19,8 @@ ENTITY_BUDGET = 400  # uncached pageview requests one 국가 간 전파 pass may
 DAY_BUDGET = 150  # uncached day-lists one 교체율 pass may fetch (~30s); the rest fills in next run
 RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
 SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
+WATCH_LIMIT = 50  # tracked keywords per diffusion run (≈ 75 paced search-data requests)
+WATCH_SPARE = 20  # extra candidates for pomdp.plan to pick from when settled keywords rest
 
 # Today's-issue profiling covers every age plus the 10·20대 splits and the 30대+ baseline.
 REPORT_SEGMENTS = [x.name for x in DEFAULT_SEGMENTS] + [g for g in YOUTH_GROUPS if g not in AGE_GROUPS] + [OLDER]
@@ -97,21 +99,28 @@ class TrendService:
 
     async def diffusion(self, max_age: timedelta = timedelta(hours=20)) -> dict[str, Any]:
         """세대 확산 감지 (Korea): stage of each youth interest + validated past cases."""
-        if hit := self.store.cache_get("diffusion:v8", max_age):
+        if hit := self.store.cache_get("diffusion:v10", max_age):
             return hit
         y = await self.youth()
         report = await self.report("KR")
+        today = archive.kst_today()
         watchlist = alerts_mod.load_watchlist(Path(self.settings.watchlist_path))
-        keywords = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"], report=report,
-                                              pinned=watchlist)
-        cases = self.store.cache_get("diffusion-cases:v1", timedelta(days=30))
+        candidates = diffusion.tracked_keywords(y["discover"], self.youth_period()["month"], report=report,
+                                                pinned=watchlist, limit=WATCH_LIMIT + WATCH_SPARE)
+        keywords = self.watch_list(candidates, watchlist, today=today)
+        cases = self.store.cache_get("diffusion-cases:v2", timedelta(days=30))
         if cases is None:
             cases = await diffusion.cases(self.settings, self.store)
-            self.store.cache_set("diffusion-cases:v1", cases)
-        tracked = await diffusion.track(self.settings, self.store, keywords, typical_lag=diffusion.typical_lags(cases))
+            self.store.cache_set("diffusion-cases:v2", cases)
+        # the phase model learns from this run's backtest *and* every archived day so far
+        history = archive.diffusion_sequences(self.store, self.archive_root, today=today)
+        tracked = await diffusion.track(self.settings, self.store, keywords, typical_lag=diffusion.typical_lags(cases),
+                                        extra_sequences=history)
+        self.store.cache_set("pomdp-model:v1", tracked["model"])
         known = {r["keyword"]: r.get("category") for rows in y["discover"]["groups"].values() for r in rows}
         for it in tracked["items"]:
             it["category"] = known.get(it["keyword"]) or "기타"
+        self._observe(tracked, today)
         # raw weekly series are the kernel's input: keep them, but out of the published payload
         weeklies = {"tracked": tracked.pop("weeklies", {}),
                     "cases": {c["keyword"]: c.pop("weeklies", {}) for c in cases.get("items", [])},
@@ -119,10 +128,36 @@ class TrendService:
                     "case_stages": {c["keyword"]: c.get("stage") for c in cases.get("items", [])}}
         self.store.cache_set("age-weeklies:v1", weeklies)
         result = {"tracked": tracked, "cases": cases, "watchlist": watchlist}
-        self.store.cache_set("diffusion:v8", result)
+        self.store.cache_set("diffusion:v10", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
             "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result
+
+    # --- POMDP: the belief over each keyword's phase lives across runs (pomdp.py, docs/POMDP.md)
+    def beliefs(self) -> dict[str, pomdp.Belief]:
+        raw = self.store.cache_get("belief:v1", timedelta(days=60)) or {}
+        return {k: pomdp.Belief.from_dict(v) for k, v in raw.items()}
+
+    def watch_list(self, candidates: list[str], pinned: list[str], limit: int = WATCH_LIMIT,
+                   today: date | None = None) -> list[str]:
+        """The measurement action: which keywords get search-data requests this run."""
+        return pomdp.plan(self.beliefs(), candidates, pinned, limit, today or archive.kst_today())
+
+    def _observe(self, tracked: dict[str, Any], today: date) -> None:
+        """Bayes step per tracked keyword with today's verdict; one observation per day at most."""
+        model = pomdp.Model.from_dict(tracked.get("model"))
+        beliefs = self.beliefs()
+        for it in tracked["items"]:
+            b = beliefs.get(it["keyword"]) or pomdp.Belief.initial()
+            days = b.days_since(today)
+            if days is None:
+                b = b.update(it["stage"], pomdp.WEEK, model)
+            elif days > 0:
+                b = b.update(it["stage"], days, model)
+            beliefs[it["keyword"]] = b = b.stamp(today)
+            it["belief"] = b.to_dict()
+        keep = {k: b.to_dict() for k, b in beliefs.items() if (b.days_since(today) or 0) <= 60}
+        self.store.cache_set("belief:v1", keep)
 
     async def alerts(self, dif: dict[str, Any] | None = None) -> dict[str, Any]:
         """New alerts vs the previous run + the last two weeks of them (for the feed and the card)."""
