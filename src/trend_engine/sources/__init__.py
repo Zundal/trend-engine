@@ -10,14 +10,16 @@ from .base import Source, SourceError
 from .google_news import GoogleNews
 from .google_trends import GoogleTrends
 from .local import ETtoday, Kenh14, Pixiv, Reddit, Steam
+from .melon import Melon
 from .nate import Nate
+from .netflix import Netflix
 from .signal_bz import SignalBz
 from .wikipedia import Wikipedia
 from .youtube import YouTube
 
 REGISTRY: dict[str, Source] = {
     s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews(), AppleCharts(),
-                       Pixiv(), ETtoday(), Reddit(), Kenh14(), Steam()]
+                       Pixiv(), ETtoday(), Reddit(), Kenh14(), Steam(), Melon(), Netflix()]
 }
 
 __all__ = ["REGISTRY", "Source", "SourceError"]
