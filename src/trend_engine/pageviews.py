@@ -8,6 +8,9 @@ the 0–100 DataLab series cannot.
 Endpoints (no key, courtesy User-Agent required):
   /top/{lang}.wikipedia/all-access/{Y/m/d}                      most-read articles that day
   /per-article/{lang}.wikipedia/all-access/user/{a}/daily/{s}/{e}   one article's daily views
+
+Rate limits: share `wikimedia_gate` with the wikipedia source (concurrency 2 + pacing).
+On 429/503, back off exponentially; never swallow the error — callers surface it.
 """
 
 from __future__ import annotations
@@ -22,16 +25,14 @@ import httpx
 
 from .config import Settings
 from .sources.base import SourceError, get_text
-from .sources.wikipedia import _SKIP_EXACT, _SKIP_PREFIX
+from .sources.wikipedia import UA, _SKIP_EXACT, _SKIP_PREFIX, wikimedia_gate
 from .store import Store
 
 REST = "https://wikimedia.org/api/rest_v1/metrics/pageviews"
-UA = "trend-engine/0.1 (https://github.com/Zundal/trend-engine)"
-CONCURRENCY = 2  # measured: 6 in parallel earns 429s from a datacenter IP, 2 with pacing does not
-PACE = 0.12  # seconds between requests, per slot
+PACE = 0.25  # seconds between requests, per slot (shared CI IPs need more gap than a laptop)
 SETTLED = timedelta(days=3)  # older days never change -> cache them for a year
 FRESH = timedelta(hours=12)
-RETRY_WAIT = 4.0  # seconds; Wikimedia throttles a burst of requests with 429
+RETRY_WAIT = 5.0  # seconds; Wikimedia throttles a burst of requests with 429
 
 
 def _keep(article: str) -> bool:
@@ -68,7 +69,6 @@ class History:
         self.budget = budget
         self.skipped = 0
         self._client: httpx.AsyncClient | None = None
-        self._sem = asyncio.Semaphore(CONCURRENCY)
         self.errors: list[str] = []  # anything that wasn't a plain 404 — surfaced, never swallowed
 
     # --- plumbing ----------------------------------------------------------------
@@ -86,17 +86,18 @@ class History:
                 self.skipped += 1
                 return None
             self.budget -= 1
-        for attempt in range(3):
+        for attempt in range(4):
             try:
-                async with self._sem:
+                # Same gate as sources.wikipedia so collect + history fill do not race.
+                async with wikimedia_gate():
                     raw = await get_text(self._client, url, headers={"User-Agent": UA})
                     await asyncio.sleep(PACE)
             except SourceError as e:
                 msg = str(e)
                 if "HTTP 404" in msg:
                     return None  # normal: article too new, or that day was never published
-                if "HTTP 429" in msg and attempt < 2:
-                    await asyncio.sleep(RETRY_WAIT * (attempt + 1))
+                if ("HTTP 429" in msg or "HTTP 503" in msg) and attempt < 3:
+                    await asyncio.sleep(RETRY_WAIT * (2 ** attempt))
                     continue
                 self.errors.append(msg[:160])  # never swallow: callers report this
                 return None

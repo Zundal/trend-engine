@@ -68,7 +68,7 @@ class Settings:
     slack_webhook: str = ""  # optional: POST new alerts here
     site_url: str = "https://trend.todoli.lat/"
     fixtures_dir: Path = field(default_factory=lambda: Path(__file__).resolve().parents[2] / "tests" / "fixtures")
-    user_agent: str = "trend-engine/0.1 (+https://github.com/; research use)"
+    user_agent: str = "trend-engine/0.1 (https://github.com/Zundal/trend-engine; research use)"
     timeout: float = 15.0
 
     @property

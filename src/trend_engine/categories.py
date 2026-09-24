@@ -14,6 +14,7 @@ Highest total wins; nothing ≥ 1 → "기타". Votes are kept so the UI/tests c
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from collections import defaultdict
@@ -115,15 +116,23 @@ def parse_topic_feed(raw: str) -> list[str]:
 
 
 async def fetch_topics(client: httpx.AsyncClient, region: Region) -> dict[str, str]:
-    """section -> raw RSS (kept raw so it can be recorded as a fixture)."""
+    """section -> raw RSS (kept raw so it can be recorded as a fixture).
+
+    Sequential + short gap: firing six topic feeds at once on a shared CI IP is what pushes
+    the main google_news source into 429/503 during the hourly export.
+    """
     hl = {"ko": "ko", "ja": "ja", "zh": "zh-TW", "vi": "vi", "de": "de", "fr": "fr", "pt": "pt-BR"}.get(region.lang, f"en-{region.country}")
     out = {}
-    for topic in NEWS_TOPICS:
+    for i, topic in enumerate(NEWS_TOPICS):
+        if i:
+            await asyncio.sleep(0.4)
         url = f"https://news.google.com/rss/headlines/section/topic/{topic}?hl={hl}&gl={region.country}&ceid={region.country}:{hl.split('-')[0]}"
         try:
             r = await client.get(url, follow_redirects=True)
             if r.status_code == 200:
                 out[topic] = r.text
+            elif r.status_code in (429, 503):
+                break  # stop hammering; partial evidence is fine
         except httpx.HTTPError:
             continue
     return out

@@ -6,6 +6,8 @@ recorded raw responses from tests/fixtures/<source>/<region>.<ext> into parse().
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -14,9 +16,25 @@ import httpx
 from ..config import Region, Settings
 from ..models import Kind, TrendItem
 
+log = logging.getLogger(__name__)
+
+# Transient upstream answers that recover if we wait (shared CI IPs get these often).
+RETRY_STATUSES = frozenset({429, 503})
+
 
 class SourceError(RuntimeError):
     pass
+
+
+def _retry_wait(resp: httpx.Response, attempt: int, base_wait: float) -> float:
+    """Seconds to sleep before the next try. Prefer Retry-After when the server sends it."""
+    raw = resp.headers.get("Retry-After")
+    if raw:
+        try:
+            return max(float(raw), 0.5)
+        except ValueError:
+            pass
+    return base_wait * (2 ** attempt)
 
 
 class Source(ABC):
@@ -84,3 +102,28 @@ async def get_text(client: httpx.AsyncClient, url: str, *, encoding: str | None 
     if encoding:
         return resp.content.decode(encoding, errors="replace")
     return resp.text
+
+
+async def get_text_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    *,
+    encoding: str | None = None,
+    retries: int = 3,
+    base_wait: float = 5.0,
+    **kw,
+) -> str:
+    """Like get_text, but backs off on 429/503 (GitHub Actions shared egress hits these hourly)."""
+    last: SourceError | None = None
+    for attempt in range(retries + 1):
+        resp = await client.get(url, **kw)
+        if resp.status_code < 400:
+            return resp.content.decode(encoding, errors="replace") if encoding else resp.text
+        last = SourceError(f"HTTP {resp.status_code} from {url.split('?')[0]}: {resp.text[:200]}")
+        if resp.status_code not in RETRY_STATUSES or attempt == retries:
+            raise last
+        wait = _retry_wait(resp, attempt, base_wait)
+        log.info("retry %s after HTTP %s in %.1fs (attempt %d/%d)",
+                 url.split("?")[0], resp.status_code, wait, attempt + 1, retries)
+        await asyncio.sleep(wait)
+    raise last  # pragma: no cover — loop always returns or raises

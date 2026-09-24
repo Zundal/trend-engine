@@ -5,7 +5,7 @@ from __future__ import annotations
 from defusedxml import ElementTree as ET  # remote feeds: no XXE / entity expansion
 
 from ..models import TrendItem
-from .base import Source, get_text, rerank
+from .base import Source, get_text_retry, rerank
 
 
 class GoogleNews(Source):
@@ -18,7 +18,11 @@ class GoogleNews(Source):
 
     async def fetch(self, client, region, settings):
         hl, gl = region.lang, region.country
-        return await get_text(client, f"https://news.google.com/rss?hl={hl}&gl={gl}&ceid={gl}:{hl}")
+        # Shared CI egress often gets 429/503; back off rather than fail the hourly deploy alert.
+        return await get_text_retry(
+            client, f"https://news.google.com/rss?hl={hl}&gl={gl}&ceid={gl}:{hl}",
+            retries=3, base_wait=5.0,
+        )
 
     def parse(self, raw, region):
         root = ET.fromstring(raw)
