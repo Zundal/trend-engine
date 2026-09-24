@@ -13,6 +13,8 @@
 | `reddit` | content | 미국 | 불필요 | `reddit.com/r/teenagers+GenZ/hot/.rss` | 영어권 10·20대 서브레딧. **익명 한도가 낮아 US 에만** (영국도 같은 내용) |
 | `kenh14` | content | 베트남 | 불필요 | `kenh14.vn/rss/home.rss` | 베트남 젊은 층 매체 |
 | `steam` | content | 전 국가 | 불필요 | `ISteamChartsService/GetMostPlayedGames` + `appdetails` | 최다 플레이 게임 12개(전 세계 공통) — 게임 분야 신호 |
+| `melon` | content | 한국 | 불필요 | `melon.com/chart/index.json` | 멜론 TOP50. 국내 10·20대 음악·팬덤 신호 (애플 차트 보완) |
+| `netflix` | content | 전 국가 | 불필요 | `netflix.com/tudum/top10/data/all-weeks-global.tsv` | 주간 글로벌 Top10(영화·TV 40편). **Chrome UA 금지**(unsupportedbrowser). 나라별 TSV(~30MB)는 수집 주기상 제외 |
 | `google_news` | content | 국가·언어 | 불필요 | `news.google.com/rss` | 개인·비상업 용도 조건 명시됨 |
 
 ## 과거 데이터 (랭킹 소스 아님)
@@ -60,4 +62,5 @@
 일본은 pixiv + 애플로, 대만은 ETtoday + 애플로 보완했고, 베트남은 Kenh14 로 채웠다. 연령·성별 **실측은 여전히 한국뿐**.
 
 ## 후보 소스 (미구현)
-X/Twitter 트렌드(유료 API), TikTok Creative Center(스크래핑), 네이버 쇼핑인사이트, 멜론/지니 차트, 넷플릭스 Top10(주간 공개 데이터), Reddit, 카카오 이슈.
+X/Twitter 트렌드(유료 API), TikTok Creative Center(스크래핑), 카카오 이슈.
+나라별 넷플릭스 Top10 TSV(`all-weeks-countries.tsv`, ~30MB) — 주간 캐시가 생기면 검토.
