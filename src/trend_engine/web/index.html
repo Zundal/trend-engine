@@ -363,16 +363,36 @@ const CAT_COLOR = { "연예·방송": "#d6336c", "음악": "#ae3ec9", "게임": 
   "음식": "#f08c00", "테크·IT": "#0c8599", "경제·재테크": "#2f9e44", "정치·사회": "#5c677d", "생활·건강": "#74b816", "기타": "#909296" };
 let ycat = "", ccat = "", dcat = "";
 const catTag = (c) => c ? `<span class="ctag" style="--c:${CAT_COLOR[c] || "#909296"}">${esc(c)}</span>` : "";
+/** 쇼핑 분야 → 택소노미 (타일·칩·필터가 같은 맵을 쓴다) */
+const SHOPMAP = { "패션의류": "패션·뷰티", "패션잡화": "패션·뷰티", "화장품/미용": "패션·뷰티", "식품": "음식", "디지털/가전": "테크·IT",
+  "스포츠/레저": "스포츠", "생활/건강": "생활·건강", "가구/인테리어": "생활·건강", "출산/육아": "생활·건강", "여가/생활편의": "생활·건강" };
 function renderCatChips(el, items, selected, onPick) {
   const counts = {};
-  for (const it of items) counts[it.category || "기타"] = (counts[it.category || "기타"] || 0) + 1;
+  for (const it of items) {
+    const c = it.category || "기타";
+    if (c === "기타") continue;  // 필터 가치 없음 — 칩에서 제외
+    counts[c] = (counts[c] || 0) + 1;
+  }
   const present = CATS.filter((c) => counts[c]);
-  if (present.length < 2) { el.innerHTML = ""; return; }
-  el.innerHTML = `<button class="cchip" aria-pressed="${!selected}" data-c="">전체<span class="k">${items.length}</span></button>` +
+  if (!present.length) { el.innerHTML = ""; return; }
+  const n = items.filter((it) => (it.category || "기타") !== "기타").length || items.length;
+  el.innerHTML = `<button class="cchip" aria-pressed="${!selected}" data-c="">전체<span class="k">${n}</span></button>` +
     present.map((c) => `<button class="cchip" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === selected}" data-c="${esc(c)}">${esc(c)}<span class="k">${counts[c]}</span></button>`).join("");
   el.onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) onPick(b.dataset.c); };
 }
 const byCat = (items, c) => c ? items.filter((it) => (it.category || "기타") === c) : items;
+function youthShopRows(g) {
+  const shop = SHOPS[yperiod === "month" ? "month" : "week"]?.by_segment[g] || {};
+  const rows = [];
+  for (const [sc, v] of Object.entries(shop)) {
+    const c = SHOPMAP[sc];
+    if (!c) continue;
+    for (const k of (v.distinctive || []).slice(0, 3)) {
+      rows.push({ keyword: k, kind: "쇼핑", category: c, vs_older: 1, affinity: 100, days: null });
+    }
+  }
+  return rows;
+}
 const PERIOD = {}, SHOPS = {};
 let AGEP = null;
 const PLABEL = { week: "7일", month: "30일" };
@@ -736,9 +756,13 @@ function renderYouth() {
   const note = $("#y-note");
   note.hidden = !(pd && pd.days_available < pd.days);
   if (pd) note.textContent = `최근 ${PLABEL[yperiod]} 중 기록 ${pd.days_available}일 — 매일 쌓이는 중`;
-  const disc = youthRows(ygroup), iss = YOUTH?.issues.groups[ygroup] || [];
-  renderCatChips($("#y-cchips"), [...disc, ...iss], ycat, (c) => { ycat = c; renderYouth(); });
-  $("#y-disc").innerHTML = barsHTML(byCat(disc, ycat), ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
+  const disc = youthRows(ygroup), iss = YOUTH?.issues.groups[ygroup] || [], shopRows = youthShopRows(ygroup);
+  const forFilter = [...disc, ...iss, ...shopRows];
+  // 그룹·데이터가 바뀌면 사라진 분야 필터는 버린다
+  if (ycat && !forFilter.some((it) => (it.category || "기타") === ycat)) ycat = "";
+  renderCatChips($("#y-cchips"), forFilter, ycat, (c) => { ycat = c; renderYouth(); });
+  // 발견 목록에 쇼핑 고유어도 같은 필터로 묶어 타일↔칩↔목록 연속성 유지
+  $("#y-disc").innerHTML = barsHTML(byCat([...disc, ...shopRows], ycat), ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
   $("#y-issues").innerHTML = barsHTML(byCat(iss, ycat), "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
   renderCatTiles(disc, iss);
   renderMatrix();
@@ -811,24 +835,19 @@ function renderYouthTrend() {
 function renderCatTiles(disc, iss) {
   $("#y-cat-title").textContent = `${ygroup} 카테고리별 한눈에 (${yperiod === "now" ? "지금" : "최근 " + PLABEL[yperiod]})`;
   const groups = {};
-  for (const r of [...disc, ...iss]) {
+  for (const r of [...disc, ...iss, ...youthShopRows(ygroup)]) {
     const c = r.category || "기타";
+    if (c === "기타") continue;
     (groups[c] ||= new Map()).set(r.keyword, Math.max(groups[c].get(r.keyword) || 0, r.vs_older || 0));
   }
-  // shopping adds product interests per category (its own 분야 → our taxonomy)
-  const SHOPMAP = { "패션의류": "패션·뷰티", "패션잡화": "패션·뷰티", "화장품/미용": "패션·뷰티", "식품": "음식", "디지털/가전": "테크·IT",
-    "스포츠/레저": "스포츠", "생활/건강": "생활·건강", "가구/인테리어": "생활·건강", "출산/육아": "생활·건강", "여가/생활편의": "생활·건강" };
-  const shop = SHOPS[yperiod === "month" ? "month" : "week"]?.by_segment[ygroup] || {};
-  const shopBy = {};
-  for (const [sc, v] of Object.entries(shop)) {
-    const c = SHOPMAP[sc]; if (!c) continue;
-    for (const k of v.distinctive.slice(0, 2)) if (!groups[c]?.has(k) && !(shopBy[c] ||= []).includes(k)) shopBy[c].push(k);
-  }
-  const cats = CATS.filter((c) => c !== "기타" && (groups[c] || shopBy[c]));
+  const cats = CATS.filter((c) => groups[c]);
   $("#y-cats").innerHTML = cats.map((c) => {
-    const kws = [...(groups[c] || new Map()).entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(k)} <span class="muted">${v.toFixed(1)}배</span>`);
-    const items = [...kws, ...(shopBy[c] || []).slice(0, Math.max(0, 3 - kws.length)).map((k) => `${esc(k)} <span class="muted">쇼핑</span>`)].slice(0, 3);
-    return `<button class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h4><span>${esc(c)}</span><span>${(groups[c]?.size || 0) + (shopBy[c]?.length || 0)}</span></h4><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
+    const kws = [...groups[c].entries()].sort((a, b) => b[1] - a[1]);
+    const items = kws.slice(0, 3).map(([k, v]) => {
+      const shop = youthShopRows(ygroup).some((r) => r.keyword === k && r.category === c);
+      return `${esc(k)} <span class="muted">${shop && v <= 1 ? "쇼핑" : v.toFixed(1) + "배"}</span>`;
+    });
+    return `<button class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h4><span>${esc(c)}</span><span>${groups[c].size}</span></h4><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
   }).join("") || `<div class="empty">분야별 데이터가 아직 없습니다</div>`;
   $("#y-cats").onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) { ycat = ycat === b.dataset.c ? "" : b.dataset.c; renderYouth(); } };
 }

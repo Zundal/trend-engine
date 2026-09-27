@@ -26,6 +26,10 @@ def test_each_evidence_type_votes():
     assert cat.classify(["후드집업"], [], {}, [], {}, shop) == ("패션·뷰티", {"패션·뷰티": 2})
     assert cat.classify(["석유 최고가격 동결"], [], {}, [], {}, {})[0] == "경제·재테크"  # lexicon
     assert cat.classify(["이선민"], [], {}, [], {}, {}) == ("기타", {})
+    # Asian Games / transit headlines that offline youth used to leave as 기타 (E2E chips need ≥2 cats)
+    assert cat.classify(["우슈 이용현 투로"], [], {}, [], {}, {})[0] == "스포츠"
+    assert cat.classify(["장애물 경기 성승민"], [], {}, [], {}, {})[0] == "스포츠"
+    assert cat.classify(["KTX 승차권 예매 확대"], [], {}, [], {}, {})[0] == "생활·건강"
 
 
 def test_related_headline_overlap_counts():
