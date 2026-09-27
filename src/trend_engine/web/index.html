@@ -84,6 +84,7 @@ ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
 .list li { padding: 7px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: baseline; min-width: 0; }
 .list li a { color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
 .list li a:hover { text-decoration: underline; }
+#flow li.mine b { color: var(--accent); }
 .tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
 svg.spark { width: 100%; height: 40px; }
@@ -613,8 +614,9 @@ async function renderAttention() {
 }
 
 // 국가 간 전파: 같은 개체(언어별 이름을 공개 지식베이스로 이어 붙인)의 나라별 곡선을 전달 함수에 넣는다.
-// 개체를 "어느 나라 목록에서 먼저 나왔는지"로 태그해 그 나라발 주제만 쓴다 — 태그 없이 재면
-// 표본이 한국발 주제로 기울어 "한국이 항상 먼저"라는 착시가 나온다.
+// 개체를 "어느 나라 목록에서 먼저 나왔는지"(날짜 기준)로 태그해 그 나라발 주제만 쓴다 — 태그 없이 재면
+// 표본이 한국발 주제로 기울어 "한국이 항상 먼저"라는 착시가 나온다. 모든 언어권을 같은 깊이로 재므로
+// 지금 보는 나라의 언어권을 맨 위에, 이 나라로 들어오는 방향을 그 아래에 둔다.
 const CNAME = { ko: "한국", ja: "일본", en: "영어권", zh: "중화권", vi: "베트남" };
 let FLOWS;
 async function renderFlows() {
@@ -623,15 +625,28 @@ async function renderFlows() {
   const rows = (FLOWS?.flows || []).filter((f) => f.leads);
   if (!rows.length) { card.hidden = true; return; }
   card.hidden = false;
+  const lang = META.regions.find((r) => r.code === region)?.lang;
+  const name = (l) => esc(CNAME[l] || l);
   const by = {};
   for (const f of rows) (by[f.from] ??= []).push(f);
-  $("#flow").innerHTML = Object.entries(by).map(([src, list]) => `<li>
-      <a><b>${esc(CNAME[src] || src)}</b>에서 먼저 뜬 주제는</a>
-      <small>${list.sort((a, b) => a.lag - b.lag).map((f) =>
-        `${esc(CNAME[f.to] || f.to)}에 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
-    </li>`).join("");
+  const order = Object.keys(by).sort((a, b) => (b === lang) - (a === lang));  // 이 나라 먼저
+  const into = rows.filter((f) => f.to === lang).sort((a, b) => a.lag - b.lag);
+  $("#flow").innerHTML = order.map((src) => `<li class="${src === lang ? "mine" : ""}">
+      <a><b>${name(src)}</b>에서 먼저 뜬 주제는</a>
+      <small>${by[src].sort((a, b) => a.lag - b.lag).map((f) =>
+        `${name(f.to)}에 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
+    </li>`).join("") + (into.length ? `<li class="mine">
+      <a><b>${name(lang)}</b>에 도착하는 주제는</a>
+      <small>${into.map((f) => `${name(f.from)}에서 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
+    </li>` : "");
+  const mine = rows.some((f) => f.from === lang || f.to === lang);
+  const m = FLOWS.measured?.[lang], o = FLOWS.origins?.[lang];
+  const depth = lang && !mine && m != null
+    ? ` ${name(lang)}은 아직 방향이 잡히지 않았습니다 — 측정 개체 ${m}개, ${name(lang)}발 주제 ${o}개${FLOWS.filling ? " (더 채우는 중)" : ""}.`
+    : "";
   $("#flow-note").textContent = `주제가 처음 등장한 나라를 기준으로만 잽니다 — 반대 방향은 ${
-    rows.every((f) => f.back_lag < 0.5) ? "모두 0주 근처로 무너집니다" : "일부만 무너집니다"}. 개체 ${FLOWS.entities}개 기준.`;
+    rows.every((f) => f.back_lag < 0.5) ? "모두 0주 근처로 무너집니다" : "일부만 무너집니다"}. 개체 ${FLOWS.entities}개, ${
+    (FLOWS.langs || []).length}개 언어권을 같은 깊이로 측정.` + depth;
 }
 
 // 유행의 모양: 정점 앞뒤 일주일에 관심이 어떻게 갈렸는지로 네 가지 중 하나를 붙인다.

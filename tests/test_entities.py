@@ -37,3 +37,28 @@ async def test_offline_alignment_reads_fixtures_and_filters_by_the_titles_asked_
     async with Entities(Settings(offline=True, fixtures_dir=tmp_path)) as e:
         got = await e.align(["오징어 게임"], "ko", ["ko", "ja", "en"])
     assert set(got) == {"Q1"}
+
+
+# --- 출처 태그: 날짜가 정하지, 언어를 훑는 순서가 정하지 않는다 -----------------------------
+from datetime import date, timedelta  # noqa: E402
+
+from trend_engine.entities import fair_order, first_origin  # noqa: E402
+
+D = date(2026, 9, 1)
+
+
+def test_first_origin_is_the_language_that_listed_the_entity_on_the_earliest_day():
+    seen = [(D, "ko", {"Q1", "Q2"}),  # ko is looked at first...
+            (D - timedelta(days=30), "en", {"Q1"})]  # ...but en had Q1 a month earlier
+    assert first_origin(seen) == {"Q1": "en", "Q2": "ko"}
+
+
+def test_first_origin_is_ambiguous_when_two_languages_list_it_on_the_same_first_day():
+    seen = [(D, "ko", {"Q1"}), (D, "en", {"Q1"}), (D + timedelta(days=5), "ja", {"Q1"})]
+    assert first_origin(seen) == {"Q1": None}  # a same-day global event has no origin
+
+
+def test_fair_order_interleaves_origins_and_drops_ambiguous_entities():
+    origin = {"k1": "ko", "k2": "ko", "k3": "ko", "e1": "en", "j1": "ja", "x": None}
+    assert fair_order(origin) == ["k1", "e1", "j1", "k2", "k3"]
+
