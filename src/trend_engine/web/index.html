@@ -467,10 +467,17 @@ function statusCell(c) {
 function periodData() { return cperiod === "live" ? null : PERIOD[region]?.[cperiod]; }
 function renderRank() {
   const pd = periodData();
-  $("#rank-title").firstChild.textContent = cperiod === "live" ? "지금 관심 랭킹 " : `최근 ${PLABEL[cperiod]} 관심 랭킹 `;
+  const title = $("#rank-title");
+  if (title) {
+    const text = cperiod === "live" ? "지금 관심 랭킹 " : `최근 ${PLABEL[cperiod]} 관심 랭킹 `;
+    const tip = title.querySelector("small")?.textContent || "행을 누르면 상세";
+    title.innerHTML = `${esc(text)}<small>${esc(tip)}</small>`;
+  }
   const note = $("#rank-note");
-  note.hidden = !(pd && pd.days_available < pd.days);
-  if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
+  if (note) {
+    note.hidden = !(pd && pd.days_available < pd.days);
+    if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
+  }
   $("#rank").classList.toggle("period", !!pd);
   if (pd) return renderPeriodRank(pd);
   // one row per story: themes group clusters that are the same thing (아시안게임 + 나고야)
@@ -532,6 +539,7 @@ async function renderDetail(t) {
   const c = t.members?.[0] || t;  // theme -> its strongest member carries the evidence
   const mentions = c.mentions || [];
   const others = (t.members || []).slice(1);
+  const wantKey = t.key, wantRegion = region;
   $("#detail").innerHTML = `<div class="detail">
     <h3>${esc(t.label)}${catTag(t.category || c.category)}</h3>
     ${others.length ? `<div class="muted">같은 이야기로 묶임: ${others.map((m) => esc(m.label)).join(" · ")}</div>` : ""}
@@ -541,9 +549,14 @@ async function renderDetail(t) {
     ${mentions.length ? `<b>관련 콘텐츠</b><ul>${mentions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
     <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
   try {
-    const h = await api(`api/history?region=${region}&key=${encodeURIComponent(t.key)}`);
+    const h = await api(`api/history?region=${wantRegion}&key=${encodeURIComponent(wantKey)}`);
+    // 나라·기간·선택이 바뀌면 이 응답은 버린다 (비동기 경쟁으로 #spark 가 이미 없음)
+    if (region !== wantRegion || !$("#spark")) return;
     $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다" : spark(h.map((x) => x.rank));
-  } catch (e) { $("#spark").textContent = e.message; }
+  } catch (e) {
+    const el = $("#spark");
+    if (el) el.textContent = e.message;
+  }
 }
 function spark(ranks) {
   const w = 300, hgt = 40, maxR = Math.max(...ranks, 10);

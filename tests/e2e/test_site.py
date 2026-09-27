@@ -90,6 +90,8 @@ def test_country_tab_periods_and_detail(page, site):
     page.wait_for_function("document.querySelector('#rank-title').textContent.includes('7일')")
     page.click("#regions [data-code='US']")
     page.wait_for_function("REPORT && REPORT.region === 'US'")
+    # 이전 상세의 history 요청이 늦게 끝나도 콘솔 에러가 없어야 함
+    page.wait_for_timeout(800)
     assert not page.errors, page.errors
 
 
