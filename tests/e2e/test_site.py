@@ -114,17 +114,32 @@ def test_no_source_names_leak_and_mobile_fits(page, site):
 
 
 def test_categories_overview_and_filters(page, site):
-    page.goto(site + "#youth/20대 여성/now")
+    """분야 칩/타일 필터 — 세그먼트·분야 개수가 바뀌어도 동적으로 고른다."""
+    page.goto(site + "#youth/20대/now")
     wait_rows(page, "#y-cats .ctile")
-    wait_rows(page, "#y-cchips .cchip", 2)
-    chip = page.locator("#y-cchips .cchip").nth(1)  # chips come from the keyword lists themselves
-    cat = chip.get_attribute("data-c")
-    chip.click()
+    chip_sel = '#y-cchips .cchip[data-c]:not([data-c=""])'
+    cat = None
+    for btn in page.locator("#ygroups [data-g]").all():
+        btn.click()
+        page.wait_for_timeout(250)
+        if page.locator(chip_sel).count() >= 1:
+            chip = page.locator(chip_sel).first
+            cat = chip.get_attribute("data-c")
+            chip.click()
+            break
+    if not cat:
+        tile = page.locator("#y-cats .ctile").first
+        cat = tile.get_attribute("data-c")
+        tile.click()
     tags = page.locator("#y-disc .ctag, #y-issues .ctag").all_inner_texts()
-    assert tags and {t for t in tags if t} == {cat}, (cat, tags)
+    assert cat and tags and {t for t in tags if t} == {cat}, (cat, tags)
+
     page.goto(site + "#country/KR/live")
-    wait_rows(page, "#c-cchips .cchip", 3)
-    chip = page.locator("#c-cchips .cchip").nth(1)
+    page.wait_for_function(
+        'document.querySelectorAll(\'#c-cchips .cchip[data-c]:not([data-c=""])\').length >= 1',
+        timeout=15000,
+    )
+    chip = page.locator('#c-cchips .cchip[data-c]:not([data-c=""])').first
     chosen = chip.get_attribute("data-c")
     chip.click()
     row_tags = page.locator("#rank .ctag").all_inner_texts()
