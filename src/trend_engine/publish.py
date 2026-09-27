@@ -97,7 +97,8 @@ def public_transfer(t: dict[str, Any]) -> dict[str, Any]:
 
 def public_crosscountry(c: dict[str, Any]) -> dict[str, Any]:
     """Language codes and coefficients. Entity titles stay out — they are article names."""
-    return {"langs": c["langs"], "entities": c["entities"],
+    return {"langs": c["langs"], "entities": c["entities"], "origins": c.get("origins", {}),
+            "measured": c.get("measured", {}), "filling": c.get("filling", 0),
             "flows": [{"from": f["from"], "to": f["to"], "entities": f["entities"], "leads": f["leads"],
                        "lag": f["forward"]["mean_lag"], "gain": f["forward"]["gain"],
                        "back_lag": f["backward"]["mean_lag"]} for f in c["flows"]]}

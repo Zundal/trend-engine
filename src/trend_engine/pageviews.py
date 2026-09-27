@@ -11,6 +11,12 @@ Endpoints (no key, courtesy User-Agent required):
 
 Rate limits: share `wikimedia_gate` with the wikipedia source (concurrency 2 + pacing).
 On 429/503, back off exponentially; never swallow the error — callers surface it.
+
+An article's series is read in two pieces: the *settled head* (whole calendar months up to the last
+one that is at least SETTLED old — those counts never change, so it is cached for a year under a key
+that stays the same all month) and the *fresh tail* (the current month, cached FRESH). A window that
+ends "yesterday" therefore costs one small request a day once the head is in the cache, instead of
+re-reading 400 days every time, and a capped run gets further each time it runs.
 """
 
 from __future__ import annotations
@@ -77,6 +83,8 @@ class History:
         return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
     async def _get(self, url: str, key: str, ttl: timedelta) -> str | None:
+        """-> the body, "" for a 404 (also cached: an article that has no data in a settled range
+        never will), or None when the request was skipped (budget) or failed."""
         if self.store is not None:
             hit = self.store.cache_get(key, ttl)
             if hit is not None:
@@ -94,8 +102,10 @@ class History:
                     await asyncio.sleep(PACE)
             except SourceError as e:
                 msg = str(e)
-                if "HTTP 404" in msg:
-                    return None  # normal: article too new, or that day was never published
+                if "HTTP 404" in msg:  # normal: article too new, or that day was never published
+                    if self.store is not None:
+                        self.store.cache_set(key, "")
+                    return ""
                 if ("HTTP 429" in msg or "HTTP 503" in msg) and attempt < 3:
                     await asyncio.sleep(RETRY_WAIT * (2 ** attempt))
                     continue
@@ -134,11 +144,22 @@ class History:
         if self.settings.offline:
             vals = self._fixture(f"{lang}-articles").get(name)
             return parse_article(json.dumps(vals), start, end) if vals else []
+        parts = split_range(start, end)
+        out: list[tuple[date, int]] = []
+        found = False
+        for s, e, ttl in parts:
+            raw = await self._range(lang, name, s, e, ttl)
+            if raw is None:
+                return []  # skipped or failed: an incomplete series is worse than none
+            found |= bool(raw)
+            out += parse_article(raw, s, e) if raw else [(s + timedelta(days=k), 0) for k in range((e - s).days + 1)]
+        return out[(start - parts[0][0]).days:] if found else []
+
+    async def _range(self, lang: str, name: str, start: date, end: date, ttl: timedelta) -> str | None:
         q = urllib.parse.quote(name, safe="")
-        raw = await self._get(f"{REST}/per-article/{lang}.wikipedia/all-access/user/{q}/daily/"
-                              f"{start:%Y%m%d}/{end:%Y%m%d}",
-                              f"pv:art:{lang}:{name}:{start.isoformat()}:{end.isoformat()}", FRESH)
-        return parse_article(raw, start, end) if raw else []
+        return await self._get(f"{REST}/per-article/{lang}.wikipedia/all-access/user/{q}/daily/"
+                               f"{start:%Y%m%d}/{end:%Y%m%d}",
+                               f"pv:art:{lang}:{name}:{start.isoformat()}:{end.isoformat()}", ttl)
 
     def latest_day(self, lang: str) -> date:
         """The most recent day we can read. Offline that is the newest day in the fixture, so a
@@ -153,6 +174,25 @@ class History:
                        ) -> dict[str, list[tuple[date, int]]]:
         got = await asyncio.gather(*(self.article(lang, n, start, end) for n in names))
         return {n: s for n, s in zip(names, got) if s}
+
+
+def settled_month_end(today: date | None = None) -> date:
+    """Last day of the most recent whole month whose counts are settled (SETTLED days old)."""
+    today = today or date.today()
+    end = today.replace(day=1) - timedelta(days=1)
+    while today - end <= SETTLED:
+        end = end.replace(day=1) - timedelta(days=1)
+    return end
+
+
+def split_range(start: date, end: date, today: date | None = None) -> list[tuple[date, date, timedelta]]:
+    """[(start, end, ttl)] for one article read: a month-aligned settled head cached for a year (its
+    key is the same for the whole month, so it is fetched once), then the fresh tail."""
+    settled = settled_month_end(today)
+    if start > settled:
+        return [(start, end, FRESH)]
+    head = (start.replace(day=1), min(end, settled), timedelta(days=365))
+    return [head] if end <= settled else [head, (settled + timedelta(days=1), end, FRESH)]
 
 
 def days_back(n: int, today: date | None = None) -> list[date]:

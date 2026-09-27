@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive, publish
+from .config import export_langs
 from .health import Health
 from .service import TrendService
 
@@ -160,12 +161,15 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
 
     # --- 국가 간 전파 (같은 개체, 여러 언어) — weekly, budgeted like the other history views
     try:
-        cc = await svc.crosscountry()
+        cc = await svc.crosscountry(export_langs(regions))
         write("crosscountry", publish.public_crosscountry(cc) if cc else {})
         if cc:
             leads = [f for f in cc["flows"] if f["leads"]]
             lines.append(f"crosscountry: {cc['entities']} entities, {len(cc['flows'])} flows, {len(leads)} with a lead"
                          + (f" (+{cc['filling']} still to fetch)" if cc.get("filling") else ""))
+            lines.append("crosscountry depth: " + ", ".join(
+                f"{l} {cc['measured'].get(l, 0)}/{cc['origins'].get(l, 0)}" for l in cc["langs"])
+                + f" measured/origin, {cc.get('ambiguous', 0)} ambiguous")
         else:
             lines.append("crosscountry: not enough entities yet")
     except Exception as e:  # noqa: BLE001

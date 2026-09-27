@@ -46,6 +46,16 @@ REGIONS: dict[str, Region] = {
 }
 
 
+# Regions the public site is built for (pages.yml). Every language here gets the same depth of
+# history analysis: attention, shapes, and a seat in the cross-country transfer measurement.
+EXPORT_REGIONS: tuple[str, ...] = ("KR", "US", "JP", "GB", "TW", "VN")
+
+
+def export_langs(regions: list[str] | tuple[str, ...] = EXPORT_REGIONS) -> tuple[str, ...]:
+    """Distinct wiki languages of these regions, in region order (US and GB share 'en')."""
+    return tuple(dict.fromkeys(get_region(code).lang for code in regions))
+
+
 def get_region(code: str) -> Region:
     code = code.upper()
     if code in REGIONS:

@@ -9,13 +9,14 @@ from typing import Any
 from . import alerts as alerts_mod
 from . import archive, diffusion, entities, flux, kernel, pageviews, pomdp, youth
 from . import shapes as shapes_mod
-from .config import REGIONS, Settings, get_region
+from .config import REGIONS, Settings, export_langs, get_region
 from .engine import TrendEngine
 from .segments import AGE_GROUPS, DEFAULT_SEGMENTS, GENDERS, OLDER, YOUTH_GROUPS, SegmentProfiler, parse_segment
 from .shopping import ShoppingInsight
 from .store import Store
 
 ENTITY_BUDGET = 400  # uncached pageview requests one 국가 간 전파 pass may make
+SAMPLE_DAYS_BACK = (200, 120, 60, 30, 2)  # most-read lists sampled per language, oldest first
 DAY_BUDGET = 150  # uncached day-lists one 교체율 pass may fetch (~30s); the rest fills in next run
 RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
 SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
@@ -37,7 +38,7 @@ class TrendService:
         s = self.settings
         return {
             "offline": s.offline,
-            "regions": [{"code": r.code, "name": r.name} for r in REGIONS.values()],
+            "regions": [{"code": r.code, "name": r.name, "lang": r.lang} for r in REGIONS.values()],
             "sources": self.engine.source_overview(),
             "segments": {"default": [x.name for x in DEFAULT_SEGMENTS], "ages": list(AGE_GROUPS), "genders": list(GENDERS)},
             "features": {
@@ -204,34 +205,43 @@ class TrendService:
         self.store.cache_set("transfer:v1", out)
         return out
 
-    async def crosscountry(self, langs: tuple[str, ...] = ("ko", "ja", "en"), per_day: int = 30,
+    async def crosscountry(self, langs: tuple[str, ...] | None = None, per_day: int = 30,
                            max_age: timedelta = timedelta(days=7)) -> dict[str, Any] | None:
         """국가 간 전파: the same entity, read in several languages, run through the transfer kernel.
 
         Entities are joined through Wikidata (entities.py) and tagged with the country whose list
-        they first showed up in, because the tag is what turns "Korea leads everything" (an artefact
+        they showed up in first, because the tag is what turns "Korea leads everything" (an artefact
         of which topics we sampled) into "a topic leads from where it came from" (a measurement).
+
+        Every exported language gets the same depth: the same sampled days, an origin decided by
+        date rather than by which language was looked at first, and a request budget spent
+        round-robin across origins so no language is the one that is always still filling.
         """
-        if (hit := self.store.cache_get("crosscountry:v1", max_age)) is not None:
+        langs = langs or export_langs()
+        key = f"crosscountry:v2:{','.join(langs)}"
+        if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
-        origin: dict[str, str] = {}
         links: dict[str, dict[str, str]] = {}
+        sightings: list[tuple[date, str, set[str]]] = []
         async with pageviews.History(self.settings, self.store, budget=ENTITY_BUDGET) as hist, \
                 entities.Entities(self.settings, self.store) as ent:
             end = min(hist.latest_day(lang) for lang in langs)  # offline: whatever the fixture holds
             start = end - timedelta(days=420)
             for lang in langs:
-                titles: list[str] = []
-                for back in (2, 30, 60, 120, 200):
-                    titles += [a for a, _ in await hist.top(lang, end - timedelta(days=back), limit=per_day)]
-                found = await ent.align(list(dict.fromkeys(titles)), lang, list(langs))
-                for qid, sitelinks in found.items():
-                    links[qid] = sitelinks
-                    origin.setdefault(qid, lang)  # first list it appeared in
+                by_day = {end - timedelta(days=back): [a for a, _ in await hist.top(lang, end - timedelta(days=back),
+                                                                                   limit=per_day)]
+                          for back in SAMPLE_DAYS_BACK}
+                found = await ent.align(list(dict.fromkeys(t for ts in by_day.values() for t in ts)), lang, list(langs))
+                links |= found
+                # most-read lists spell titles with underscores, sitelinks with spaces
+                by_title = {sl[lang].replace("_", " "): qid for qid, sl in found.items() if lang in sl}
+                sightings += [(day, lang, {by_title[t.replace("_", " ")] for t in titles if t.replace("_", " ") in by_title})
+                              for day, titles in by_day.items()]
+            origin = entities.first_origin(sightings)
             series: dict[str, dict[str, list[float]]] = {l: {} for l in langs}
-            for qid, sitelinks in links.items():
+            for qid in entities.fair_order(origin):
                 for lang in langs:
-                    title = sitelinks.get(lang)
+                    title = links[qid].get(lang)
                     if not title:
                         continue
                     rows = await hist.article(lang, title, start, end)
@@ -243,9 +253,11 @@ class TrendService:
         flows = kernel.country_flows(series, origin, min_entities=3 if self.settings.offline else 8)
         if not flows:
             return None
+        pools = {l: sum(1 for o in origin.values() if o == l) for l in langs}
         result = {"langs": list(langs), "entities": len(links), "flows": flows,
+                  "origins": pools, "ambiguous": sum(1 for o in origin.values() if o is None),
                   "measured": {l: len(v) for l, v in series.items()}, "filling": skipped}
-        self.store.cache_set("crosscountry:v1", result)
+        self.store.cache_set(key, result)
         return result
 
     async def attention(self, region: str = "KR", days: int = 400,

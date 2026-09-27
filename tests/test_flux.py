@@ -142,3 +142,81 @@ def test_recurrence_looks_a_year_away_and_says_nothing_without_the_data():
     short = _series([10] * 30 + [50, 900, 50] + [10] * 60)
     b = shapes.bursts(short, min_side=1, min_peak=100)
     assert b and shapes.recurs(short, b[0]) is None  # no data a year out -> no claim
+
+
+# --- 과거 조회수: 정착 구간은 한 달 내내 같은 키로 캐시, 최신 꼬리만 매번 -------------------------
+import json
+
+from trend_engine import pageviews as pv
+from trend_engine.pageviews import settled_month_end, split_range
+
+
+def test_settled_month_end_skips_a_month_that_is_still_too_fresh():
+    assert settled_month_end(date(2026, 9, 27)) == date(2026, 8, 31)
+    assert settled_month_end(date(2026, 9, 2)) == date(2026, 7, 31)  # Aug 31 is only 2 days old
+
+
+def test_split_range_gives_a_month_aligned_head_that_is_stable_all_month():
+    today = date(2026, 9, 27)
+    a = split_range(date(2025, 8, 3), date(2026, 9, 26), today)
+    b = split_range(date(2025, 8, 4), date(2026, 9, 27), today + timedelta(days=1))
+    assert a[0][:2] == b[0][:2] == (date(2025, 8, 1), date(2026, 8, 31))  # same key tomorrow
+    assert a[0][2] == timedelta(days=365) and a[1] == (date(2026, 9, 1), date(2026, 9, 26), pv.FRESH)
+    assert split_range(date(2026, 9, 10), date(2026, 9, 26), today) == [(date(2026, 9, 10), date(2026, 9, 26), pv.FRESH)]
+    assert split_range(date(2026, 1, 10), date(2026, 3, 26), today) == [(date(2026, 1, 1), date(2026, 3, 26), timedelta(days=365))]
+
+
+class _Store:
+    def __init__(self):
+        self.d = {}
+
+    def cache_get(self, key, ttl):
+        return self.d.get(key)
+
+    def cache_set(self, key, value):
+        self.d[key] = value
+
+
+def _daily(start: date, end: date, v: int) -> str:
+    items = [{"timestamp": f"{start + timedelta(days=k):%Y%m%d}00", "views": v} for k in range((end - start).days + 1)]
+    return json.dumps({"items": items})
+
+
+@pytest.mark.asyncio
+async def test_article_reads_head_once_and_only_the_tail_again(monkeypatch):
+    from trend_engine.sources.base import SourceError
+
+    calls = []
+
+    async def fake_get(client, url, headers=None):
+        calls.append(url)
+        s, e = url.rsplit("/", 2)[-2:]
+        s, e = date(int(s[:4]), int(s[4:6]), int(s[6:])), date(int(e[:4]), int(e[4:6]), int(e[6:]))
+        if "Nova" in url and e <= settled_month_end():
+            raise SourceError("HTTP 404")  # an article created this month: no settled history
+        return _daily(s, e, 7)
+
+    monkeypatch.setattr(pv, "get_text", fake_get)
+    monkeypatch.setattr(pv, "PACE", 0)
+    store = _Store()
+    end = date.today() - timedelta(days=1)
+    start = end - timedelta(days=100)
+    async with pv.History(Settings(offline=False), store, budget=10) as h:
+        got = await h.article("ko", "A", start, end)
+        assert [d for d, _ in got] == [start + timedelta(days=k) for k in range(101)] and all(v == 7 for _, v in got)
+        n_first = len(calls)
+        assert n_first == 2  # settled head + fresh tail
+        again = await h.article("ko", "A", start, end)
+        assert again == got and len(calls) == n_first  # both halves cached
+        h.store.d = {k: v for k, v in h.store.d.items() if not k.endswith(f"{end.isoformat()}")}  # tail expires
+        await h.article("ko", "A", start, end)
+        assert len(calls) == n_first + 1  # the head is still good; only the tail was re-read
+
+        nova = await h.article("ko", "Nova", start, end)
+        assert len(nova) == 101 and nova[0][1] == 0 and nova[-1][1] == 7  # 404 head -> zeros, tail kept
+        assert h.errors == []  # a 404 is not an error
+        assert store.cache_get(next(k for k in store.d if "Nova" in k and "365" not in k), None) is not None
+
+    async with pv.History(Settings(offline=False), _Store(), budget=1) as h:
+        assert await h.article("ko", "A", start, end) == []  # budget for one half only -> not measured
+        assert h.skipped == 1

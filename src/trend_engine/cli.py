@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Any
 
-from .config import Settings
+from .config import EXPORT_REGIONS, Settings
 
 
 def _print(data: Any, as_json: bool, render) -> None:
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
 
     ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
     ex.add_argument("--out", default="site")
-    ex.add_argument("--regions", default="KR,US,JP,GB,TW,VN")
+    ex.add_argument("--regions", default=",".join(EXPORT_REGIONS))
     ex.add_argument("--archive", help="일별 요약 저장 위치 (기본: TREND_ENGINE_ARCHIVE 또는 data/archive)")
     ex.add_argument("--health", help="점검 결과 파일 (사이트 밖에 저장, 예: health.json)")
 

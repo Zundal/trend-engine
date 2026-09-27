@@ -67,6 +67,7 @@ score           = (Σ family_score + content_boost) × consensus × 100
 - `reports`: 리포트 JSON 전체 (재현·디버깅용).
 - `clusters`: (report_id, rank, key) — `/api/history` 순위 추이.
 - `cache`: DataLab 응답(6h), 세그먼트·쇼핑·10·20대(3h)·세대 확산(20h) 결과, 국면 믿음(`belief:v1`, 60일), 일별 스냅샷(`daily:*`, 기록되면 archive 로).
+  위키미디어 조회수는 정착된 날·달은 1년(`pv:top:*`, 문서 시계열의 달 단위 머리), 최신 꼬리만 12시간 — 404 도 캐시해 예산을 다시 쓰지 않는다. 국가 간 전파는 언어 집합별 키(`crosscountry:v2:<langs>`, 7일).
 - 이전 스냅샷 기준: 30분 이상 지난 최신 리포트 (없으면 직전 리포트).
 
 ## 확장 지점

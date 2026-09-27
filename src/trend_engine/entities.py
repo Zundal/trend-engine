@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import json
 import urllib.parse
-from datetime import timedelta
-from typing import Any
+from datetime import date, timedelta
+from typing import Any, Iterable
 
 from .config import Settings
 from .sources.base import SourceError, get_text
@@ -93,3 +93,34 @@ class Entities:
                     self.store.cache_set(key, raw)
             out |= parse_sitelinks(raw, langs)
         return out
+
+
+# --- where a topic came from ------------------------------------------------------------------
+def first_origin(sightings: Iterable[tuple[date, str, Iterable[str]]]) -> dict[str, str | None]:
+    """{qid: lang} — the language whose most-read list showed the entity on the *earliest* sampled
+    day. Sighted in two languages on that same day it is tagged None: a topic that lands everywhere
+    at once has no origin, and putting it in one country's pool would only drag that lag to zero.
+    The order languages are looked at in never decides (which is the point: a fixed order gave the
+    first language every shared topic)."""
+    first: dict[str, tuple[date, set[str]]] = {}
+    for day, lang, qids in sightings:
+        for q in qids:
+            seen = first.get(q)
+            if seen is None or day < seen[0]:
+                first[q] = (day, {lang})
+            elif day == seen[0]:
+                seen[1].add(lang)
+    return {q: (next(iter(langs)) if len(langs) == 1 else None) for q, (_, langs) in first.items()}
+
+
+def fair_order(origin: dict[str, str | None]) -> list[str]:
+    """Entities interleaved by origin (ko, en, ko, en …) so a capped run measures every language to
+    the same depth instead of exhausting its budget on whichever language came first."""
+    groups: dict[str, list[str]] = {}
+    for q, lang in origin.items():
+        if lang is not None:
+            groups.setdefault(lang, []).append(q)
+    out: list[str] = []
+    for i in range(max((len(g) for g in groups.values()), default=0)):
+        out += [g[i] for g in groups.values() if i < len(g)]
+    return out
