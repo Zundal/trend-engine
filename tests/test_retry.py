@@ -7,7 +7,7 @@ import pytest
 
 from trend_engine.config import get_region
 from trend_engine.pageviews import History
-from trend_engine.sources.base import SourceError, get_text_retry
+from trend_engine.sources.base import SourceError, TransientError, get_text_retry
 from trend_engine.sources.google_news import GoogleNews
 from trend_engine.sources.wikipedia import Wikipedia
 
@@ -45,9 +45,19 @@ async def test_get_text_retry_gives_up_after_budget(monkeypatch):
     monkeypatch.setattr("trend_engine.sources.base.asyncio.sleep", _instant_sleep)
     transport = _SeqTransport([httpx.Response(503, text="nope")] * 4)
     async with httpx.AsyncClient(transport=transport) as client:
-        with pytest.raises(SourceError, match="HTTP 503"):
+        with pytest.raises(TransientError, match="HTTP 503"):  # engine may stand in the last good result
             await get_text_retry(client, "https://example.test/x", retries=2, base_wait=0.01)
     assert len(transport.urls) == 3  # initial + 2 retries
+
+
+@pytest.mark.asyncio
+async def test_get_text_retry_other_errors_are_not_transient():
+    transport = _SeqTransport([httpx.Response(404, text="gone")])
+    async with httpx.AsyncClient(transport=transport) as client:
+        with pytest.raises(SourceError, match="HTTP 404") as err:
+            await get_text_retry(client, "https://example.test/x", retries=2, base_wait=0.01)
+    assert not isinstance(err.value, TransientError)
+    assert len(transport.urls) == 1
 
 
 @pytest.mark.asyncio

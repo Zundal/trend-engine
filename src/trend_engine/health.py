@@ -37,6 +37,9 @@ class Health:
             # extras (community feeds, charts) come and go — worth knowing, not worth a red build
             report_it = self.warn if getattr(REGISTRY.get(name), "optional", True) else self.problem
             report_it(f"[{region}] 소스 실패: {name} — {str(err)[:160]}")
+        for name, s in status.items():
+            if s["ok"] and s.get("stale"):  # blocked, but a recent good result stood in (engine._run_source)
+                self.warn(f"[{region}] 소스 일시 차단: {name} — 직전 결과로 대체 ({str(s['stale'])[:160]})")
         ok = sum(1 for s in status.values() if s["ok"])
         if ok < 2:
             self.problem(f"[{region}] 정상 소스가 {ok}개뿐")

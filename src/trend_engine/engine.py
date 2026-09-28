@@ -14,10 +14,12 @@ from .config import Settings, get_region
 from .models import TrendCluster, TrendItem, TrendReport
 from .scoring import apply_history, apply_novelty, build_clusters, build_themes
 from .sources import REGISTRY, Source
+from .sources.base import TransientError
 from .store import Store, utcnow
 
 log = logging.getLogger(__name__)
 _CLUSTER_FIELDS = {f.name for f in fields(TrendCluster)}
+_ITEM_FIELDS = {f.name for f in fields(TrendItem)}
 
 
 def make_client(settings: Settings) -> httpx.AsyncClient:
@@ -50,12 +52,22 @@ class TrendEngine:
             for s in REGISTRY.values()
         ]
 
-    async def _run_source(self, src: Source, client, region) -> tuple[str, list[TrendItem] | Exception]:
+    async def _run_source(self, src: Source, client, region) -> tuple[str, list[TrendItem] | Exception, str | None]:
+        """(name, items or the error, why the items are stale — None when fresh)."""
+        remember = src.stale_ok is not None and self.store is not None and not self.settings.offline
+        key = f"last-good:v1:{src.name}:{region.code}"
         try:
-            return src.name, await src.collect(client, region, self.settings)
+            items = await src.collect(client, region, self.settings)
         except Exception as e:  # one broken source must never break the report
             log.warning("source %s failed: %s", src.name, e)
-            return src.name, e
+            if remember and isinstance(e, TransientError) and (hit := self.store.cache_get(key, src.stale_ok)):
+                age = int((utcnow() - datetime.fromisoformat(hit["at"])).total_seconds() // 60)
+                items = [TrendItem(**{k: v for k, v in d.items() if k in _ITEM_FIELDS}) for d in hit["items"]]
+                return src.name, items, f"{age}분 전 · {str(e)[:120]}"
+            return src.name, e, None
+        if remember:
+            self.store.cache_set(key, {"at": utcnow().isoformat(), "items": [i.to_dict() for i in items]})
+        return src.name, items, None
 
     async def collect(self, region_code: str = "KR", only: list[str] | None = None, save: bool = True) -> TrendReport:
         region = get_region(region_code)
@@ -82,11 +94,11 @@ class TrendEngine:
         status: dict[str, dict] = {}
         keyword_items: list[TrendItem] = []
         content: dict[str, list[TrendItem]] = {}
-        for name, res in results:
+        for name, res, stale in results:
             if isinstance(res, Exception):
                 status[name] = {"ok": False, "count": 0, "error": str(res)}
                 continue
-            status[name] = {"ok": True, "count": len(res), "error": None}
+            status[name] = {"ok": True, "count": len(res), "error": None} | ({"stale": stale} if stale else {})
             if REGISTRY[name].kind == "content":
                 content[name] = res
             else:

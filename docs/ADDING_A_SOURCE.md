@@ -13,6 +13,8 @@
        regions = frozenset({"KR", "KR-11"})   # None = 모든 지역
        requires = ()             # Settings 필드명 (키 필요 시). config.Settings/.env.example 에도 추가
        fixture_ext = "json"
+       # stale_ok = timedelta(hours=3)  # 업스트림이 IP 단위로 막는 소스만: get_text_retry 가 끝내 429/503 이면
+       #                                # 이 시간 안의 직전 성공 결과로 대체 (경고). 파싱 오류는 대체하지 않음
 
        async def fetch(self, client, region, settings):
            return await get_text(client, "https://...")   # 원본 그대로 반환
