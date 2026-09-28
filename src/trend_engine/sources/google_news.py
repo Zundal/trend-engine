@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from defusedxml import ElementTree as ET  # remote feeds: no XXE / entity expansion
 
 from ..models import TrendItem
@@ -15,6 +17,9 @@ class GoogleNews(Source):
     optional = False
     weight = 0.5
     fixture_ext = "xml"
+    # news.google.com serves a 503 "Sorry..." page to some runner IPs for a whole run; the next
+    # hourly run (fresh IP) is fine. Headlines a couple of hours old beat none; longer still alerts.
+    stale_ok = timedelta(hours=3)
 
     async def fetch(self, client, region, settings):
         hl, gl = region.lang, region.country

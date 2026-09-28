@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from pathlib import Path
 
 import httpx
@@ -24,6 +25,10 @@ RETRY_STATUSES = frozenset({429, 503})
 
 class SourceError(RuntimeError):
     pass
+
+
+class TransientError(SourceError):
+    """Upstream refused us (429/503) even after backing off — the data itself is not broken."""
 
 
 def _retry_wait(resp: httpx.Response, attempt: int, base_wait: float) -> float:
@@ -48,6 +53,9 @@ class Source(ABC):
     fixture_ext: str = "json"
     subregion_aware: bool = False  # True if fetch() differs for KR-11 vs KR (only Google Trends today)
     optional: bool = True  # False = a failure is a real problem (alerts); True = nice-to-have extra
+    # On TransientError, the engine reuses the last good result up to this old (None = never).
+    # For IP-level blocks that outlast any in-run retry; parse/format errors never fall back.
+    stale_ok: timedelta | None = None
 
     def fixture_code(self, region: Region) -> str:
         return region.code if self.subregion_aware else region.country
@@ -114,13 +122,16 @@ async def get_text_retry(
     **kw,
 ) -> str:
     """Like get_text, but backs off on 429/503 (GitHub Actions shared egress hits these hourly)."""
-    last: SourceError | None = None
+    last: TransientError | None = None
     for attempt in range(retries + 1):
         resp = await client.get(url, **kw)
         if resp.status_code < 400:
             return resp.content.decode(encoding, errors="replace") if encoding else resp.text
-        last = SourceError(f"HTTP {resp.status_code} from {url.split('?')[0]}: {resp.text[:200]}")
-        if resp.status_code not in RETRY_STATUSES or attempt == retries:
+        msg = f"HTTP {resp.status_code} from {url.split('?')[0]}: {resp.text[:200]}"
+        if resp.status_code not in RETRY_STATUSES:
+            raise SourceError(msg)
+        last = TransientError(msg)
+        if attempt == retries:
             raise last
         wait = _retry_wait(resp, attempt, base_wait)
         log.info("retry %s after HTTP %s in %.1fs (attempt %d/%d)",
