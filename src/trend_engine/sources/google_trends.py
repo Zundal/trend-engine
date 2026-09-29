@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import re
+from datetime import timedelta
+
 from defusedxml import ElementTree as ET  # remote feeds: no XXE / entity expansion
 
 from ..models import TrendItem
-from .base import Source, get_text, rerank
+from .base import Source, get_text_retry, rerank
 
 HT = "{https://trends.google.com/trending/rss}"
 
@@ -29,9 +31,12 @@ class GoogleTrends(Source):
     weight = 1.0
     fixture_ext = "xml"
     subregion_aware = True
+    stale_ok = timedelta(hours=3)  # same rule as google_news: blocked 3 runs in a row -> alert
 
     async def fetch(self, client, region, settings):
-        return await get_text(client, f"https://trends.google.com/trending/rss?geo={region.code}")
+        return await get_text_retry(
+            client, f"https://trends.google.com/trending/rss?geo={region.code}", retries=3, base_wait=5.0,
+        )
 
     def parse(self, raw, region):
         root = ET.fromstring(raw)

@@ -19,8 +19,9 @@ from ..models import Kind, TrendItem
 
 log = logging.getLogger(__name__)
 
-# Transient upstream answers that recover if we wait (shared CI IPs get these often).
-RETRY_STATUSES = frozenset({429, 503})
+# Transient upstream answers that recover if we wait (shared CI IPs get these often;
+# a lone Google Trends 500 on one region succeeded a minute later from the same IP).
+RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
 
 
 class SourceError(RuntimeError):
@@ -28,7 +29,7 @@ class SourceError(RuntimeError):
 
 
 class TransientError(SourceError):
-    """Upstream refused us (429/503) even after backing off — the data itself is not broken."""
+    """Upstream refused or was late (429/5xx, unpublished day) even after waiting — not a broken source."""
 
 
 def _retry_wait(resp: httpx.Response, attempt: int, base_wait: float) -> float:
@@ -121,7 +122,7 @@ async def get_text_retry(
     base_wait: float = 5.0,
     **kw,
 ) -> str:
-    """Like get_text, but backs off on 429/503 (GitHub Actions shared egress hits these hourly)."""
+    """Like get_text, but backs off on 429/5xx (GitHub Actions shared egress hits these hourly)."""
     last: TransientError | None = None
     for attempt in range(retries + 1):
         resp = await client.get(url, **kw)

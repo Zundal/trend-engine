@@ -123,3 +123,30 @@ async def test_pageviews_history_retries_429(monkeypatch, tmp_path):
 
 async def _instant_sleep(_delay: float) -> None:
     return None
+
+
+@pytest.mark.asyncio
+async def test_google_trends_retries_500(monkeypatch):
+    """A lone 500 on one region (09-22 GB, 09-29 KR) — the same IP succeeded a minute later."""
+    monkeypatch.setattr("trend_engine.sources.base.asyncio.sleep", _instant_sleep)
+    from trend_engine.sources.google_trends import GoogleTrends
+
+    transport = _SeqTransport([
+        httpx.Response(500, text="<html lang=en>Error</html>"),
+        httpx.Response(200, text="<rss><channel></channel></rss>"),
+    ])
+    async with httpx.AsyncClient(transport=transport) as client:
+        raw = await GoogleTrends().fetch(client, get_region("KR"), None)
+    assert "<rss>" in raw
+    assert len(transport.urls) == 2
+
+
+@pytest.mark.asyncio
+async def test_wikipedia_unpublished_days_are_transient(monkeypatch):
+    """Both candidate days 404 = Wikimedia is late publishing (09-28 VN) — not a broken source."""
+    monkeypatch.setattr("trend_engine.sources.base.asyncio.sleep", _instant_sleep)
+    transport = _SeqTransport([httpx.Response(404, text="not published")] * 2)
+    async with httpx.AsyncClient(transport=transport) as client:
+        with pytest.raises(TransientError, match="HTTP 404"):
+            await Wikipedia().fetch(client, get_region("VN"), None)
+    assert len(transport.urls) == 2

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from ..config import get_region
 from ..models import TrendItem
-from .base import Source, SourceError, get_text_retry, rerank
+from .base import Source, SourceError, TransientError, get_text_retry, rerank
 
 # Courtesy User-Agent required by Wikimedia; also used by pageviews.History.
 UA = "trend-engine/0.1 (https://github.com/Zundal/trend-engine)"
@@ -36,6 +36,7 @@ class Wikipedia(Source):
     label = "위키백과 조회"
     optional = False
     weight = 0.4  # evergreen pages (방송사, 국가) add noise; low weight
+    stale_ok = timedelta(hours=3)  # daily data anyway; late/throttled 3 runs in a row -> alert
 
     async def fetch(self, client, region, settings):
         # Daily data lands with a delay; try yesterday, then the day before (404 only).
@@ -56,7 +57,8 @@ class Wikipedia(Source):
                 last_err = e
                 if "HTTP 404" not in str(e):
                     raise
-        raise last_err  # type: ignore[misc]
+        # Neither day published yet (vi.wikipedia was 2 days late once): upstream delay, not breakage.
+        raise TransientError(str(last_err))
 
     def parse(self, raw, region):
         data = json.loads(raw)

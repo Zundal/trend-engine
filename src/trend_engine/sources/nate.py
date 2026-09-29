@@ -34,7 +34,7 @@ class Nate(Source):
         m = re.search(r"\[\s*\[.*\]\s*\]", raw, re.S)
         if not m:
             return []
-        rows = json.loads(m.group(0))
+        rows = json.loads(m.group(0), strict=False)  # headlines sometimes carry raw tabs/newlines
         items = []
         for row in rows:
             if len(row) < 2 or not str(row[1]).strip():
