@@ -46,8 +46,11 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
 
     meta = publish.decrypt(files["meta"], key)
     assert meta["static"] is True and [r["code"] for r in meta["regions"]] == ["KR", "US"]
+    assert meta["generated_at"].endswith("+00:00")  # one build time for the page header
     rep = publish.decrypt(files["report-KR"], key)
     assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
+    assert rep["apps"] and all(set(a) == {"title", "url"} for a in rep["apps"])  # app chart only: names, no songs
+    assert len(rep["apps"]) <= 20
     hist = publish.decrypt(files["history-KR"], key)
     assert set(hist) == {c["key"] for c in rep["clusters"]}
     assert publish.decrypt(files["shopping"], key)["by_segment"]

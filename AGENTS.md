@@ -38,7 +38,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
-| `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (의존성 없는 단일 HTML) |
+| `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (빌드 없는 단일 HTML. 외부 자원은 웹폰트뿐이고 없어도 동작) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
 | `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지) |
 | `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환 |

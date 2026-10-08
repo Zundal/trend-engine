@@ -16,6 +16,7 @@ from . import archive, publish
 from .config import export_langs
 from .health import Health
 from .service import TrendService
+from .store import utcnow
 
 log = logging.getLogger(__name__)
 WEB = Path(__file__).parent / "web"
@@ -50,7 +51,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     (out / "index.html").write_text(build_page(key), encoding="utf-8")
     (out / ".nojekyll").write_text("")
 
-    meta = svc.meta() | {"static": True}
+    meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
     meta["regions"] = [r for r in meta["regions"] if r["code"] in regions]
 
     for code in regions:
