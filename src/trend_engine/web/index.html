@@ -4,352 +4,687 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trend Engine</title>
-<meta name="description" content="지금 사람들의 관심사 — 나라별 트렌드와 연령·성별 관심">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+<meta name="description" content="지금 사람들의 관심사 — 10·20대가 유독 찾는 것, 세대 확산, 나라별 이슈, 연령·성별 관심">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%23101217'/><path d='M2 18h5l3-9 5 14 4-10 2 5h5' fill='none' stroke='%23FB923C' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<!-- 글꼴만 외부에서 받는다 (실패해도 시스템 글꼴로 그대로 동작) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f6f5f2; --panel: #ffffff; --ink: #1c1b19; --muted: #6b6860; --line: #e4e1da;
-  --accent: #d9480f; --accent-soft: #fff0e6; --up: #c92a2a; --down: #1c7ed6; --new: #d9480f;
-  --hot: 217, 72, 15; --cold: 28, 126, 214;
-  --radius: 10px; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --bg: #F2F3F5; --panel: #FFFFFF; --ink: #101217; --ink2: #3A3F4A; --muted: #5B606B;
+  --line: #E3E5EA; --hair: #EEF0F3; --edge: #D5D8DE; --rule: #DADDE3; --dash: #C4C8D0;
+  --track: #F0F1F4; --soft: #F7F8FA; --seg: #E3E5EA; --seg-on: #FFFFFF; --gray: #9CA3AF;
+  --accent: #EA580C; --accent-ink: #C2410C; --accent-deep: #9A3412; --accent-soft: #FFF4EC; --accent-tag: #FFF1E6;
+  --blue: #1D4ED8; --blue-ink: #1E40AF; --blue-deep: #1E3A8A; --blue-soft: #EEF3FD; --blue-tag: #E8EFFD;
+  --violet-ink: #5B21B6; --violet-tag: #F1ECFE;
+  --inv: #101217; --inv-ink: #FFFFFF; --inv-ink2: #D5D8DE; --inv-muted: #A9AEB8; --inv-line: #2A2E36; --inv-edge: #3A3F4A;
+  --inv-accent: #FDBA74; --inv-bar: #FB923C;
+  --on: #101217; --on-ink: #FFFFFF;
+  --heat-hot: color-mix(in oklab, #EA580C 85%, #F7F8FA); --heat-cold: color-mix(in oklab, #1D4ED8 70%, #F7F8FA);
+  --st1: #FDBA74; --st2: #EA580C; --st3: #9A3412;
+  --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #131312; --panel: #1c1c1a; --ink: #eceae4; --muted: #9a978f; --line: #2e2d2a;
-    --accent: #ff8a4c; --accent-soft: #3a2518; --up: #ff6b6b; --down: #4dabf7; --new: #ff8a4c;
-    --hot: 255, 138, 76; --cold: 77, 171, 247;
+    --bg: #0B0D11; --panel: #16191F; --ink: #F2F3F5; --ink2: #D5D8DE; --muted: #A9AEB8;
+    --line: #23272F; --hair: #23272F; --edge: #3A3F4A; --rule: #2A2E36; --dash: #3A3F4A;
+    --track: #2A2E36; --soft: #1D2027; --seg: #1D2027; --seg-on: #3A3F4A; --gray: #6B7280;
+    --accent: #F97316; --accent-ink: #FB923C; --accent-deep: #FDBA74; --accent-soft: #2E1D12; --accent-tag: #3A2414;
+    --blue: #60A5FA; --blue-ink: #93C5FD; --blue-deep: #BFDBFE; --blue-soft: #16223D; --blue-tag: #1B2A4A;
+    --violet-ink: #C4B5FD; --violet-tag: #2A2145;
+    --inv: #232730; --inv-line: #343945; --inv-edge: #4A505C;
+    --on: #F2F3F5; --on-ink: #101217;
+    --heat-hot: #B4470F; --heat-cold: #2449B8;
   }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; background: var(--bg); color: var(--ink);
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif; }
-header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
-.bar { max-width: 1320px; margin: 0 auto; padding: 12px 16px 0; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-h1 { font-size: 17px; margin: 0; letter-spacing: -.02em; }
-h1 span { color: var(--accent); }
-.tabs { display: flex; gap: 4px; }
-.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px 10px; font: inherit; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; }
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-.spacer { flex: 1; }
-.meta { color: var(--muted); font-size: 12px; }
-.sub { max-width: 1320px; margin: 0 auto; padding: 12px 16px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.sub[hidden] { display: none; }
-.sub .hint { color: var(--muted); font-size: 12px; }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px;
-  padding: 5px 13px; cursor: pointer; font: inherit; font-size: 13px; }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-left: auto; }
-.seg button { background: var(--panel); color: var(--muted); border: 0; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; }
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
-.pmeta { font-size: 11px; color: var(--muted); white-space: nowrap; text-align: right; }
-.note { font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
-.attrow { display: flex; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.attrow b { font-size: 20px; font-variant-numeric: tabular-nums; min-width: 62px; }
-.attrow span { flex: 1; font-size: 13px; line-height: 1.45; }
-.attrow small { color: var(--muted); }
-.xt { width: 100%; border-collapse: collapse; font-size: 13px; }
-.xt th, .xt td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
-.xt thead th { color: var(--muted); font-weight: 600; text-align: center; }
-.xt tbody th { text-align: left; font-weight: 600; }
-button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+a { color: var(--accent-ink); }
+a:hover { color: var(--accent-deep); }
+button { font: inherit; color: inherit; }
 button:disabled { opacity: .5; cursor: progress; }
-.banner { max-width: 1320px; margin: 10px auto 0; padding: 8px 14px; border-radius: 8px; background: var(--accent-soft); font-size: 13px; }
-main { max-width: 1320px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
-main[hidden] { display: none; }
-@media (max-width: 960px) { main { grid-template-columns: 1fr; } }
-section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
-section.card h2 { font-size: 14px; margin: 0 0 10px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-section.card h2 small { color: var(--muted); font-weight: 400; font-size: 12px; }
-.col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.wide { grid-column: 1 / -1; }
-ol.rank { list-style: none; margin: 0; padding: 0; }
-ol.rank li { display: grid; grid-template-columns: 28px minmax(0, 1fr) 54px 110px; gap: 8px; align-items: center;
-  padding: 7px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
-ol.rank li:hover, ol.rank li.sel { background: var(--accent-soft); }
-ol.rank.period li { grid-template-columns: 28px minmax(0, 1fr) auto 90px; }
-.n { font-family: var(--mono); color: var(--muted); text-align: right; }
-.label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-.st { font-size: 11px; font-family: var(--mono); text-align: center; }
-.st.new { color: var(--new); font-weight: 700; } .st.rising { color: var(--up); } .st.falling { color: var(--down); } .st.steady { color: var(--muted); }
-.score { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
-.score i { display: block; height: 100%; background: var(--accent); }
-.detail { margin-top: 12px; padding: 12px; border: 1px dashed var(--line); border-radius: 8px; font-size: 13px; }
-.detail h3 { margin: 0 0 6px; font-size: 15px; }
-.detail ul { margin: 4px 0 8px; padding-left: 18px; }
-.muted { color: var(--muted); }
-.list { list-style: none; margin: 0; padding: 0; }
-.list li { padding: 7px 0; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: baseline; min-width: 0; }
-.list li a { color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
-.list li a:hover { text-decoration: underline; }
-#flow li.mine b { color: var(--accent); }
-.tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
-.empty { color: var(--muted); font-size: 13px; padding: 8px 0; }
-svg.spark { width: 100%; height: 40px; }
-/* 매트릭스 · 추이 */
-table.matrix { width: 100%; border-collapse: collapse; font-size: 12px; }
-table.matrix th { font-size: 11px; color: var(--muted); font-weight: 600; text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
-table.matrix td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-table.matrix td.cat { font-weight: 700; white-space: nowrap; color: var(--c); border-left: 3px solid var(--c); }
-table.matrix .kw { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-table.matrix .kw b { font-weight: 600; } table.matrix .kw span { color: var(--muted); }
-.matrix-wrap { overflow-x: auto; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.dim { color: var(--muted); }
+.empty { color: var(--muted); font-size: 14px; margin: 0; padding: 6px 0; }
+.m-only { display: none; }
+
+/* 머리말 */
+.top { background: #101217; color: #FFFFFF; }
+.top-in { max-width: 1240px; margin: 0 auto; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 32px; min-height: 72px; }
+.brand { display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+.brand:hover { color: #FFFFFF; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto; }
+.tab { display: flex; flex-direction: column; padding: 14px 14px 12px; color: #A9AEB8; text-decoration: none; border-bottom: 3px solid transparent; }
+.tab b { font-weight: 600; font-size: 15px; }
+.tab span { font-size: 12px; }
+.tab:hover { color: #FFFFFF; }
+.tab[aria-current="page"] { color: #FFFFFF; border-bottom-color: #FB923C; }
+.tab[aria-current="page"] span { color: #C9CDD4; }
+.stamp { display: flex; align-items: center; gap: 8px; font: 500 12px var(--mono); color: #A9AEB8; }
+.stamp .dot { width: 8px; height: 8px; border-radius: 4px; background: #4ADE80; }
+.stamp button { margin-left: 8px; background: none; border: 1px solid #3A3F4A; border-radius: 8px; padding: 6px 12px; color: #FFFFFF; font: 600 12px var(--sans); cursor: pointer; }
+#banner { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+.banner, .warn { padding: 10px 16px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-deep); font-size: 13px; }
+.banner { margin-top: 16px; }
+
+/* 공통 뼈대 */
+.view { max-width: 1240px; margin: 0 auto; padding: 40px 24px 64px; display: flex; flex-direction: column; gap: 28px; }
+.hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.hero-t { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.eyebrow { margin: 0; font: 500 13px var(--mono); color: var(--muted); }
+h1 { margin: 0; font-size: 34px; line-height: 1.25; letter-spacing: -.02em; font-weight: 700; text-wrap: pretty; }
+h1 em, h2 em { font-style: normal; color: var(--accent-ink); }
+/* 한국어는 음절마다 줄이 바뀔 수 있어, 제목과 설명문은 낱말 단위로만 끊는다 */
+h1, h2, h3, .card-h, .block-h, .howto, .note, .flash-t, .callout, .others, .notify, .det-h p, .quote, .legendrow, .vs p { word-break: keep-all; overflow-wrap: break-word; }
+.seg { display: flex; background: var(--seg); border-radius: 10px; padding: 4px; gap: 4px; }
+.seg button { border: 0; border-radius: 7px; padding: 0 18px; min-height: 40px; font-size: 14px; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { font-weight: 600; background: var(--seg-on); color: var(--ink); box-shadow: 0 1px 2px rgba(16, 18, 23, .12); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border-radius: 999px; padding: 0 18px; min-height: 44px; font-size: 14px; font-weight: 600; cursor: pointer; background: var(--panel); color: var(--ink2); border: 1px solid var(--edge); }
+.chip[aria-pressed="true"] { background: var(--on); color: var(--on-ink); border-color: var(--on); }
+.note { font-size: 13px; color: var(--muted); margin: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 20px; align-items: start; }
+.grid2.stretch { align-items: stretch; }
+.stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.card { background: var(--panel); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 0 var(--line); min-width: 0; }
+.card.sm { padding: 24px; gap: 14px; }
+.card h2, .block-h h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.card-h { display: flex; flex-direction: column; gap: 2px; }
+.card-h > span, .card-h > small { font-size: 13px; color: var(--muted); }
+.card-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.kicker { font: 600 12px var(--mono); color: var(--accent-ink); letter-spacing: .06em; }
+.n { font: 500 13px var(--mono); color: var(--muted); text-align: right; }
+.x { font: 600 16px var(--mono); text-align: right; }
+.hscroll { overflow-x: auto; }
+.deep-h { margin: 12px 0 -8px; display: flex; align-items: center; gap: 12px; font: 600 12px var(--mono); letter-spacing: .06em; color: var(--muted); }
+.deep-h::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+.deep { display: flex; flex-direction: column; gap: 28px; }
+.deep:not(:has(.card:not([hidden]))) { display: none; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 20px; align-items: start; }
+.howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 16px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+.howto p { margin: 0; }
+.howto b { color: var(--ink); }
+.btn { font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 10px; background: var(--on); color: var(--on-ink); text-decoration: none; border: 0; cursor: pointer; }
+a.btn:hover { color: var(--on-ink); }
+.ghost { background: transparent; color: var(--ink); border: 1px solid var(--edge); border-radius: 10px; padding: 0 14px; min-height: 40px; font-size: 14px; cursor: pointer; }
+.more { align-self: flex-start; margin: 8px 16px; }
+.badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; vertical-align: middle; white-space: nowrap; }
+.b-spread { background: #C2410C; color: #FFFFFF; }
+.b-up { background: #9A3412; color: #FFFFFF; }
+.b-wait { background: #FDBA74; color: #101217; }
+.b-flat { background: var(--track); color: var(--ink2); }
+.tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; white-space: nowrap; background: var(--track); color: var(--ink2); }
+.t-shop { background: var(--accent-tag); color: var(--accent-deep); }
+.t-content { background: var(--violet-tag); color: var(--violet-ink); }
+.t-issue { background: var(--blue-tag); color: var(--blue-ink); }
+svg.spark { width: 100%; height: 40px; display: block; }
 svg.mini { width: 54px; height: 14px; vertical-align: middle; margin-left: 6px; }
-.trend-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
-/* 카테고리 */
-.ctag { display: inline-block; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px;
-  color: var(--c, var(--muted)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); white-space: nowrap; }
-.cchips { display: flex; gap: 5px; flex-wrap: wrap; margin: 0 0 10px; }
-.cchip { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 2px 10px; font: inherit; font-size: 12px; cursor: pointer; }
-.cchip[aria-pressed="true"] { background: var(--c, var(--ink)); border-color: var(--c, var(--ink)); color: #fff; }
-.cchip .k { opacity: .7; margin-left: 3px; }
-.ctiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.ctile { border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 8px; padding: 8px 10px; cursor: pointer; background: var(--panel); text-align: left; font: inherit; color: var(--ink); }
-.ctile[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 10%, var(--panel)); }
-.ctile h4 { margin: 0 0 4px; font-size: 13px; color: var(--c); display: flex; justify-content: space-between; }
-.ctile ol { margin: 0; padding-left: 16px; font-size: 12px; }
-.ctile li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+/* 분야 */
+.ctag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 5px; margin-left: 6px; vertical-align: 1px; white-space: nowrap;
+  color: color-mix(in oklab, var(--c, var(--muted)) 70%, var(--ink)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); }
+.cchips { display: flex; gap: 6px; flex-wrap: wrap; }
+.cchips:empty { display: none; }
+.cchip { border: 1px solid var(--edge); background: var(--panel); color: var(--ink2); border-radius: 999px; padding: 0 12px; min-height: 32px; font-size: 13px; cursor: pointer; }
+.cchip[aria-pressed="true"] { background: var(--on); border-color: var(--on); color: var(--on-ink); font-weight: 600; }
+.cchip .k { opacity: .65; margin-left: 4px; font-family: var(--mono); font-size: 12px; }
+
 /* 10·20대 */
-.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.vs h3 { font-size: 13px; margin: 0 0 6px; }
-.vs ol { margin: 0; padding-left: 20px; font-size: 13px; }
-.vs li { padding: 3px 0; }
-.kind { display: inline-block; font-size: 10px; padding: 0 5px; margin-left: 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; vertical-align: 1px; }
-@media (max-width: 520px) { .vs { grid-template-columns: 1fr; } }
+.lead { gap: 20px; }
+.top1 { display: flex; flex-direction: column; gap: 10px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.top1-r { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+.top1-k { font-size: 52px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1; overflow-wrap: anywhere; }
+.top1-k.long { font-size: 36px; line-height: 1.2; }
+.top1-x { font-size: 17px; color: var(--ink2); }
+.top1-x b { font: 600 28px var(--mono); color: var(--accent-ink); }
+.lead-list { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.colhead { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); }
+.xrows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.xrows li { display: grid; grid-template-columns: 24px minmax(0, 1.4fr) minmax(90px, 1.3fr) 60px; gap: 14px; align-items: center; min-height: 52px; border-bottom: 1px solid var(--hair); }
+.xrows li.empty { display: block; min-height: 0; border: 0; }
+.xrows .k { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.xrows .k b { font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xrows .k small { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.xbar { position: relative; height: 12px; background: var(--track); border-radius: 6px; }
+.xbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 6px; }
+.xbar::after { content: ""; position: absolute; left: var(--one, 16.6%); top: -4px; bottom: -4px; width: 2px; background: var(--ink); }
+.xbar.off::after { display: none; }
+.x.off { color: var(--muted); font-weight: 500; }
+.pills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.pills li { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--blue-soft); min-width: 0; }
+.pills li.empty { background: none; padding: 0; }
+.pills b { font-weight: 600; overflow-wrap: anywhere; }
+.pills span { font: 600 14px var(--mono); color: var(--blue); }
+.kv { margin: 0; display: flex; flex-direction: column; }
+.kv > div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--hair); }
+.kv > div.empty { display: block; }
+.kv dt { font-size: 13px; color: var(--muted); }
+.kv dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.vs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 16px; }
+.vs > div { display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 12px; min-width: 0; }
+.vs h3 { margin: 0; font-size: 13px; font-weight: 700; }
+.vs p { margin: 0; color: var(--ink2); font-size: 14px; }
+.vs .only10 { background: var(--accent-soft); }
+.vs .only10 h3 { color: var(--accent-deep); }
+.vs .both { background: var(--inv); color: var(--inv-ink); }
+.vs .both h3 { color: var(--inv-accent); }
+.vs .both p { color: var(--inv-ink2); }
+.vs .only20 { background: var(--blue-soft); }
+.vs .only20 h3 { color: var(--blue-deep); }
+.wchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.wchips > span, .wchips > button { padding: 6px 12px; background: var(--panel); border-radius: 8px; font-weight: 500; overflow-wrap: anywhere; }
+.wchips b { font-family: var(--mono); color: var(--accent-ink); }
+.only20 .wchips b { color: var(--blue); }
+.bothgrid { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 16px; align-items: baseline; font-size: 15px; }
+.bothgrid small { font-size: 12px; color: var(--inv-muted); }
+.bothgrid span { font-weight: 600; overflow-wrap: anywhere; }
+.bothgrid b { font-family: var(--mono); color: var(--inv-accent); }
+table.matrix { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 13px; }
+table.matrix th { font-size: 12px; color: var(--muted); font-weight: 500; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+table.matrix td { padding: 10px 8px; border-bottom: 1px solid var(--hair); vertical-align: top; }
+table.matrix td.cat { font-weight: 700; white-space: nowrap; padding-left: 12px; box-shadow: inset 3px 0 0 var(--c); color: color-mix(in oklab, var(--c) 70%, var(--ink)); }
+table.matrix .kw { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+table.matrix .kw b { font-weight: 600; }
+table.matrix .kw span { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.trend-legend { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
+.ctiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.ctile { border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 12px; padding: 12px 14px; cursor: pointer; background: var(--panel); text-align: left; }
+.ctile[aria-pressed="true"] { background: color-mix(in srgb, var(--c) 10%, var(--panel)); }
+.ctile h3 { margin: 0 0 6px; font-size: 14px; display: flex; justify-content: space-between; color: color-mix(in oklab, var(--c) 70%, var(--ink)); }
+.ctile h3 span + span { font-family: var(--mono); color: var(--muted); font-weight: 500; }
+.ctile ol { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.ctile li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* 세대 확산 */
-.dif { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr); gap: 6px 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
-.dif h3 { margin: 0; font-size: 14px; }
-.dif .why { font-size: 12px; color: var(--muted); margin-top: 3px; }
-.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 4px; }
-.b-spread { background: var(--accent); color: #fff; } .b-up { background: var(--accent-soft); color: var(--accent); }
-.b-wait { background: rgba(var(--cold), .15); color: rgb(var(--cold)); } .b-flat { background: var(--line); color: var(--muted); }
-.strip { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 2px 6px; font-size: 10px; color: var(--muted); }
-.strip svg { width: 100%; height: 11px; display: block; }
-.strip .axis { grid-column: 2; display: flex; justify-content: space-between; }
-.acc { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.acc .kpi { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-.acc .big { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1.2; }
-.acc .vs { font-size: 12px; color: var(--muted); }
-.legend2 { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-@media (max-width: 620px) { .dif { grid-template-columns: 1fr; } }
-/* 연령별 */
-.bars { list-style: none; margin: 0; padding: 0; }
-.bars li { display: grid; grid-template-columns: 22px minmax(0, 1fr) minmax(80px, 38%) 58px; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
-.bars .bar-bg { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
-.bars .bar-bg i { display: block; height: 100%; background: var(--accent); }
-.bars .x { font-family: var(--mono); font-size: 12px; text-align: right; }
-.shopgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px 18px; }
-.shopgrid h4 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
-.shopgrid ol { margin: 0; padding-left: 18px; font-size: 13px; }
-.shopgrid li.dist { color: var(--accent); font-weight: 600; }
-table.heat { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 12px; table-layout: fixed; }
-table.heat th { font-weight: 500; color: var(--muted); font-size: 11px; padding: 2px; }
-table.heat th.kw { text-align: left; width: 30%; }
-table.heat td { text-align: center; padding: 5px 0; border-radius: 4px; font-family: var(--mono); font-size: 11px; }
-table.heat td.kw { text-align: left; font-family: inherit; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: 4px; }
-table.heat th.on { color: var(--accent); font-weight: 700; }
-.legend { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
-.legend .sw { display: inline-block; width: 22px; height: 10px; border-radius: 3px; vertical-align: middle; }
-.kwrow { display: flex; gap: 6px; margin-bottom: 10px; }
-.kwrow input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 6px 10px; font: inherit; }
-@media (max-width: 520px) {
-  main { padding: 12px; }
-  ol.rank.period li { grid-template-columns: 22px minmax(0, 1fr) auto 32px; }
-  ol.rank li { grid-template-columns: 22px minmax(0, 1fr) 40px 36px; gap: 6px; }
-  .bars li { grid-template-columns: 20px minmax(0, 1fr) 70px 50px; }
+.flash { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 18px 22px; border-radius: 14px; background: var(--inv); color: var(--inv-ink); }
+.flash .kicker { color: var(--inv-accent); }
+.flash-t { font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
+.flash-t em { font-style: normal; font-weight: 700; color: var(--inv-accent); }
+.btn-line { margin-left: auto; color: var(--inv-ink); font-size: 14px; font-weight: 600; padding: 10px 16px; border: 1px solid var(--inv-edge); border-radius: 10px; background: none; cursor: pointer; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.block-h { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.block-h h2 { font-size: 20px; }
+.block-h > span { font-size: 13px; color: var(--muted); }
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+.stage { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 14px; background: var(--panel); box-shadow: 0 1px 0 var(--line); border-top: 4px solid var(--c); min-width: 0; }
+.stage-top { display: flex; justify-content: space-between; align-items: baseline; }
+.stage-top span { font: 500 13px var(--mono); color: var(--muted); }
+.stage-top b { font: 600 22px var(--mono); }
+.stage h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.stage p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.kchips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.kchip { border-radius: 999px; padding: 0 14px; min-height: 44px; font-size: 14px; font-weight: 600; background: var(--panel); color: var(--ink); border: 1px solid var(--edge); cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kchip[aria-pressed="true"] { background: var(--on); color: var(--on-ink); border-color: var(--on); }
+.others { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--ink2); padding: 4px 2px; }
+.others i { font: 500 14px var(--mono); color: var(--muted); }
+.det-h { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.det-h > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.det-h > div > span { font-size: 13px; color: var(--muted); }
+.det-h h2 { font-size: 28px; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.det-h h2 .badge { font-size: 14px; padding: 4px 10px; margin-left: 8px; }
+.det-h p { margin: 0; max-width: 440px; font-size: 14px; color: var(--ink2); }
+.det-x { display: flex; flex-wrap: wrap; gap: 6px; }
+.hgrid { min-width: 640px; display: flex; flex-direction: column; gap: 6px; }
+.hrow { display: grid; grid-template-columns: 56px repeat(var(--n), minmax(0, 1fr)); gap: 4px; align-items: center; }
+.hgrid.dense .hrow { gap: 2px; }
+.hrow > span { font-size: 13px; font-weight: 600; color: var(--ink2); white-space: nowrap; }
+.hrow > i { height: 30px; border-radius: 5px; background: color-mix(in oklab, var(--accent) var(--p, 0%), var(--accent-soft)); }
+.hgrid.dense .hrow > i { border-radius: 3px; }
+.hrow.thin > i, .hatch { background: repeating-linear-gradient(45deg, var(--line) 0 3px, var(--soft) 3px 6px); }
+.haxis > span { font: 500 11px var(--mono); color: var(--muted); }
+.legendrow { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 12px; color: var(--muted); }
+.legendrow > span { display: flex; align-items: center; gap: 6px; }
+.legendrow b { color: var(--ink); }
+.ramp { width: 96px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--accent-soft), var(--accent)); }
+.hatch { width: 14px; height: 10px; border-radius: 3px; }
+#dif-acc { display: flex; flex-direction: column; gap: 18px; }
+.accrows { display: flex; flex-direction: column; gap: 16px; }
+.accrow { display: grid; grid-template-columns: 72px minmax(0, 1fr) 64px; gap: 6px 14px; align-items: center; }
+.accrow > b { font-size: 14px; font-weight: 600; grid-row: span 2; }
+.abar { height: 14px; border-radius: 7px; background: var(--track); position: relative; }
+.abar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 7px; }
+.abar.base i { background: var(--gray); }
+.accrow .v { font: 600 15px var(--mono); text-align: right; }
+.accrow .v.base { color: var(--muted); font-weight: 500; }
+.keyrow { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.keyrow span { display: flex; align-items: center; gap: 6px; }
+.callout { margin: 0; padding: 14px 16px; background: var(--soft); border-radius: 10px; font-size: 14px; }
+details.fine summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink2); display: flex; flex-direction: column; gap: 6px; }
+#dif-cases { display: flex; flex-direction: column; gap: 18px; }
+.casebox { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 12px; background: var(--soft); }
+.casebox.spread { background: var(--accent-soft); }
+.casebox.same { background: var(--blue-soft); }
+.casebox header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.casebox header b { font-weight: 700; }
+.casebox.spread header b { color: var(--accent-deep); }
+.casebox.same header b { color: var(--blue-deep); }
+.casebox header span { font-size: 13px; color: var(--ink2); }
+.casebox button { border: 1px solid transparent; min-height: 36px; cursor: pointer; }
+.casebox button[aria-pressed="true"] { border-color: var(--ink); }
+.notify { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px 24px; border-radius: 14px; border: 1px dashed var(--dash); }
+.notify b { font-weight: 700; }
+.notify > span { font-size: 14px; color: var(--muted); flex: 1 1 320px; }
+.dif { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 6px 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.dif-k { background: none; border: 0; padding: 0; font-size: 15px; font-weight: 700; cursor: pointer; text-align: left; }
+.dif-k:hover { color: var(--accent-ink); }
+.dif .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.dif .why { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.strip { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 2px 6px; font-size: 11px; color: var(--muted); }
+.strip svg { width: 100%; height: 11px; display: block; border-radius: 2px; }
+.strip .axis { grid-column: 2; display: flex; justify-content: space-between; font-family: var(--mono); }
+.xt { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13px; }
+.xt th, .xt td { padding: 8px; border-bottom: 1px solid var(--hair); text-align: right; font-variant-numeric: tabular-nums; }
+.xt thead th { color: var(--muted); font-weight: 500; text-align: center; }
+.xt tbody th { text-align: left; font-weight: 600; }
+
+/* 나라별 */
+.split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+.rankcard { flex: 999 1 560px; padding: 12px 8px 8px; gap: 0; }
+.rankcard .cchips { padding: 8px 16px 4px; }
+.side { flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.rank-head, .row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 64px 120px; gap: 12px; }
+.rank-head { padding: 8px 16px; font-size: 12px; color: var(--muted); }
+.rank-head span:first-child { text-align: right; }
+.rank-head span:nth-child(3) { text-align: center; }
+.rank { list-style: none; margin: 0; padding: 0; }
+.rank li.empty { padding: 12px 16px; }
+.row { width: 100%; align-items: center; min-height: 60px; padding: 8px 16px; border: 0; border-radius: 10px; background: transparent; cursor: pointer; text-align: left; }
+.row:hover { background: var(--soft); }
+.row[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.rn { font: 600 15px var(--mono); text-align: right; color: var(--ink2); }
+.rl { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.label { font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rsub { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chg { font: 600 12px var(--mono); text-align: center; padding: 3px 0; border-radius: 6px; }
+.chg.new { color: var(--accent-deep); background: var(--accent-tag); }
+.chg.rising { color: var(--blue); background: var(--blue-tag); }
+.chg.falling { color: var(--muted); background: var(--track); }
+.chg.steady { color: var(--muted); }
+.pmeta { font-size: 11px; color: var(--muted); text-align: center; white-space: nowrap; }
+.pmeta b { color: var(--accent-deep); }
+.score { height: 8px; border-radius: 4px; background: var(--track); position: relative; display: block; }
+.score i { position: absolute; inset: 0 auto 0 0; background: var(--ink); border-radius: 4px; }
+.card.inv { background: var(--inv); color: var(--inv-ink); padding: 24px; box-shadow: none; --spark: var(--inv-bar); }
+.inv .kicker { color: var(--inv-accent); }
+.d-head { display: flex; flex-direction: column; gap: 4px; }
+.inv h2 { font-size: 26px; letter-spacing: -.02em; line-height: 1.25; overflow-wrap: anywhere; }
+.quote { margin: 0; font-size: 14px; color: var(--inv-ink2); line-height: 1.6; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; }
+.facts span { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--inv-edge); color: #E3E5EA; }
+.d-sec { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--inv-line); font-size: 13px; }
+.d-sec > b { font-weight: 600; }
+.d-sec > b small { font-weight: 400; font-size: 13px; color: var(--inv-muted); }
+.d-sec ul { margin: 0; padding-left: 18px; color: var(--inv-ink2); display: flex; flex-direction: column; gap: 4px; }
+.inv .dim, .inv .legend { color: var(--inv-muted); }
+.affrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
+.affrow > span:first-child { color: #C9CDD4; }
+.affrow > span:last-child { font-family: var(--mono); text-align: right; color: #E3E5EA; }
+.affbar { height: 8px; border-radius: 4px; background: var(--inv-line); position: relative; display: block; }
+.affbar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: #6B7280; }
+.affbar i.hi { background: var(--inv-bar); }
+.affbar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: #6B7280; }
+.side .card:not(.inv) { padding: 22px 24px; gap: 10px; }
+.side .card:not(.inv) h2 { font-size: 16px; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; font-size: 14px; }
+.list li { display: flex; gap: 12px; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--hair); min-width: 0; }
+.list li.col { flex-direction: column; gap: 2px; }
+.list li.mine b { color: var(--accent-ink); }
+.list .n { text-align: left; min-width: 14px; }
+.list a { color: var(--ink); text-decoration: none; font-weight: 500; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.list a[href]:hover { text-decoration: underline; }
+.list small { font-size: 12px; color: var(--muted); }
+.list li > small { white-space: nowrap; }
+.list li.col > small { white-space: normal; }
+.attrow { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--hair); }
+.attrow b { font: 600 22px var(--mono); min-width: 68px; }
+.attrow span { flex: 1; font-size: 13px; line-height: 1.5; }
+.attrow small { color: var(--muted); }
+.attrow svg.mini { align-self: center; margin-left: 0; flex: none; }
+
+/* 전체 연령 */
+.scale { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.scale i { width: 140px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--heat-cold), var(--soft) 50%, var(--heat-hot)); }
+table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 4px; font-size: 14px; }
+.heat thead th { padding: 0 0 6px; }
+.heat thead th.kw { text-align: left; font-size: 12px; color: var(--muted); font-weight: 500; padding: 0 8px 6px 0; }
+.heat thead button { width: 100%; min-height: 44px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--panel); color: var(--ink2); border: 1px solid var(--edge); }
+.heat thead button[aria-pressed="true"] { background: var(--on); color: var(--on-ink); border-color: var(--on); }
+.heat tbody th { text-align: left; font-weight: 600; padding-right: 12px; white-space: nowrap; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.heat td { height: 44px; min-width: 52px; text-align: center; border-radius: 6px; font: 600 13px var(--mono); background: var(--soft); }
+.heat td.hot { background: color-mix(in oklab, var(--heat-hot) var(--p), var(--soft)); }
+.heat td.cold { background: color-mix(in oklab, var(--heat-cold) var(--p), var(--soft)); }
+.heat td.on { outline: 2px solid var(--ink); outline-offset: -2px; }
+.kwrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.kwrow input { flex: 1 1 220px; min-width: 0; min-height: 40px; border: 1px solid var(--edge); background: var(--panel); color: var(--ink); border-radius: 10px; padding: 0 12px; font: inherit; font-size: 14px; }
+.pickrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.pickrow .eyebrow b { color: var(--ink); font-weight: 600; }
+.toplist { list-style: none; margin: 0; padding: 0; }
+.toplist li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 48px; border-top: 1px solid var(--hair); }
+.toplist li.empty { display: block; min-height: 0; border: 0; }
+.toplist b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toplist .x { font-size: 15px; color: var(--accent-ink); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .m-only { display: block; }
+  .top-in { padding: 16px 16px 0; gap: 8px; min-height: 0; }
+  .brand { order: 1; font-size: 16px; gap: 8px; }
+  .brand svg { width: 24px; height: 24px; }
+  .stamp { order: 2; margin-left: auto; font-size: 11px; gap: 6px; }
+  .stamp .dot { width: 7px; height: 7px; }
+  .tabs { order: 3; flex: none; width: calc(100% + 32px); margin: 0 -16px; padding: 0 8px; flex-wrap: nowrap; overflow-x: auto; gap: 2px; scrollbar-width: none; }
+  .tab { flex: none; padding: 12px 10px; }
+  .tab span { display: none; }
+  #banner { padding: 0 16px; }
+  .view { padding: 24px 16px 48px; gap: 20px; }
+  h1 { font-size: 26px; line-height: 1.3; }
+  .eyebrow { font-size: 12px; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 16px; scrollbar-width: none; }
+  .chip { flex: none; padding: 0 16px; }
+  .card, .card.sm, .side .card:not(.inv) { padding: 18px 16px; gap: 12px; }
+  .card h2, .side .card:not(.inv) h2 { font-size: 16px; }
+  .block-h h2 { font-size: 18px; }
+  .lead { background: none; box-shadow: none; padding: 0; gap: 20px; border-radius: 0; }
+  .top1 { background: var(--inv); color: var(--inv-ink); border: 0; border-radius: 16px; padding: 22px; gap: 6px; }
+  .top1 .kicker { color: var(--inv-accent); font-size: 11px; }
+  .top1-r { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .top1-k { font-size: 36px; line-height: 1.15; }
+  .top1-k.long { font-size: 28px; }
+  .top1-x { font-size: 15px; color: var(--inv-ink2); }
+  .top1-x b { font-size: 22px; color: var(--inv-accent); }
+  .lead-list { background: var(--panel); border-radius: 16px; padding: 8px 16px; box-shadow: 0 1px 0 var(--line); gap: 8px; }
+  .lead-list h2 { margin: 12px 0 0; }
+  .colhead { display: none; }
+  .xrows li { grid-template-columns: 16px minmax(0, 1fr) 44px; grid-template-areas: "n k x" ". bar bar"; gap: 8px 10px; padding: 14px 0; min-height: 0; border-bottom: 0; border-top: 1px solid var(--hair); }
+  .xrows .n { grid-area: n; }
+  .xrows .k { grid-area: k; }
+  .xrows .k b { flex: 1; white-space: normal; overflow-wrap: anywhere; }
+  .xrows .x { grid-area: x; font-size: 15px; }
+  .xbar { grid-area: bar; height: 8px; border-radius: 4px; }
+  .xbar i { border-radius: 4px; }
+  .xbar::after { top: -3px; bottom: -3px; }
+  .pills li { padding: 8px 12px; }
+  .pills span { font-size: 13px; }
+  .kv > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .kv dt { font-size: 12px; }
+  .det-h h2 { font-size: 22px; }
+  .flash { padding: 16px; }
+  .btn-line { margin-left: 0; }
+  .notify { padding: 16px; }
+  .dif { grid-template-columns: minmax(0, 1fr); }
+  .rankcard { padding: 8px 4px 4px; }
+  .rank-head, .row { grid-template-columns: 24px minmax(0, 1fr) 46px 44px; gap: 10px; }
+  .rank-head, .row { padding-left: 10px; padding-right: 10px; }
+  .rankcard .cchips { padding: 8px 10px 4px; }
+  .rn { font-size: 14px; }
+  .pmeta { white-space: normal; line-height: 1.3; }
+  .card.inv { padding: 20px 16px; }
+  .inv h2 { font-size: 22px; }
 }
 </style>
 </head>
 <body>
-<header>
-  <div class="bar">
-    <h1>Trend <span>Engine</span></h1>
-    <nav class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-youth" aria-selected="true" data-view="youth">10·20대</button>
-      <button class="tab" role="tab" id="tab-diffusion" aria-selected="false" data-view="diffusion">세대 확산</button>
-      <button class="tab" role="tab" id="tab-country" aria-selected="false" data-view="country">나라별</button>
-      <button class="tab" role="tab" id="tab-age" aria-selected="false" data-view="age">전체 연령</button>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#youth" data-view="youth">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#FB923C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h5l3-9 5 14 4-10 2 5h5"></path></svg>
+      <span>Trend Engine</span>
+    </a>
+    <nav class="tabs" aria-label="화면">
+      <a class="tab" id="tab-youth" href="#youth" data-view="youth" aria-current="page"><b>10·20대</b><span>젊은 층이 유독 찾는 것</span></a>
+      <a class="tab" id="tab-diffusion" href="#diffusion" data-view="diffusion"><b>세대 확산</b><span>윗세대로 번지나</span></a>
+      <a class="tab" id="tab-country" href="#country" data-view="country"><b>나라별</b><span>지금 뜨는 이슈</span></a>
+      <a class="tab" id="tab-age" href="#age" data-view="age"><b>전체 연령</b><span>그룹별 관심</span></a>
     </nav>
-    <div class="spacer"></div>
-    <span class="meta" id="gen"></span>
-    <button class="ghost" id="refresh" hidden>새로 수집</button>
-  </div>
-  <div class="sub" id="sub-youth">
-    <div class="chips" id="ygroups" role="group" aria-label="10·20대 그룹"></div>
-    <span class="hint">한국</span>
-    <div class="seg" id="yperiod" role="group" aria-label="기간">
-      <button data-p="now" aria-pressed="true">지금</button><button data-p="week" aria-pressed="false">7일</button><button data-p="month" aria-pressed="false">30일</button>
-    </div>
-  </div>
-  <div class="sub" id="sub-diffusion" hidden>
-    <span class="hint">한국 · 10·20대가 먼저 찾은 것이 윗세대로 번지는지 매일 추적 (최근 17주)</span>
-  </div>
-  <div class="sub" id="sub-country" hidden>
-    <div class="chips" id="regions" role="group" aria-label="나라"></div>
-    <div class="seg" id="cperiod" role="group" aria-label="기간">
-      <button data-p="live" aria-pressed="true">실시간</button><button data-p="week" aria-pressed="false">7일</button><button data-p="month" aria-pressed="false">30일</button>
-    </div>
-  </div>
-  <div class="sub" id="sub-age" hidden>
-    <div class="chips" id="groups" role="group" aria-label="연령·성별 그룹"></div>
-    <span class="hint">한국</span>
-    <div class="seg" id="aperiod" role="group" aria-label="기간">
-      <button data-p="week" aria-pressed="true">7일</button><button data-p="month" aria-pressed="false">30일</button>
-    </div>
+    <div class="stamp"><i class="dot" aria-hidden="true"></i><span id="gen"></span><button type="button" id="refresh" hidden>새로 수집</button></div>
   </div>
 </header>
 <div id="banner"></div>
 
 <!-- 10·20대 -->
-<main id="view-youth">
-  <section class="card wide">
-    <h2>카테고리 × 성별 <small>10·20대 남녀가 분야별로 유독 찾는 것 (30대 이상 대비 배수) · 한국 실측</small></h2>
-    <div class="matrix-wrap"><table class="matrix" id="y-matrix"><tbody><tr><td class="empty">불러오는 중…</td></tr></tbody></table></div>
+<main id="view-youth" class="view">
+  <section class="hero">
+    <div class="hero-t">
+      <p class="eyebrow" id="y-eyebrow">한국 · 연령별 검색량</p>
+      <h1 id="y-title">10대가 30대 이상보다 <em>유독 더</em> 찾는 것</h1>
+    </div>
+    <div class="seg" id="yperiod" role="group" aria-label="기간">
+      <button type="button" data-p="now" aria-pressed="true">지금</button><button type="button" data-p="week" aria-pressed="false">7일</button><button type="button" data-p="month" aria-pressed="false">30일</button>
+    </div>
   </section>
-  <section class="card wide" id="y-trend-card">
-    <h2>관심 분야 이동 <small id="y-trend-sub">그룹의 관심이 어느 분야로 옮겨가는지 (매일 기록)</small></h2>
-    <div id="y-trend"><div class="empty">불러오는 중…</div></div>
-  </section>
-  <section class="card wide">
-    <h2><span id="y-cat-title">10대 카테고리별 한눈에</span> <small>분야별로 이 그룹이 유독 찾는 것 · 누르면 아래 목록을 그 분야로 거름</small></h2>
-    <div class="ctiles" id="y-cats"><div class="empty">불러오는 중…</div></div>
-  </section>
-  <section class="card wide">
-    <h2>한눈에 — 10대 vs 20대 <small id="y-vs-sub">30대 이상보다 유독 더 찾는 것</small></h2>
-    <div class="vs" id="y-vs"><div class="empty">불러오는 중…</div></div>
-  </section>
-  <div class="col">
-    <section class="card">
-      <h2><span id="y-title">10대가 유독 찾는 것</span> <small>30대 이상 대비 몇 배 더 검색하는지</small></h2>
-      <div class="note" id="y-note" hidden></div>
-      <div class="cchips" id="y-cchips"></div>
-      <ol class="bars" id="y-disc"></ol>
+  <div class="chips" id="ygroups" role="group" aria-label="그룹"></div>
+  <div class="warn" id="y-warn" hidden>샘플 데이터 — 실제 값이 아닙니다</div>
+  <p class="note" id="y-note" hidden></p>
+
+  <div class="grid2">
+    <section class="card lead" id="y-lead" aria-label="가장 유독 찾는 것">
+      <div class="top1" id="y-top" hidden></div>
+      <div class="lead-list">
+        <h2 class="m-only">전체 순위</h2>
+        <div class="cchips" id="y-cchips"></div>
+        <div class="colhead"><span>키워드</span><span>30대 이상 대비 (세로선 = 같은 수준)</span></div>
+        <ol class="xrows" id="y-disc"><li class="empty">불러오는 중…</li></ol>
+      </div>
     </section>
-    <section class="card" id="y-rise-card" hidden>
-      <h2>📈 10·20대 사이 3주 연속 증가 <small>설명용 신호 — 계속 오를지는 보장되지 않음 (세대 확산 탭에서 적중률 확인)</small></h2>
-      <ol class="bars" id="y-rise"></ol>
-    </section>
-    <section class="card">
-      <h2><span id="y-title3">오늘 이슈 중 10대가 더 관심</span> <small>30대 이상 대비</small></h2>
-      <ol class="bars" id="y-issues"></ol>
-    </section>
+    <div class="stack">
+      <section class="card sm" aria-labelledby="iss-h">
+        <div class="card-h"><h2 id="iss-h">오늘 이슈 중 더 관심 있는 것</h2><span>실시간 이슈 가운데 30대 이상보다 많이 찾은 것</span></div>
+        <ul class="pills" id="y-issues"></ul>
+      </section>
+      <section class="card sm" aria-labelledby="shop-h">
+        <div class="card-h"><h2 id="shop-h">쇼핑에서 유독 찾는 것</h2><span id="y-title2">전체 인기어에는 없는, 이 그룹만의 검색어</span></div>
+        <dl class="kv" id="y-shop"><div class="empty">불러오는 중…</div></dl>
+      </section>
+    </div>
   </div>
-  <div class="col">
-    <section class="card">
-      <h2><span id="y-title2">10대 쇼핑 관심</span> <small><b style="color:var(--accent)">주황</b> = 전체 순위엔 없는 이 그룹만의 관심</small></h2>
-      <div id="y-shop"><div class="empty">불러오는 중…</div></div>
-    </section>
-  </div>
+
+  <section class="card" aria-labelledby="vs-h">
+    <div class="card-h"><h2 id="vs-h">10대와 20대, 겹치는 관심과 다른 관심</h2><span id="y-vs-sub">둘 다 유독 찾는 것은 가운데에 모았어요</span></div>
+    <div class="vs" id="y-vs"><p class="empty">불러오는 중…</p></div>
+  </section>
+
+  <h2 class="deep-h">더 깊이 보기</h2>
+  <section class="card" id="y-rise-card" hidden>
+    <div class="card-h"><h2>10·20대 사이 3주 연속 증가</h2><span>설명용 신호예요 — 계속 오를지는 보장되지 않아요 (세대 확산에서 적중률 확인)</span></div>
+    <ol class="toplist" id="y-rise"></ol>
+  </section>
+  <section class="card">
+    <div class="card-h"><h2 id="y-cat-title">분야별 한눈에</h2><span>분야를 누르면 위 순위를 그 분야로 걸러요</span></div>
+    <div class="ctiles" id="y-cats"><p class="empty">불러오는 중…</p></div>
+  </section>
+  <section class="card">
+    <div class="card-h"><h2>분야 × 성별</h2><span>10·20대 남녀가 분야별로 유독 찾는 것 (30대 이상 대비 배수)</span></div>
+    <div class="hscroll"><table class="matrix" id="y-matrix"><tbody><tr><td class="empty">불러오는 중…</td></tr></tbody></table></div>
+  </section>
+  <section class="card" id="y-trend-card">
+    <div class="card-h"><h2>관심 분야 이동</h2><span id="y-trend-sub">그룹의 관심이 어느 분야로 옮겨가는지 (매일 기록)</span></div>
+    <div id="y-trend"><p class="empty">불러오는 중…</p></div>
+  </section>
+
+  <section class="howto" aria-label="읽는 법">
+    <p><b id="y-how-x">3.7×</b> — 이 그룹의 검색에서 차지하는 비중이 30대 이상보다 그만큼 크다는 뜻이에요. 검색한 사람 수의 비율은 아니에요.</p>
+    <p><b id="y-how-n">후보</b> — 오늘 이슈, 인기 영상 태그, 10·20대 쇼핑어에서 골라 연령별 검색량을 쟀어요.</p>
+    <p><b>세로선</b> — 30대 이상과 같은 수준(1×)이에요. 막대가 선을 넘은 만큼 더 찾는 거예요.</p>
+  </section>
 </main>
 
 <!-- 세대 확산 -->
-<main id="view-diffusion" hidden>
-  <section class="card wide">
-    <h2>어떻게 읽나 <small>각 연령은 자기 최고치 기준(진할수록 관심 ↑) — 크기가 아니라 <b>언제</b> 뜨는지를 비교</small></h2>
-    <div class="legend2">
-      <span><span class="badge b-spread">확산 중</span> 10·20대가 먼저, 40대+가 뒤따라 오름</span>
-      <span><span class="badge b-up">윗세대 상승</span> 지금 40대+가 오르는 중</span>
-      <span><span class="badge b-wait">확산 대기</span> 아직 10·20대만</span>
-      <span><span class="badge b-flat">전 연령 동시</span> 뉴스처럼 한꺼번에</span>
-      <span><span class="badge b-flat">상시 관심</span> 꾸준함 (유행 아님)</span>
+<main id="view-diffusion" class="view" hidden>
+  <section class="hero">
+    <div class="hero-t">
+      <p class="eyebrow" id="d-eyebrow">한국 · 매일 판정</p>
+      <h1>10·20대의 유행, <em>윗세대로 번지고</em> 있나</h1>
     </div>
-    <div class="note" style="margin-top:8px">🎯 <b>누적 판단</b>은 매일의 판정을 잡음 섞인 관측으로 보고 며칠에 걸쳐 확률을 갱신한 것(부분관측 마르코프 결정과정).
-      판정이 경계에서 오락가락해도 믿음은 천천히 움직이고, 알림은 믿음이 판정에 동의할 때만 나갑니다.</div>
   </section>
-  <section class="card wide" id="transfer-card" hidden>
-    <h2>세대 전달 함수 <small>20대의 관심 곡선이 윗세대에 <b>얼마나</b>, <b>몇 주 뒤에</b> 도착하는지</small></h2>
-    <div id="transfer"></div>
+  <div class="warn" id="d-warn" hidden>샘플 데이터 — 실제 값이 아닙니다</div>
+
+  <section class="flash" id="d-flash" aria-label="단계 변화">
+    <span class="kicker" id="d-flash-k">단계 변화</span>
+    <span class="flash-t" id="d-flash-t">불러오는 중…</span>
+    <button type="button" class="btn-line" id="d-flash-go" hidden>자세히</button>
   </section>
-  <section class="card wide" id="alert-card" hidden>
-    <h2>🔔 알림 <small id="alert-sub">변화가 생겼을 때만 — <a href="feed.xml" id="feed-link">RSS 구독</a> · watchlist.txt 에 키워드를 적으면 고정 추적</small></h2>
+
+  <section class="block" aria-labelledby="flow-h">
+    <div class="block-h"><h2 id="flow-h">지금 어디쯤 있나</h2><span>키워드를 누르면 아래에 연령별 흐름이 보여요</span></div>
+    <div class="stages" id="d-stages"></div>
+    <div class="others" id="d-others"></div>
+  </section>
+
+  <section class="card" id="d-detail" aria-labelledby="det-h"><p class="empty">불러오는 중…</p></section>
+
+  <div class="grid2 stretch">
+    <section class="card" aria-labelledby="acc-h">
+      <div class="card-h"><h2 id="acc-h">예측이 맞았나</h2><span id="acc-sub">과거 시점에서 다시 판정해 보고, 실제로 윗세대가 따라왔는지 채점</span></div>
+      <div id="dif-acc"><p class="empty">불러오는 중…</p></div>
+    </section>
+    <section class="card" aria-labelledby="case-h">
+      <div class="card-h"><h2 id="case-h">과거 유행으로 검증</h2><span id="case-sub">같은 방법으로 계산한 실제 유행 — 누르면 위에 연령별 흐름이 보여요</span></div>
+      <div id="dif-cases"><p class="empty">불러오는 중…</p></div>
+    </section>
+  </div>
+
+  <section class="notify" aria-label="알림">
+    <b>변화가 생길 때만 알려드려요</b>
+    <span id="alert-sub">watchlist.txt 에 키워드를 적으면 매일 추적하고, 단계가 바뀌면 알림이 와요.</span>
+    <a class="btn" href="feed.xml" id="feed-link">RSS 구독</a>
+  </section>
+
+  <h2 class="deep-h">더 깊이 보기</h2>
+  <section class="card" id="alert-card" hidden>
+    <div class="card-h"><h2>최근 알림</h2><span id="alert-count"></span></div>
     <ul class="list" id="alerts"></ul>
   </section>
-  <section class="card wide">
-    <h2>예측이 맞았나 <small id="acc-sub">과거 데이터로 매주 판정을 다시 해 보고, 실제로 윗세대가 따라왔는지 채점</small></h2>
-    <div id="dif-acc"><div class="empty">불러오는 중…</div></div>
-  </section>
-  <section class="card wide">
-    <h2>지금 추적 중 <small id="dif-sub">10·20대가 유독 찾는 키워드</small></h2>
+  <section class="card">
+    <div class="card-h"><h2>추적 중인 키워드 전체</h2><span id="dif-sub">10·20대가 유독 찾는 키워드 — 이름을 누르면 위에 크게 보여요</span></div>
     <div class="cchips" id="d-cchips"></div>
-    <div id="dif-now"><div class="empty">불러오는 중…</div></div>
+    <div id="dif-now"><p class="empty">불러오는 중…</p></div>
+    <button type="button" class="ghost" id="dif-more" style="align-self:flex-start" hidden></button>
   </section>
-  <section class="card wide">
-    <h2>과거 사례로 검증 <small>같은 방법으로 계산한 실제 유행 — 확산형은 윗세대가 몇 주~몇 년 뒤 따라옴</small></h2>
-    <div id="dif-cases"><div class="empty">불러오는 중…</div></div>
+  <section class="card" id="transfer-card" hidden>
+    <div class="card-h"><h2>세대 전달 함수</h2><span>20대의 관심 곡선이 윗세대에 <b>얼마나</b>, <b>몇 주 뒤에</b> 도착하는지</span></div>
+    <div id="transfer"></div>
+  </section>
+
+  <section class="howto" aria-label="읽는 법">
+    <p><b>단계</b> — 연령별 주간 검색 흐름에서 급상승 시점을 찾아, 10·20대와 40대 이상의 시차로 매일 판정해요.</p>
+    <p><b>누적 판단</b> — 매일의 판정을 잡음 섞인 관측으로 보고 며칠에 걸쳐 확률을 갱신한 값이에요. 판정이 오락가락해도 천천히 움직이고, 알림은 누적 판단이 판정에 동의할 때만 나가요.</p>
+    <p><b>N배</b> — 판정 없이 아무 키워드나 골랐을 때보다 얼마나 더 맞히는지예요. 표본이 작아 참고용이에요.</p>
   </section>
 </main>
 
 <!-- 나라별 -->
-<main id="view-country" hidden>
-  <div class="col">
-    <section class="card">
-      <h2 id="rank-title">지금 관심 랭킹 <small>행을 누르면 상세</small></h2>
-      <div class="note" id="rank-note" hidden></div>
+<main id="view-country" class="view" hidden>
+  <section class="hero">
+    <div class="hero-t">
+      <p class="eyebrow" id="c-eyebrow">검색 급상승 · 실시간 이슈 · 인기 문서를 교차 확인</p>
+      <h1 id="rank-title">지금 뜨는 이슈</h1>
+    </div>
+    <div class="seg" id="cperiod" role="group" aria-label="기간">
+      <button type="button" data-p="live" aria-pressed="true">실시간</button><button type="button" data-p="week" aria-pressed="false">7일</button><button type="button" data-p="month" aria-pressed="false">30일</button>
+    </div>
+  </section>
+  <div class="chips" id="regions" role="group" aria-label="나라"></div>
+  <p class="note" id="rank-note" hidden></p>
+
+  <div class="split">
+    <section class="card rankcard" aria-labelledby="rank-h">
+      <h2 id="rank-h" class="sr">관심 랭킹</h2>
       <div class="cchips" id="c-cchips"></div>
+      <div class="rank-head" id="rank-head"><span>순위</span><span>이슈</span><span>변화</span><span>교차 점수</span></div>
       <ol class="rank" id="rank"></ol>
-      <button class="ghost" id="more" style="margin-top:8px" hidden></button>
-      <div id="detail"></div>
+      <button type="button" class="ghost more" id="more" hidden></button>
     </section>
+    <aside class="side">
+      <section class="card inv" id="detail" aria-live="polite" hidden></section>
+      <section class="card" id="card-apps" hidden>
+        <h2>인기 무료 앱</h2>
+        <ol class="list" id="apps"></ol>
+      </section>
+      <section class="card">
+        <h2>인기 동영상</h2>
+        <ul class="list" id="yt"></ul>
+      </section>
+      <section class="card">
+        <h2>뉴스 헤드라인</h2>
+        <ul class="list" id="news"></ul>
+      </section>
+    </aside>
   </div>
-  <div class="col">
-    <section class="card" id="card-att" hidden>
-      <h2>관심의 속도 <small>이 나라의 평소와 비교</small></h2>
-      <div id="att"></div>
-    </section>
-    <section class="card" id="card-flow" hidden>
-      <h2>국가 간 전파 <small>같은 주제가 나라를 건너는 데 걸리는 시간</small></h2>
-      <ul class="list" id="flow"></ul>
-      <div class="note" id="flow-note"></div>
-    </section>
-    <section class="card" id="card-shape" hidden>
-      <h2>유행의 모양 <small>정점 일주일 뒤부터 읽힙니다</small></h2>
-      <ul class="list" id="shape"></ul>
-      <div class="note" id="shape-note"></div>
-    </section>
-    <section class="card">
-      <h2>인기 동영상</h2>
-      <ul class="list" id="yt"></ul>
-    </section>
-    <section class="card">
-      <h2>뉴스 헤드라인</h2>
-      <ul class="list" id="news"></ul>
-    </section>
+
+  <div class="deep">
+    <h2 class="deep-h">더 깊이 보기</h2>
+    <div class="grid3">
+      <section class="card sm" id="card-att" hidden>
+        <div class="card-h"><h2>관심의 속도</h2><span>이 나라의 평소와 비교</span></div>
+        <div id="att"></div>
+      </section>
+      <section class="card sm" id="card-flow" hidden>
+        <div class="card-h"><h2>국가 간 전파</h2><span>같은 주제가 나라를 건너는 데 걸리는 시간</span></div>
+        <ul class="list" id="flow"></ul>
+        <p class="note" id="flow-note"></p>
+      </section>
+      <section class="card sm" id="card-shape" hidden>
+        <div class="card-h"><h2>유행의 모양</h2><span>정점 일주일 뒤부터 읽혀요</span></div>
+        <ul class="list" id="shape"></ul>
+        <p class="note" id="shape-note"></p>
+      </section>
+    </div>
   </div>
 </main>
 
-<!-- 연령별 -->
-<main id="view-age" hidden>
-  <div class="col">
-    <section class="card" id="card-issues">
-      <h2><span id="g-title">20대가 특히 관심 있는 이슈</span> <small id="issues-sub">평균보다 더 관심을 보인 날 수 · 평균 대비 배수</small></h2>
-      <div class="note" id="issues-note" hidden></div>
-      <ol class="bars" id="issues"></ol>
-    </section>
-  </div>
-  <div class="col" id="shopcol">
-    <section class="card">
-      <h2><span id="g-title2">20대 쇼핑 관심</span> <small><b style="color:var(--accent)">주황</b> = 전체 순위엔 없는 이 그룹만의 관심</small></h2>
-      <div id="shop"><div class="empty">불러오는 중…</div></div>
-    </section>
-  </div>
-  <section class="card wide">
-    <h2>그룹 비교표 <small>오늘의 이슈 × 연령·성별 (100 = 평균, 최근 7일 검색 기준)</small></h2>
+<!-- 전체 연령 -->
+<main id="view-age" class="view" hidden>
+  <section class="hero">
+    <div class="hero-t">
+      <p class="eyebrow" id="a-eyebrow">한국 · 최근 7일 검색 · 100 = 전체 평균</p>
+      <h1>오늘의 이슈, <em>누가</em> 더 찾았나</h1>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="mx-h">
+    <div class="card-row">
+      <h2 id="mx-h">이슈 × 연령·성별</h2>
+      <div class="scale"><span>덜 찾음</span><i></i><span>더 찾음</span></div>
+    </div>
     <div class="kwrow" id="kwrow">
       <input id="kwinput" placeholder="직접 비교할 키워드 (쉼표 구분)" aria-label="키워드">
-      <button class="ghost" id="kwgo">비교</button>
-      <button class="ghost" id="kwreset">오늘 이슈로</button>
+      <button type="button" class="ghost" id="kwgo">비교</button>
+      <button type="button" class="ghost" id="kwreset">오늘 이슈로</button>
     </div>
-    <div id="heat"><div class="empty">불러오는 중…</div></div>
+    <div id="heat"><p class="empty">불러오는 중…</p></div>
+    <p class="note">열 이름을 누르면 그 그룹 기준으로 아래가 바뀌어요.</p>
   </section>
+
+  <div class="pickrow">
+    <p class="eyebrow">선택한 그룹 · <b id="g-pick">20대</b></p>
+    <div class="seg" id="aperiod" role="group" aria-label="기간">
+      <button type="button" data-p="week" aria-pressed="true">7일</button><button type="button" data-p="month" aria-pressed="false">30일</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <section class="card" id="card-issues" aria-labelledby="g-title">
+      <div class="card-h"><h2 id="g-title">20대가 특히 관심 있는 이슈</h2><span id="issues-sub">평균보다 많이 찾은 순서</span></div>
+      <p class="note" id="issues-note" hidden></p>
+      <ol class="toplist" id="issues"></ol>
+    </section>
+    <section class="card" aria-labelledby="g-title2">
+      <div class="card-h"><h2 id="g-title2">20대 쇼핑 관심</h2><span id="shop-sub">전체 인기어엔 없는 이 그룹만의 검색어</span></div>
+      <dl class="kv" id="shop"><div class="empty">불러오는 중…</div></dl>
+    </section>
+  </div>
 </main>
 
 <script>
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const GROUPS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성", "20대 여성", "20대 남성"];
 const BASIC_SEGS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성"];
 const HIDDEN_REGIONS = new Set(["KR-11", "KR-26"]); // 서울·부산은 나라 탭에서 제외
 let META = null, REPORT = null, SEG = null;
@@ -377,8 +712,8 @@ function renderCatChips(el, items, selected, onPick) {
   const present = CATS.filter((c) => counts[c]);
   if (!present.length) { el.innerHTML = ""; return; }
   const n = items.filter((it) => (it.category || "기타") !== "기타").length || items.length;
-  el.innerHTML = `<button class="cchip" aria-pressed="${!selected}" data-c="">전체<span class="k">${n}</span></button>` +
-    present.map((c) => `<button class="cchip" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === selected}" data-c="${esc(c)}">${esc(c)}<span class="k">${counts[c]}</span></button>`).join("");
+  el.innerHTML = `<button type="button" class="cchip" aria-pressed="${!selected}" data-c="">전체<span class="k">${n}</span></button>` +
+    present.map((c) => `<button type="button" class="cchip" aria-pressed="${c === selected}" data-c="${esc(c)}">${esc(c)}<span class="k">${counts[c]}</span></button>`).join("");
   el.onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) onPick(b.dataset.c); };
 }
 const byCat = (items, c) => c ? items.filter((it) => (it.category || "기타") === c) : items;
@@ -389,7 +724,7 @@ function youthShopRows(g) {
     const c = SHOPMAP[sc];
     if (!c) continue;
     for (const k of (v.distinctive || []).slice(0, 3)) {
-      rows.push({ keyword: k, kind: "쇼핑", category: c, vs_older: 1, affinity: 100, days: null });
+      rows.push({ keyword: k, kind: "쇼핑", category: c, vs_older: 1, affinity: 100, days: null, shopOnly: true });
     }
   }
   return rows;
@@ -397,6 +732,30 @@ function youthShopRows(g) {
 const PERIOD = {}, SHOPS = {};
 let AGEP = null;
 const PLABEL = { week: "7일", month: "30일" };
+
+// ---- 표기 ---------------------------------------------------------------------------
+const md = (iso) => `${+iso.slice(5, 7)}/${+iso.slice(8, 10)}`;
+function rangeKo(a, b) {  // "9월 13–19일" / "9월 28일–10월 4일"
+  const [am, ad, bm, bd] = [+a.slice(5, 7), +a.slice(8, 10), +b.slice(5, 7), +b.slice(8, 10)];
+  return am === bm ? `${am}월 ${ad}–${bd}일` : `${am}월 ${ad}일–${bm}월 ${bd}일`;
+}
+function stampKST(iso) {  // "9.20 15:45 KST 업데이트"
+  const p = {};
+  const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  for (const x of f.formatToParts(new Date(iso))) p[x.type] = x.value;
+  return `${p.month}.${p.day} ${p.hour}:${p.minute} KST 업데이트`;
+}
+/** 머리말 시각: 수집 시각을 알면 그것을, 모르면 화면이 준 기간 문구를 쓴다. */
+function setStamp(fallback) {
+  const at = (view === "country" && REPORT?.generated_at) || META?.generated_at;
+  $("#gen").textContent = at ? stampKST(at) : (fallback || "");
+}
+function josa(word) {  // 이/가: '여성이', '20대가'
+  const c = word.replace(/[^가-힣]/g, "").slice(-1);
+  return c && (c.charCodeAt(0) - 0xac00) % 28 ? "이" : "가";
+}
+const chipHTML = (label, on, attr) => `<button type="button" class="chip" aria-pressed="${on}" ${attr}>${esc(label)}</button>`;
+const WARN = `<div class="warn">샘플 데이터 — 실제 값이 아닙니다</div>`;
 
 // Static mode (published site): data is pre-built into encrypted api/*.dat files by `trend-engine export`.
 let STATIC = false; // export.py rewrites this to true
@@ -437,7 +796,7 @@ function readHash() {
   const [v, arg, p] = decodeURIComponent(location.hash.slice(1)).split("/");
   if (v === "diffusion") { view = "diffusion"; }
   else if (v === "youth") { view = "youth"; if (YGROUPS.includes(arg)) ygroup = arg; if (p === "now" || PLABEL[p]) yperiod = p; }
-  else if (v === "age") { view = "age"; if (GROUPS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
+  else if (v === "age") { view = "age"; if (BASIC_SEGS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
   else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; }
 }
 function writeHash() {
@@ -446,82 +805,77 @@ function writeHash() {
 }
 function setView(v) {
   view = v; writeHash();
-  for (const t of $$(".tab")) t.setAttribute("aria-selected", String(t.dataset.view === v));
-  $("#view-youth").hidden = $("#sub-youth").hidden = v !== "youth";
-  $("#view-diffusion").hidden = $("#sub-diffusion").hidden = v !== "diffusion";
-  $("#view-country").hidden = $("#sub-country").hidden = v !== "country";
-  $("#view-age").hidden = $("#sub-age").hidden = v !== "age";
+  for (const t of $$(".tab")) { if (t.dataset.view === v) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); }
+  for (const name of ["youth", "diffusion", "country", "age"]) $(`#view-${name}`).hidden = name !== v;
+  $("#refresh").hidden = STATIC || v !== "country";
   if (v === "youth") loadYouth(); else if (v === "diffusion") loadDiffusion(); else if (v === "country") loadCountry(); else loadAge();
 }
 
 // ---- 나라별 --------------------------------------------------------------------------
 function countries() { return META.regions.filter((r) => !HIDDEN_REGIONS.has(r.code)); }
 function renderRegions() {
-  $("#regions").innerHTML = countries().map((r) =>
-    `<button class="chip" aria-pressed="${r.code === region}" data-code="${r.code}">${esc(r.name)}</button>`).join("");
+  $("#regions").innerHTML = countries().map((r) => chipHTML(r.name, r.code === region, `data-code="${r.code}"`)).join("");
 }
 function statusCell(c) {
-  if (!c.status) return `<span class="st"></span>`;
+  if (!c.status) return `<span class="chg"></span>`;
   const txt = { new: "NEW", rising: "▲" + (c.rank_change || ""), falling: "▼" + Math.abs(c.rank_change || 0), steady: "–" }[c.status];
-  return `<span class="st ${c.status}">${txt}</span>`;
+  return `<span class="chg ${c.status}">${txt}</span>`;
 }
 function periodData() { return cperiod === "live" ? null : PERIOD[region]?.[cperiod]; }
+/** 한 줄 = 한 이야기: 실시간은 같은 이야기를 묶은 주제(themes), 기간 보기는 기간 항목. 선택 번호도 이 목록 기준. */
+function rankSource() {
+  const pd = periodData();
+  if (pd) return pd.items;
+  return REPORT?.themes?.length ? REPORT.themes : (REPORT?.clusters || []);
+}
+let detailSig = null;
 function renderRank() {
   const pd = periodData();
-  const title = $("#rank-title");
-  if (title) {
-    const text = cperiod === "live" ? "지금 관심 랭킹 " : `최근 ${PLABEL[cperiod]} 관심 랭킹 `;
-    const tip = title.querySelector("small")?.textContent || "행을 누르면 상세";
-    title.innerHTML = `${esc(text)}<small>${esc(tip)}</small>`;
-  }
+  const name = REPORT?.region_name || META.regions.find((r) => r.code === region)?.name || region;
+  $("#rank-title").innerHTML = cperiod === "live" ? `지금 <em>${esc(name)}</em>에서 뜨는 이슈` : `최근 ${PLABEL[cperiod]}, <em>${esc(name)}</em>에서 뜬 이슈`;
   const note = $("#rank-note");
-  if (note) {
-    note.hidden = !(pd && pd.days_available < pd.days);
-    if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
-  }
-  $("#rank").classList.toggle("period", !!pd);
-  if (pd) return renderPeriodRank(pd);
-  // one row per story: themes group clusters that are the same thing (아시안게임 + 나고야)
-  const source = REPORT.themes?.length ? REPORT.themes : REPORT.clusters;
-  renderCatChips($("#c-cchips"), source, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
-  const all = source.map((c, i) => ({ ...c, _i: i }));
-  const cs = byCat(all, ccat).slice(0, showAll ? 50 : 20);
-  const max = Math.max(...cs.map((c) => c.score), 1);
-  $("#rank").innerHTML = cs.map((c) => `
-    <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
-      <span class="n">${c._i + 1}</span>
-      <span class="label" title="${esc((c.members || []).map((m) => m.label).join(" · ") || c.label)}">${esc(c.label)}${catTag(c.category)}${
-        c.members?.length > 1 ? `<span class="ctag" style="--c:var(--muted)" title="${esc(c.members.slice(1).map((m) => m.label).join(", "))}">외 ${c.members.length - 1}</span>` : ""}${
-        (c.days_seen ?? c.members?.[0]?.days_seen ?? 0) >= 7 ? `<span class="ctag" title="지난 30일 중 자주 순위권 — 점수 낮춤">단골</span>` : ""}</span>
-      ${statusCell(c)}
-      <span class="score"><i style="width:${(c.score / max * 100).toFixed(1)}%"></i></span>
-    </li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
-  $("#more").hidden = REPORT.clusters.length <= 20;
-  $("#more").textContent = showAll ? "접기" : `더보기 (${REPORT.clusters.length}개)`;
+  note.hidden = !(pd && pd.days_available < pd.days);
+  if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
+  $("#rank-head").innerHTML = pd ? `<span>순위</span><span>이슈</span><span>순위권</span><span>노출</span>` : `<span>순위</span><span>이슈</span><span>변화</span><span>교차 점수</span>`;
+  const src = rankSource();
+  renderCatChips($("#c-cchips"), src, ccat, (c) => { ccat = c; selected = null; renderRank(); });
+  const rows = byCat(src.map((c, i) => ({ ...c, _i: i })), ccat).slice(0, showAll ? 50 : 20);
+  if (!rows.some((c) => c._i === selected)) selected = rows[0]?._i ?? null;  // 첫 줄을 기본 선택
+  const val = (c) => pd ? c.exposure : c.score;
+  const max = Math.max(...rows.map(val), 1);
+  $("#rank").innerHTML = rows.map((c) => {
+    const sub = [c.category && c.category !== "기타" ? `<span class="rcat">${esc(c.category)}</span>` : "",
+      c.members?.length > 1 ? `외 ${c.members.length - 1}건 묶음` : "",
+      !pd && (c.days_seen ?? c.members?.[0]?.days_seen ?? 0) >= 7 ? `<span title="지난 30일 중 자주 순위권 — 점수 낮춤">단골</span>` : ""].filter(Boolean).join(" · ");
+    const mid = pd ? `<span class="pmeta">${c.new_in_period ? `<b>NEW</b> ` : ""}${c.days}일 · ${c.best_rank}위</span>` : statusCell(c);
+    return `<li data-i="${c._i}"><button type="button" class="row" aria-pressed="${selected === c._i}">
+      <span class="rn">${c._i + 1}</span>
+      <span class="rl"><span class="label" title="${esc((c.members || []).map((m) => m.label).join(" · ") || c.label)}">${esc(c.label)}</span>${sub ? `<span class="rsub">${sub}</span>` : ""}</span>
+      ${mid}
+      <span class="score"><i style="width:${(val(c) / max * 100).toFixed(1)}%"></i></span>
+    </button></li>`; }).join("") || `<li class="empty">${pd ? "아직 기록이 없습니다" : "데이터가 없습니다"}</li>`;
+  $("#more").hidden = src.length <= 20;
+  $("#more").textContent = showAll ? "접기" : `더보기 (${src.length}개)`;
+  renderSelected();
 }
-function renderPeriodRank(pd) {
-  renderCatChips($("#c-cchips"), pd.items, ccat, (c) => { ccat = c; selected = null; $("#detail").innerHTML = ""; renderRank(); });
-  const items = byCat(pd.items.map((c, i) => ({ ...c, _i: i })), ccat).slice(0, showAll ? 40 : 20);
-  const max = Math.max(...items.map((c) => c.exposure), 1);
-  $("#rank").innerHTML = items.map((c) => `
-    <li data-i="${c._i}" class="${selected === c._i ? "sel" : ""}">
-      <span class="n">${c._i + 1}</span>
-      <span class="label" title="${esc(c.label)}">${esc(c.label)}${catTag(c.category)}</span>
-      <span class="pmeta">${c.new_in_period ? `<b class="st new">NEW</b> ` : ""}${c.days}일 · ${c.best_rank}위</span>
-      <span class="score"><i style="width:${(c.exposure / max * 100).toFixed(1)}%"></i></span>
-    </li>`).join("") || `<li class="empty">아직 기록이 없습니다</li>`;
-  $("#more").hidden = pd.items.length <= 20;
-  $("#more").textContent = showAll ? "접기" : `더보기 (${pd.items.length}개)`;
+function renderSelected() {
+  const it = selected == null ? null : rankSource()[selected];
+  const sig = it ? `${region}/${cperiod}/${it.key}` : "";
+  $("#detail").hidden = !it;
+  if (sig === detailSig) return;
+  detailSig = sig;
+  if (!it) { $("#detail").innerHTML = ""; return; }
+  const pd = periodData();
+  if (pd) renderPeriodDetail(it, pd, selected + 1); else renderDetail(it, selected + 1);
 }
-function renderPeriodDetail(c, pd) {
-  const fmt = (d) => d.slice(5).replace("-", "/");
-  $("#detail").innerHTML = `<div class="detail">
-    <h3>${esc(c.label)}</h3>
-    <div class="muted">최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권 · 최고 ${c.best_rank}위 · 누적 ${c.hours}시간 · 처음 ${fmt(c.since)}</div>
-    <b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
+const detailHead = (n, cat, label) => `<div class="d-head"><span class="kicker">${n}위${cat && cat !== "기타" ? " · " + esc(cat) : ""}</span><h2 id="sel-h">${esc(label)}</h2></div>`;
+function renderPeriodDetail(c, pd, n) {
+  $("#detail").innerHTML = `${detailHead(n, c.category, c.label)}
+    <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>누적 ${c.hours}시간</span><span>처음 ${md(c.since)}</span></div>
+    <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
 }
 function sparkDays(dates, series) {
-  if (dates.length < 2) return `<div class="muted">기록이 2일 이상 쌓이면 표시됩니다</div>`;
+  if (dates.length < 2) return `<div class="dim">기록이 2일 이상 쌓이면 표시됩니다</div>`;
   const ranks = Object.values(series);
   const w = 300, hgt = 46, maxR = Math.max(10, ...ranks);
   const x = (i) => (i / (dates.length - 1) * w).toFixed(1);
@@ -530,59 +884,83 @@ function sparkDays(dates, series) {
   const segs = []; let cur = [];
   for (const p of pts) { if (p) cur.push(p); else if (cur.length) { segs.push(cur); cur = []; } }
   if (cur.length) segs.push(cur);
-  const dots = "";
   return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="날짜별 순위 (위쪽이 상위)">
-    ${segs.map((sg) => `<polyline points="${sg.join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join("")}${dots}</svg>
-    <div class="legend"><span>${dates[0].slice(5)}</span><span style="margin-left:auto">${dates.at(-1).slice(5)}</span></div>
-    <div class="muted" style="font-size:11px">위쪽이 1위 · 아래 끝 ${maxR}위 · 끊긴 날 = 순위권 밖</div>`;
+    ${segs.map((sg) => `<polyline points="${sg.join(" ")}" fill="none" stroke="var(--spark, var(--accent))" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join("")}</svg>
+    <div class="legend"><span>${md(dates[0])}</span><span style="margin-left:auto">${md(dates.at(-1))}</span></div>
+    <div class="dim" style="font-size:12px">위쪽이 1위 · 아래 끝 ${maxR}위 · 끊긴 날 = 순위권 밖</div>`;
 }
-async function renderDetail(t) {
+async function renderDetail(t, n) {
   const c = t.members?.[0] || t;  // theme -> its strongest member carries the evidence
-  const mentions = c.mentions || [];
   const others = (t.members || []).slice(1);
-  const wantKey = t.key, wantRegion = region;
-  $("#detail").innerHTML = `<div class="detail">
-    <h3>${esc(t.label)}${catTag(t.category || c.category)}</h3>
-    ${others.length ? `<div class="muted">같은 이야기로 묶임: ${others.map((m) => esc(m.label)).join(" · ")}</div>` : ""}
-    ${c.volume ? `<div class="muted">검색량 ${c.volume.toLocaleString()}+</div>` : ""}
-    ${c.novelty != null ? `<div class="muted">${c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권 (신규성 ${Math.round(c.novelty * 100)}%)` : "지난 30일 동안 처음 등장"}</div>` : ""}
-    ${c.related.length ? `<b>관련 뉴스</b><ul>${c.related.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
-    ${mentions.length ? `<b>관련 콘텐츠</b><ul>${mentions.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
-    <b>순위 추이</b><div id="spark" class="muted">…</div></div>`;
+  const wantKey = c.key || t.key, wantRegion = region, wantSig = detailSig;
+  const facts = [];
+  if (c.volume) facts.push(`검색량 ${c.volume.toLocaleString()}+`);
+  if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권 (신규성 ${Math.round(c.novelty * 100)}%)` : "지난 30일 동안 처음 등장");
+  const more = [...(c.related || []).slice(1), ...(c.mentions || [])];
+  $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label)}
+    ${c.related?.[0] ? `<p class="quote">“${esc(c.related[0])}”</p>` : ""}
+    ${facts.length ? `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>` : ""}
+    ${others.length ? `<p class="quote">같은 이야기로 묶임: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
+    <div id="aff"></div>
+    <div class="d-sec"><b>순위 추이</b><div id="spark" class="dim">…</div></div>
+    ${more.length ? `<div class="d-sec"><b>함께 나온 제목</b><ul>${more.slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`;
+  renderAffinity([t.label, c.label, ...others.map((m) => m.label)]);
   try {
     const h = await api(`api/history?region=${wantRegion}&key=${encodeURIComponent(wantKey)}`);
-    // 나라·기간·선택이 바뀌면 이 응답은 버린다 (비동기 경쟁으로 #spark 가 이미 없음)
-    if (region !== wantRegion || !$("#spark")) return;
+    // 나라·기간·선택이 바뀌면 이 응답은 버린다 (비동기 경쟁으로 #spark 가 이미 다른 항목의 것)
+    if (detailSig !== wantSig || !$("#spark")) return;
     $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다" : spark(h.map((x) => x.rank));
   } catch (e) {
-    const el = $("#spark");
-    if (el) el.textContent = e.message;
+    if (detailSig === wantSig && $("#spark")) $("#spark").textContent = e.message;
   }
+}
+// 누가 더 찾나: 연령·성별 관심은 한국 검색 기준이라 한국에서만, 그리고 상위 이슈만 잰다 (전체 연령 탭과 같은 응답을 쓴다).
+let SEG_TRIED = false;
+async function renderAffinity(labels) {
+  if (region !== "KR") return;
+  const sig = detailSig;
+  if (!SEG && !SEG_TRIED) {
+    SEG_TRIED = true;
+    try { SEG = await api(`api/segments?region=KR&top=14`); } catch (_) { /* 전체 연령 탭이 다시 시도한다 */ }
+  }
+  const box = $("#aff");
+  if (!SEG || detailSig !== sig || !box) return;
+  const key = SEG.keywords.find((k) => labels.includes(SEG.labels?.[k] || k) || labels.includes(k));
+  const aff = key ? SEG.affinity[key] : null;
+  const segs = BASIC_SEGS.filter((g) => aff?.[g] != null);
+  box.innerHTML = `<div class="d-sec">${segs.length
+    ? `<b>누가 더 찾나 <small>(100 = 평균${SEG.synthetic ? " · 샘플 데이터" : ""})</small></b>` + segs.map((g) => `<div class="affrow">
+        <span>${esc(g)}</span><span class="affbar"><i class="${aff[g] >= 100 ? "hi" : ""}" style="width:${Math.min(100, aff[g] / 2).toFixed(0)}%"></i></span><span>${Math.round(aff[g])}</span></div>`).join("")
+    : `<span class="dim">연령·성별 관심은 상위 이슈만 재서, 이 이슈는 측정되지 않았어요.</span>`}</div>`;
 }
 function spark(ranks) {
   const w = 300, hgt = 40, maxR = Math.max(...ranks, 10);
   const pts = ranks.map((r, i) => `${(i / (ranks.length - 1) * w).toFixed(1)},${((r - 1) / (maxR - 1 || 1) * (hgt - 6) + 3).toFixed(1)}`).join(" ");
   return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="순위 추이 (위쪽이 상위)">
-    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
-    <div class="muted" style="font-size:11px">최근 ${ranks.length}회 · 현재 ${ranks.at(-1)}위 (위쪽이 상위)</div>`;
+    <polyline points="${pts}" fill="none" stroke="var(--spark, var(--accent))" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="dim" style="font-size:12px">최근 ${ranks.length}회 · 현재 ${ranks.at(-1)}위 (위쪽이 상위)</div>`;
 }
 function renderContent() {
   // Link targets stay in memory (opened on click) so addresses don't show on hover.
-  $("#yt").innerHTML = (REPORT.videos || []).slice(0, 12).map((v, i) => `<li><a href="#" data-v="${i}">${esc(v.title)}</a>
-    <span class="tag">${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</span></li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
-  $("#news").innerHTML = (REPORT.news || []).slice(0, 12).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
+  const apps = REPORT.apps || [];
+  $("#card-apps").hidden = !apps.length;
+  $("#apps").innerHTML = apps.slice(0, 5).map((a, i) => `<li><span class="n">${i + 1}</span><a href="#" data-a="${i}">${esc(a.title)}</a></li>`).join("");
+  $("#yt").innerHTML = (REPORT.videos || []).slice(0, 6).map((v, i) => `<li><a href="#" data-v="${i}">${esc(v.title)}</a>
+    <small>${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</small></li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
+  $("#news").innerHTML = (REPORT.news || []).slice(0, 8).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
     || `<li class="empty">데이터가 없습니다</li>`;
 }
 function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 1e4 ? Math.round(v / 1e4) + "만회" : Math.round(v).toLocaleString() + "회"; }
 async function loadCountry(refresh = false) {
-  selected = null; $("#detail").innerHTML = "";
+  selected = null; detailSig = null;
+  $("#detail").hidden = true; $("#detail").innerHTML = "";
   $("#rank").innerHTML = `<li class="empty">불러오는 중…</li>`;
   for (const b of $$("#cperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === cperiod));
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
     renderAttention(); renderShapes(); renderFlows();
-    $("#gen").textContent = `${new Date(REPORT.generated_at).toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" })} 기준 · 매시간 갱신`;
+    setStamp();
     renderRank(); renderContent();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
 }
@@ -608,8 +986,8 @@ async function renderAttention() {
   rows.push(`<div class="attrow"><b>${Math.round(s.concentration.value * 100)}%</b>
     <span>상위 ${s.concentration.n}개가 가져간 관심 — ${esc(s.concentration.label)}
     <small>(평소 ${Math.round(s.concentration.median * 100)}%, ${gap(s.concentration.gap_pp)})</small></span></div>`);
-  if (a.trend) rows.push(`<div class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</div>`);
-  rows.push(`<div class="note">최근 ${a.days}일 기록 기준</div>`);
+  if (a.trend) rows.push(`<p class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</p>`);
+  rows.push(`<p class="note">최근 ${a.days}일 기록 기준</p>`);
   box.innerHTML = rows.join("");
 }
 
@@ -631,12 +1009,12 @@ async function renderFlows() {
   for (const f of rows) (by[f.from] ??= []).push(f);
   const order = Object.keys(by).sort((a, b) => (b === lang) - (a === lang));  // 이 나라 먼저
   const into = rows.filter((f) => f.to === lang).sort((a, b) => a.lag - b.lag);
-  $("#flow").innerHTML = order.map((src) => `<li class="${src === lang ? "mine" : ""}">
-      <a><b>${name(src)}</b>에서 먼저 뜬 주제는</a>
+  $("#flow").innerHTML = order.map((src) => `<li class="col ${src === lang ? "mine" : ""}">
+      <span><b>${name(src)}</b>에서 먼저 뜬 주제는</span>
       <small>${by[src].sort((a, b) => a.lag - b.lag).map((f) =>
         `${name(f.to)}에 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
-    </li>`).join("") + (into.length ? `<li class="mine">
-      <a><b>${name(lang)}</b>에 도착하는 주제는</a>
+    </li>`).join("") + (into.length ? `<li class="col mine">
+      <span><b>${name(lang)}</b>에 도착하는 주제는</span>
       <small>${into.map((f) => `${name(f.from)}에서 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
     </li>` : "");
   const mine = rows.some((f) => f.from === lang || f.to === lang);
@@ -652,7 +1030,7 @@ async function renderFlows() {
 // 유행의 모양: 정점 앞뒤 일주일에 관심이 어떻게 갈렸는지로 네 가지 중 하나를 붙인다.
 // 라벨이 보지 못한 데이터(1년 뒤 재등장 여부)로 교차 검증했다 — 예고형 39% vs 여운형 17%.
 const SHAPES = {};
-const SHAPE_TONE = { "예고형": "steady", "하루형": "falling", "대칭형": "rising", "여운형": "new" };
+const SHAPE_TONE = { "예고형": "", "하루형": "t-issue", "대칭형": "t-content", "여운형": "t-shop" };
 async function renderShapes() {
   const card = $("#card-shape"), code = region;
   try {
@@ -662,7 +1040,7 @@ async function renderShapes() {
   if (!d?.items?.length) { card.hidden = true; return; }
   card.hidden = false;
   $("#shape").innerHTML = d.items.slice(0, 8).map((i) => `<li>
-      <span class="st ${SHAPE_TONE[i.shape] || ""}">${esc(i.shape)}</span>
+      <span class="st tag ${SHAPE_TONE[i.shape] || ""}">${esc(i.shape)}</span>
       <a title="${esc(d.classes[i.shape] || "")}">${esc(i.label)}</a>
       <small>정점 ${i.days_since_peak === 0 ? "어제" : `${i.days_since_peak}일 전`}${i.recurring ? " · 해마다 돌아옴" : ""}</small>
     </li>`).join("");
@@ -670,81 +1048,73 @@ async function renderShapes() {
   $("#shape-note").textContent = `${mix} — ${d.classes[Object.entries(d.mix).sort((a, b) => b[1] - a[1])[0][0]]}`;
 }
 
-// ---- 연령별 --------------------------------------------------------------------------
-function renderGroups() {
-  $("#groups").innerHTML = GROUPS.map((g) => `<button class="chip" aria-pressed="${g === group}" data-g="${esc(g)}">${esc(g)}</button>`).join("");
-  $("#g-title").textContent = `${group}${josa(group)} 특히 관심 있는 이슈`;
-  $("#g-title2").textContent = `${group} 쇼핑 관심`;
-}
-function josa(word) {  // 이/가: '여성이', '20대가'
-  const c = word.replace(/[^가-힣]/g, "").slice(-1);
-  return c && (c.charCodeAt(0) - 0xac00) % 28 ? "이" : "가";
-}
-function renderIssues() {
-  const card = $("#card-issues");
-  const ap = AGEP?.[aperiod];
-  const hasGroup = SEG ? !!SEG.top_by_segment?.[group] : true;
-  card.hidden = !hasGroup;  // 조합 그룹(20대 여성 등)은 쇼핑만 제공 → 쇼핑 카드를 넓게
-  card.parentElement.hidden = !hasGroup;
-  $("#shopcol").classList.toggle("wide", !hasGroup);
-  if (!hasGroup) return;
-  if (!ap) { $("#issues").innerHTML = `<li class="empty">불러오는 중…</li>`; return; }
-  const note = $("#issues-note");
-  note.hidden = ap.days_available >= ap.days;
-  note.textContent = `최근 ${PLABEL[aperiod]} 중 기록 ${ap.days_available}일 — 매일 쌓이는 중`;
-  const rows = ap.by_segment?.[group] || [];
-  const max = Math.max(...rows.map((r) => r.avg_affinity), 100);
-  $("#issues").innerHTML = rows.map((r, i) => `<li>
-      <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(r.keyword)}">${esc(r.keyword)}</span>
-      <span class="bar-bg"><i style="width:${(r.avg_affinity / max * 100).toFixed(1)}%"></i></span>
-      <span class="x">${r.days}일·${(r.avg_affinity / 100).toFixed(1)}배</span></li>`).join("")
-    || `<li class="empty">이 기간에 이 그룹이 두드러진 이슈가 없습니다</li>`;
-}
-function renderShopping() {
-  const SHOP = SHOPS[aperiod];
-  if (!SHOP) return;
-  $("#g-title2").textContent = `${group} 쇼핑 관심 (${PLABEL[aperiod]})`;
-  const cats = SHOP.by_segment[group];
-  if (!cats) { $("#shop").innerHTML = `<div class="empty">이 그룹의 쇼핑 데이터가 없습니다</div>`; return; }
-  $("#shop").innerHTML = `<div class="shopgrid">${Object.entries(cats).map(([cat, v]) => {
-    const dist = new Set(v.distinctive);
-    return `<div><h4>${esc(cat)}</h4><ol>${v.top.slice(0, 6).map((k) => `<li class="${dist.has(k) ? "dist" : ""}">${esc(k)}</li>`).join("")}</ol></div>`;
-  }).join("")}</div>`;
-}
-function heatColor(v) {
-  if (v == null) return "transparent";
-  const d = Math.max(-1, Math.min(1, Math.log2(v / 100) / 1.5));
-  return `rgba(${getComputedStyle(document.documentElement).getPropertyValue(d >= 0 ? "--hot" : "--cold")}, ${(Math.abs(d) * 0.75 + 0.05).toFixed(2)})`;
+// ---- 전체 연령 ------------------------------------------------------------------------
+function heatCell(v) {  // 100 = 평균. 배수는 곱셈 척도라 로그로 편다 (50 과 200 이 같은 진하기)
+  if (v == null) return ["", 0];
+  const d = Math.max(-1, Math.min(1, Math.log2(Math.max(v, 1) / 100) / 1.5));
+  return [d >= 0 ? "hot" : "cold", Math.round(Math.abs(d) * 100)];
 }
 function renderHeat(s) {
   const labels = s.labels || {};
-  const rows = s.keywords.filter((k) => Object.values(s.affinity[k]).some((v) => v != null));
-  const warn = s.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 샘플 데이터 — 실제 값이 아닙니다</div>` : "";
-  if (!rows.length) { $("#heat").innerHTML = warn + `<div class="empty">비교할 수 있는 키워드가 없습니다</div>`; return; }
-  s = { ...s, segments: s.segments.filter((g) => BASIC_SEGS.includes(g)) };
-  $("#heat").innerHTML = warn + `<table class="heat"><thead><tr><th class="kw">키워드</th>${s.segments.map((g) => `<th class="${g === group ? "on" : ""}">${esc(g)}</th>`).join("")}</tr></thead><tbody>${
-    rows.map((k) => `<tr><td class="kw" title="${esc(labels[k] || k)}">${esc(labels[k] || k)}</td>${s.segments.map((g) => {
-      const v = s.affinity[k][g];
-      return `<td style="background:${heatColor(v)}" title="${esc(g)}: ${v == null ? "데이터 없음" : (v / 100).toFixed(1) + "배"}">${v == null ? "·" : Math.round(v)}</td>`;
-    }).join("")}</tr>`).join("")}</tbody></table>
-    <div class="legend"><span><span class="sw" style="background:${heatColor(40)}"></span> 덜 관심</span>
-    <span><span class="sw" style="background:${heatColor(100)}"></span> 평균(100)</span>
-    <span><span class="sw" style="background:${heatColor(250)}"></span> 훨씬 관심</span>
-    <span>기간 ${s.period[0]} ~ ${s.period[1]}</span></div>`;
+  const segs = s.segments.filter((g) => BASIC_SEGS.includes(g));
+  const rows = s.keywords.filter((k) => segs.some((g) => s.affinity[k]?.[g] != null));
+  const warn = s.synthetic ? WARN : "";
+  if (s.period) $("#a-eyebrow").textContent = `한국 · ${rangeKo(s.period[0], s.period[1])} 검색 · 100 = 전체 평균`;
+  if (!rows.length) { $("#heat").innerHTML = warn + `<p class="empty">비교할 수 있는 키워드가 없습니다</p>`; return; }
+  $("#heat").innerHTML = warn + `<div class="hscroll"><table class="heat"><thead><tr><th class="kw" scope="col">이슈</th>${
+    segs.map((g) => `<th scope="col"><button type="button" data-g="${esc(g)}" aria-pressed="${g === group}">${esc(g)}</button></th>`).join("")}</tr></thead><tbody>${
+    rows.map((k) => `<tr><th scope="row" title="${esc(labels[k] || k)}">${esc(labels[k] || k)}</th>${segs.map((g) => {
+      const v = s.affinity[k][g], [cls, p] = heatCell(v);
+      return `<td class="${cls}${g === group ? " on" : ""}" style="--p:${p}%" title="${esc(g)}: ${v == null ? "데이터 없음" : (v / 100).toFixed(1) + "배"}">${v == null ? "·" : Math.round(v)}</td>`;
+    }).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function renderIssues() {
+  $("#g-pick").textContent = group;
+  $("#g-title").innerHTML = `<em>${esc(group)}</em>${josa(group)} 특히 관심 있는 이슈`;
+  const ap = AGEP?.[aperiod];
+  const note = $("#issues-note");
+  const rows = ap?.by_segment?.[group] || [];
+  if (rows.length) {  // 기간 기록: 매일의 표를 쌓아 며칠이나 두드러졌는지
+    note.hidden = ap.days_available >= ap.days;
+    note.textContent = `최근 ${PLABEL[aperiod]} 중 기록 ${ap.days_available}일 — 매일 쌓이는 중`;
+    $("#issues-sub").textContent = `최근 ${PLABEL[aperiod]} · 평균보다 더 찾은 날 수와 평균 대비 배수`;
+    $("#issues").innerHTML = rows.map((r, i) => `<li><span class="n">${i + 1}</span><b title="${esc(r.keyword)}">${esc(r.keyword)}</b>
+      <span class="x">${r.days}일 · ${(r.avg_affinity / 100).toFixed(1)}배</span></li>`).join("");
+    return;
+  }
+  // 기록이 아직 없으면 위 표의 이 그룹 열을 그대로 줄 세운다
+  note.hidden = true;
+  $("#issues-sub").textContent = "오늘 이슈 가운데 평균보다 많이 찾은 순서";
+  const top = !SEG ? [] : SEG.keywords.map((k) => ({ k: SEG.labels?.[k] || k, r: (SEG.affinity[k]?.[group] ?? 0) / 100 }))
+    .filter((x) => x.r >= 1.1).sort((a, b) => b.r - a.r).slice(0, 6);
+  $("#issues").innerHTML = top.map((x, i) => `<li><span class="n">${i + 1}</span><b title="${esc(x.k)}">${esc(x.k)}</b><span class="x">${x.r.toFixed(1)}배</span></li>`).join("")
+    || `<li class="empty">${SEG ? "오늘 이슈 중 평균보다 눈에 띄게 더 찾은 건 없어요." : "불러오는 중…"}</li>`;
+}
+/** 쇼핑: 전체 인기어에는 없는 이 그룹만의 말(distinctive)을 분야별로 */
+function shopHTML(cats) {
+  const rows = Object.entries(cats || {}).filter(([, v]) => v.distinctive?.length)
+    .map(([cat, v]) => `<div><dt>${esc(cat)}</dt><dd>${v.distinctive.slice(0, 3).map(esc).join(" · ")}</dd></div>`).join("");
+  return rows || `<div class="empty">${cats ? "이 그룹만의 검색어가 아직 없어요." : "이 그룹의 쇼핑 데이터가 없습니다"}</div>`;
+}
+function renderShopping() {
+  const SHOP = SHOPS[aperiod];
+  $("#g-title2").innerHTML = `<em>${esc(group)}</em> 쇼핑 관심`;
+  if (!SHOP) return;
+  $("#shop-sub").textContent = `${SHOP.period ? rangeKo(SHOP.period[0], SHOP.period[1]) : PLABEL[aperiod]} · 전체 인기어엔 없는 이 그룹만의 검색어`;
+  $("#shop").innerHTML = shopHTML(SHOP.by_segment[group]);
 }
 async function loadAge(custom) {
-  renderGroups();
+  renderIssues(); renderShopping();
   if (!SEG || custom !== undefined) {
-    $("#heat").innerHTML = `<div class="empty">불러오는 중…</div>`;
+    $("#heat").innerHTML = `<p class="empty">불러오는 중…</p>`;
     try {
       const s = custom ? await api(`api/keyword?q=${encodeURIComponent(custom)}`) : await api(`api/segments?region=KR&top=14`);
       if (!custom) SEG = s;
       renderHeat(s);
-    } catch (e) { $("#heat").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+    } catch (e) { $("#heat").innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
   } else renderHeat(SEG);
   for (const b of $$("#aperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === aperiod));
-  if (!AGEP) { try { AGEP = await api("api/age-period"); } catch (e) { $("#issues").innerHTML = `<li class="empty">${esc(e.message)}</li>`; } }
+  if (!AGEP) { try { AGEP = await api("api/age-period"); } catch (_) { AGEP = {}; } }
   renderIssues();
   if (!SHOPS[aperiod]) {
     $("#shop").innerHTML = `<div class="empty">불러오는 중…</div>`;
@@ -752,46 +1122,63 @@ async function loadAge(custom) {
     catch (e) { $("#shop").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
   }
   renderShopping();
-  const sp = SHOPS[aperiod]?.period;
-  if (sp) $("#gen").textContent = `${sp[0]} ~ ${sp[1]}`;
+  setStamp(SEG?.period ? `${md(SEG.period[0])}–${md(SEG.period[1])} 검색 기준` : "");
 }
 
 // ---- 10·20대 ------------------------------------------------------------------------
-function youthRows(g) {  // discovered interests for the selected period
+function youthRows(g) {  // discovered interests for the selected period, most distinctive first
   if (yperiod === "now") return (YOUTH?.discover.groups[g] || []).map((r) => ({ ...r, days: null }));
-  return (YPER?.[yperiod]?.by_segment[g] || []).map((r) => ({ keyword: r.keyword, kind: r.kind, category: r.category, vs_older: r.avg_vs_older, affinity: r.avg_affinity, days: r.days }));
+  return (YPER?.[yperiod]?.by_segment[g] || []).map((r) => ({ keyword: r.keyword, kind: r.kind, category: r.category, vs_older: r.avg_vs_older, affinity: r.avg_affinity, days: r.days }))
+    .sort((a, b) => (b.vs_older || 0) - (a.vs_older || 0));
 }
-function barsHTML(rows, empty) {
-  const max = Math.max(...rows.map((r) => r.vs_older || 0), 1);
-  return rows.map((r, i) => `<li>
+const KIND_TAG = { "쇼핑": "t-shop", "콘텐츠": "t-content", "이슈": "t-issue" };
+const xfmt = (r) => (r.vs_older || 0).toFixed(1);
+function xRowsHTML(rows, max, empty) {
+  return rows.map((r, i) => `<li data-cat="${esc(r.category || "기타")}">
       <span class="n">${i + 1}</span>
-      <span class="label" title="${esc(r.keyword)}${r.kind ? " · " + esc(r.kind) : ""}">${esc(r.keyword)}${catTag(r.category)}${miniSpark(stripFor(r.keyword, ygroup))}</span>
-      <span class="bar-bg"><i style="width:${((r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span>
-      <span class="x">${r.days ? `${r.days}일·` : ""}${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="empty">${empty}</li>`;
+      <span class="k"><b title="${esc(r.keyword)}">${esc(r.keyword)}</b>${r.kind ? `<span class="tag ${KIND_TAG[r.kind] || ""}">${esc(r.kind)}</span>` : ""}${r.days ? `<small>${r.days}일</small>` : ""}</span>
+      ${r.shopOnly ? `<span class="xbar off"></span><span class="x off" title="이 그룹 쇼핑 검색에만 나오는 말 — 배수는 재지 않았어요">–</span>`
+        : `<span class="xbar"><i style="width:${Math.min(100, (r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span><span class="x">${xfmt(r)}×</span>`}
+    </li>`).join("") || `<li class="empty">${empty}</li>`;
 }
 function renderYouth() {
-  $("#ygroups").innerHTML = YGROUPS.map((g) => `<button class="chip" aria-pressed="${g === ygroup}" data-g="${esc(g)}">${esc(g)}</button>`).join("");
+  $("#ygroups").innerHTML = YGROUPS.map((g) => chipHTML(g, g === ygroup, `data-g="${esc(g)}"`)).join("");
   for (const b of $$("#yperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === yperiod));
-  const pl = yperiod === "now" ? "지금" : `최근 ${PLABEL[yperiod]}`;
-  $("#y-title").textContent = `${ygroup}${josa(ygroup)} 유독 찾는 것 (${pl})`;
-  $("#y-title2").textContent = `${ygroup} 쇼핑 관심 (${yperiod === "month" ? "30일" : "7일"})`;
-  $("#y-title3").textContent = `오늘 이슈 중 ${ygroup}${josa(ygroup)} 더 관심`;
-  $("#y-vs-sub").textContent = `${pl} · 30대 이상보다 유독 더 찾는 것`;
-  // 한눈에: 10대 vs 20대
-  $("#y-vs").innerHTML = ["10대", "20대"].map((g) => `<div><h3>${g}</h3><ol>${youthRows(g).slice(0, 6).map((r) =>
-    `<li>${esc(r.keyword)} <span class="muted">${(r.vs_older || 0).toFixed(1)}배</span></li>`).join("") || `<li class="muted">아직 없음</li>`}</ol></div>`).join("");
+  const pl = yperiod === "now" ? "이번 주" : `최근 ${PLABEL[yperiod]}`;
+  const per = YOUTH?.discover.period;
+  $("#y-title").innerHTML = `${esc(ygroup)}${josa(ygroup)} 30대 이상보다 <em>유독 더</em> 찾는 것`;
+  $("#y-eyebrow").textContent = ["한국", yperiod === "now" ? (per ? rangeKo(per[0], per[1]) : "") : `최근 ${PLABEL[yperiod]} 기록`, "연령별 검색량"].filter(Boolean).join(" · ");
+  $("#y-warn").hidden = !YOUTH?.discover.synthetic;
   const pd = yperiod === "now" ? null : YPER?.[yperiod];
   const note = $("#y-note");
   note.hidden = !(pd && pd.days_available < pd.days);
   if (pd) note.textContent = `최근 ${PLABEL[yperiod]} 중 기록 ${pd.days_available}일 — 매일 쌓이는 중`;
+
   const disc = youthRows(ygroup), iss = YOUTH?.issues.groups[ygroup] || [], shopRows = youthShopRows(ygroup);
   const forFilter = [...disc, ...iss, ...shopRows];
   // 그룹·데이터가 바뀌면 사라진 분야 필터는 버린다
   if (ycat && !forFilter.some((it) => (it.category || "기타") === ycat)) ycat = "";
   renderCatChips($("#y-cchips"), forFilter, ycat, (c) => { ycat = c; renderYouth(); });
-  // 발견 목록에 쇼핑 고유어도 같은 필터로 묶어 타일↔칩↔목록 연속성 유지
-  $("#y-disc").innerHTML = barsHTML(byCat([...disc, ...shopRows], ycat), ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
-  $("#y-issues").innerHTML = barsHTML(byCat(iss, ycat), "오늘 이슈 중 이 그룹이 두드러진 것이 없습니다");
+
+  const top = disc[0];
+  $("#y-top").hidden = !top;
+  if (top) $("#y-top").innerHTML = `<span class="kicker">${pl} 1위</span>
+    <div class="top1-r"><span class="top1-k${top.keyword.length > 9 ? " long" : ""}">${esc(top.keyword)}</span>
+    <span class="top1-x">30대 이상보다 <b>${xfmt(top)}배</b> 더 검색</span></div>`;
+  // 순위는 잰 것만. 분야를 고르면 그 분야의 쇼핑 고유어도 함께 보여 타일↔칩↔목록이 이어지게 한다
+  const list = ycat ? byCat([...disc, ...shopRows], ycat) : disc;
+  const max = Math.max(6, Math.ceil(Math.max(0, ...list.map((r) => r.vs_older || 0))));
+  $("#y-disc").style.setProperty("--one", `${(100 / max).toFixed(2)}%`);
+  $("#y-disc").innerHTML = xRowsHTML(list, max, !YOUTH ? "불러오는 중…" : ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
+  $("#y-issues").innerHTML = byCat(iss, ycat).map((r) => `<li data-cat="${esc(r.category || "기타")}"><b>${esc(r.keyword)}</b><span>${xfmt(r)}×</span></li>`).join("")
+    || `<li class="empty">${YOUTH ? "오늘 이슈 중 눈에 띄게 더 찾는 것은 없어요." : "불러오는 중…"}</li>`;
+  const shop = SHOPS[yperiod === "month" ? "month" : "week"];
+  $("#y-title2").textContent = `최근 ${yperiod === "month" ? "30일" : "7일"} · 전체 인기어에는 없는, 이 그룹만의 검색어`;
+  $("#y-shop").innerHTML = !shop ? `<div class="empty">불러오는 중…</div>` : shopHTML(shop.by_segment[ygroup]);
+  if (top) $("#y-how-x").textContent = `${xfmt(top)}×`;
+  $("#y-how-n").textContent = YOUTH?.discover.candidates ? `후보 ${YOUTH.discover.candidates}개` : "후보";
+
+  renderVs(pl + (yperiod === "now" ? "는" : "은"));
   renderCatTiles(disc, iss);
   renderMatrix();
   renderYouthTrend();
@@ -799,22 +1186,31 @@ function renderYouth() {
   $("#y-rise-card").hidden = !rising.length;
   $("#y-rise").innerHTML = rising.map((it, i) => {
     const g = Object.entries(it.momentum || {}).filter(([, m]) => m.steady).map(([a, m]) => `${a} +${m.growth_3w_pct}%`).join(" · ");
-    return `<li><span class="n">${i + 1}</span><span class="label">${esc(it.keyword)}${catTag(it.category)}</span><span></span><span class="x">${esc(g)}</span></li>`;
+    return `<li><span class="n">${i + 1}</span><b>${esc(it.keyword)}${catTag(it.category)}</b><span class="x">${esc(g)}</span></li>`;
   }).join("");
-  const shop = SHOPS[yperiod === "month" ? "month" : "week"];
-  const cats = shop?.by_segment[ygroup];
-  $("#y-shop").innerHTML = !shop ? `<div class="empty">불러오는 중…</div>` : !cats ? `<div class="empty">데이터가 없습니다</div>` :
-    `<div class="shopgrid">${Object.entries(cats).map(([cat, v]) => {
-      const dist = new Set(v.distinctive);
-      return `<div><h4>${esc(cat)}</h4><ol>${v.top.slice(0, 6).map((k) => `<li class="${dist.has(k) ? "dist" : ""}">${esc(k)}</li>`).join("")}</ol></div>`;
-    }).join("")}</div>`;
+}
+/** 10대와 20대: 한쪽만 유독 찾는 것 / 둘 다 유독 찾는 것 */
+function renderVs(when) {
+  const a = youthRows("10대"), b = youthRows("20대");
+  const am = new Set(a.map((r) => r.keyword)), bm = new Map(b.map((r) => [r.keyword, r]));
+  const both = a.filter((r) => bm.has(r.keyword)).slice(0, 6);
+  const only = (rows, other, who) => {
+    const mine = rows.filter((r) => !other.has(r.keyword)).slice(0, 6);
+    return mine.length ? `<div class="wchips">${mine.map((r) => `<span>${esc(r.keyword)} <b>${xfmt(r)}×</b></span>`).join("")}</div>`
+      : `<p>${when} ${who}만 유독 찾는 키워드가 없어요.</p>`;
+  };
+  $("#y-vs").innerHTML = !YOUTH ? `<p class="empty">불러오는 중…</p>` : `
+    <div class="only10"><h3>10대만</h3>${only(a, bm, "10대")}</div>
+    <div class="both"><h3>둘 다</h3>${both.length ? `<div class="bothgrid"><small></small><small>10대</small><small>20대</small>${
+      both.map((r) => `<span>${esc(r.keyword)}</span><b>${xfmt(r)}×</b><b>${xfmt(bm.get(r.keyword))}×</b>`).join("")}</div>` : `<p>${when} 둘 다 유독 찾는 키워드가 없어요.</p>`}</div>
+    <div class="only20"><h3>20대만</h3>${only(b, am, "20대")}</div>`;
 }
 function miniSpark(strip) {
   if (!strip?.length) return "";
   const w = 54, h = 14, n = strip.length;
   const pts = strip.map((v, i) => `${(i / (n - 1) * w).toFixed(1)},${(h - 1 - v * (h - 2)).toFixed(1)}`).join(" ");
   return `<svg class="mini" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
-    <polyline points="${pts}" fill="none" stroke="rgb(var(--hot))" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
 }
 function stripFor(keyword, group) {  // weekly shape of this keyword's search in that age (세대 확산 데이터 재사용)
   const it = (DIF?.tracked?.items || []).find((x) => x.keyword === keyword);
@@ -833,20 +1229,18 @@ function renderMatrix() {
   const head = `<tr><th>분야</th>${GENDER_COLS.map((g) => `<th>${esc(g)}</th>`).join("")}</tr>`;
   const body = cats.map((c) => `<tr><td class="cat" style="--c:${CAT_COLOR[c]}">${esc(c)}</td>${
     GENDER_COLS.map((g) => `<td>${(rows[c][g] || []).slice(0, 2).map((r) =>
-      `<span class="kw"><b>${esc(r.keyword)}</b> <span>${(r.vs_older || 0).toFixed(1)}배</span>${miniSpark(stripFor(r.keyword, g))}</span>`).join("") || `<span class="muted">–</span>`}</td>`).join("")}</tr>`).join("");
+      `<span class="kw"><b>${esc(r.keyword)}</b> <span>${xfmt(r)}×</span>${miniSpark(stripFor(r.keyword, g))}</span>`).join("") || `<span class="dim">–</span>`}</td>`).join("")}</tr>`).join("");
   $("#y-matrix").innerHTML = cats.length ? `<thead>${head}</thead><tbody>${body}</tbody>`
     : `<tbody><tr><td class="empty">성별 데이터가 아직 없습니다</td></tr></tbody>`;
 }
 function renderYouthTrend() {
   const t = YTREND;
-  const card = $("#y-trend-card");
   if (!t) return;
-  const g = GENDER_COLS.includes(ygroup) ? ygroup : ygroup;
-  const cats = t.by_group?.[g] || {};
+  const cats = t.by_group?.[ygroup] || {};
   const names = CATS.filter((c) => cats[c]?.some((v) => v > 0));
   $("#y-trend-sub").textContent = `${ygroup} · 기록 ${t.days_available}일` + (t.days_available < 7 ? " — 며칠 더 쌓이면 이동이 보입니다" : "");
   if (!names.length || t.days_available < 2) {
-    $("#y-trend").innerHTML = `<div class="empty">기록이 2일 이상 쌓이면 표시됩니다 (현재 ${t.days_available}일)</div>`;
+    $("#y-trend").innerHTML = `<p class="empty">기록이 2일 이상 쌓이면 표시됩니다 (현재 ${t.days_available}일)</p>`;
     return;
   }
   const w = 600, h = 120, n = t.dates.length;
@@ -857,13 +1251,14 @@ function renderYouthTrend() {
   const delta = (c) => { const v = cats[c]; return Math.round((v[v.length - 1] - v[0]) * 100); };
   $("#y-trend").innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:120px" role="img"
       aria-label="${esc(ygroup)} 분야 비중 추이">${lines}</svg>
-    <div class="trend-legend">${names.map((c) => `<span><span class="sw" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${CAT_COLOR[c]}"></span> ${esc(c)} ${delta(c) >= 0 ? "+" : ""}${delta(c)}%p</span>`).join("")}
-      <span style="margin-left:auto">${esc(t.dates[0].slice(5))} → ${esc(t.dates[n - 1].slice(5))}</span></div>`;
+    <div class="trend-legend">${names.map((c) => `<span><span class="sw" style="background:${CAT_COLOR[c]}"></span> ${esc(c)} ${delta(c) >= 0 ? "+" : ""}${delta(c)}%p</span>`).join("")}
+      <span style="margin-left:auto">${md(t.dates[0])} → ${md(t.dates[n - 1])}</span></div>`;
 }
 function renderCatTiles(disc, iss) {
-  $("#y-cat-title").textContent = `${ygroup} 카테고리별 한눈에 (${yperiod === "now" ? "지금" : "최근 " + PLABEL[yperiod]})`;
+  $("#y-cat-title").textContent = `${ygroup} 분야별 한눈에`;
+  const shopRows = youthShopRows(ygroup);
   const groups = {};
-  for (const r of [...disc, ...iss, ...youthShopRows(ygroup)]) {
+  for (const r of [...disc, ...iss, ...shopRows]) {
     const c = r.category || "기타";
     if (c === "기타") continue;
     (groups[c] ||= new Map()).set(r.keyword, Math.max(groups[c].get(r.keyword) || 0, r.vs_older || 0));
@@ -872,16 +1267,21 @@ function renderCatTiles(disc, iss) {
   $("#y-cats").innerHTML = cats.map((c) => {
     const kws = [...groups[c].entries()].sort((a, b) => b[1] - a[1]);
     const items = kws.slice(0, 3).map(([k, v]) => {
-      const shop = youthShopRows(ygroup).some((r) => r.keyword === k && r.category === c);
-      return `${esc(k)} <span class="muted">${shop && v <= 1 ? "쇼핑" : v.toFixed(1) + "배"}</span>`;
+      const shop = shopRows.some((r) => r.keyword === k && r.category === c);
+      return `${esc(k)} <span class="dim">${shop && v <= 1 ? "쇼핑" : v.toFixed(1) + "×"}</span>`;
     });
-    return `<button class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h4><span>${esc(c)}</span><span>${groups[c].size}</span></h4><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
-  }).join("") || `<div class="empty">분야별 데이터가 아직 없습니다</div>`;
-  $("#y-cats").onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) { ycat = ycat === b.dataset.c ? "" : b.dataset.c; renderYouth(); } };
+    return `<button type="button" class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h3><span>${esc(c)}</span><span>${groups[c].size}</span></h3><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
+  }).join("") || `<p class="empty">${YOUTH ? "분야별 데이터가 아직 없습니다" : "불러오는 중…"}</p>`;
+  $("#y-cats").onclick = (e) => {
+    const b = e.target.closest("[data-c]"); if (!b) return;
+    ycat = ycat === b.dataset.c ? "" : b.dataset.c; renderYouth();
+    if (ycat) $("#y-lead").scrollIntoView({ behavior: "smooth", block: "nearest" });  // 걸러진 순위는 위에 있다
+  };
 }
 async function loadYouth() {
   renderYouth();
   const sp = yperiod === "month" ? "month" : "week";
+  let failed = null;
   try {
     const jobs = [];
     if (!YOUTH) jobs.push(api("api/youth").then((d) => { YOUTH = d; }));
@@ -890,36 +1290,56 @@ async function loadYouth() {
     if (!DIF) jobs.push(api("api/diffusion").then((d) => { DIF = d; }).catch(() => {}));
     if (!YTREND) jobs.push(api("api/youth-trend").then((d) => { YTREND = d; }).catch(() => { YTREND = { days_available: 0, dates: [], by_group: {} }; }));
     await Promise.all(jobs);
-  } catch (e) { $("#y-disc").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
+  } catch (e) { failed = e; }
   renderYouth();
+  if (failed) $("#y-disc").innerHTML = `<li class="empty">${esc(failed.message)}</li>`;
   const per = YOUTH?.discover.period;
-  if (per) $("#gen").textContent = `검색 ${per[0]} ~ ${per[1]} 기준`;
+  setStamp(per ? `${md(per[0])}–${md(per[1])} 검색 기준` : "");
 }
 
 // ---- 세대 확산 ------------------------------------------------------------------------
 const DIF_AGES = ["10대", "20대", "30대", "40대", "50대", "60대+"];
 const BADGE = { "확산 중": "b-spread", "확산형": "b-spread", "윗세대 상승": "b-up", "확산 대기": "b-wait" };
+const STAGE_CARDS = [
+  { stage: "확산 대기", step: "1단계", desc: "10·20대만 유독 찾는 중", c: "var(--st1)" },
+  { stage: "확산 중", step: "2단계", desc: "윗세대가 따라오기 시작", c: "var(--st2)" },
+  { stage: "윗세대 상승", step: "3단계", desc: "윗세대 관심이 커지는 중", c: "var(--st3)" }];
+const STAGE_OTHERS = [["전 연령 동시", "처음부터 모든 연령이 함께 찾음"], ["상시 관심", "늘 비슷하게 찾음"], ["지나감", "고점이 지나 식는 중"]];
+const STAGE_ORDER = ["확산 중", "윗세대 상승", "확산 대기", "전 연령 동시", "지나감", "상시 관심"];
+let dsel = null;  // 크게 보는 키워드: { kind: "tracked" | "case", keyword }
+const DIF_FOLD = 8;
+let dall = false;
+const isSel = (kind, kw) => dsel?.kind === kind && dsel.keyword === kw;
+function difItem() {
+  const list = dsel?.kind === "case" ? DIF.cases?.items : DIF.tracked.items;
+  return (list || []).find((x) => x.keyword === dsel?.keyword);
+}
 function stripSVG(vals, thin) {
   const n = vals.length || 1, w = 100 / n;
   return `<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">${vals.map((v, i) =>
-    `<rect x="${(i * w).toFixed(2)}" y="0" width="${(w + 0.05).toFixed(2)}" height="10" fill="rgb(var(--hot))" fill-opacity="${thin ? 0.08 : (0.06 + 0.94 * Math.max(0, Math.min(1, v))).toFixed(2)}"/>`).join("")}</svg>`;
+    `<rect x="${(i * w).toFixed(2)}" y="0" width="${(w + 0.05).toFixed(2)}" height="10" fill="var(--accent)" fill-opacity="${thin ? 0.08 : (0.06 + 0.94 * Math.max(0, Math.min(1, v))).toFixed(2)}"/>`).join("")}</svg>`;
 }
 const STAGE_NOTE = { "확산 대기": "아직 10·20대만 — 윗세대는 조용", "전 연령 동시": "모든 연령이 같은 시기에",
   "지나감": "고점이 지나감", "상시 관심": "뚜렷한 급상승 없이 꾸준함", "동시형": "모든 연령이 1주 안에 함께 뜸", "윗세대 상승": "지금 40대+가 오르는 중" };
-function difRow(it, from, to) {
+function difWhy(it) {
   // Only 40대+ lags answer "did it spread?"; 30대 sits in between and is noisy on long windows.
   const lags = ["40대", "50대", "60대+"].filter((a) => it.lags?.[a] != null).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
   const det = it.detection?.old_takeoff ? ` · 검출 지연: 판정 ${it.detection.verdict == null ? "못 함" : `+${it.detection.verdict}주`} / 누적 판단 ${it.detection.belief == null ? "못 함" : `+${it.detection.belief}주`}` : "";
-  const why = it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
+  return it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
     : it.stage === "확산형" ? `20대보다 늦게: ${lags}${det}`
     : it.stage === "동시형" ? `${STAGE_NOTE[it.stage]}${det}`
     : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
-  const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 증가 (설명용 — 예측력은 아래 '예측이 맞았나'에서 매일 측정)">📈 3주 연속 증가</span>`
-    : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 갑자기 튐 (설명용)">⚡ 반짝 급등</span>` : "";
-  const fc = Object.entries(it.forecast?.ages || {}).map(([a, f]) => `${a} ${f.weeks_from_now === 0 ? "이번 주" : `약 ${f.weeks_from_now}주 뒤`}`).join(" · ");
-  const bl = it.belief ? beliefBadge(it.belief, it.stage) : "";
-  return `<div class="dif"><div><h3>${esc(it.keyword)}${catTag(it.category)}</h3>
-      <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span> ${bl}${mom}<div class="why">${esc(why)}</div>
+}
+const difForecast = (it) => Object.entries(it.forecast?.ages || {}).map(([a, f]) => `${a} ${f.weeks_from_now === 0 ? "이번 주" : `약 ${f.weeks_from_now}주 뒤`}`).join(" · ");
+function difTags(it) {
+  const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 증가 (설명용 — 예측력은 '예측이 맞았나'에서 매일 측정)">3주 연속 증가</span>`
+    : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 갑자기 튐 (설명용)">반짝 급등</span>` : "";
+  return (it.belief ? beliefBadge(it.belief, it.stage) : "") + mom;
+}
+function difRow(it, from, to) {
+  const fc = difForecast(it);
+  return `<div class="dif"><div><button type="button" class="dif-k" data-k="${esc(it.keyword)}">${esc(it.keyword)}</button>${catTag(it.category)}
+      <div class="tags"><span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span>${difTags(it)}</div><div class="why">${esc(difWhy(it))}</div>
       ${fc ? `<div class="why" title="윗세대도 시작이 늦은 만큼 늦게 정점 — 과거 유행 검증 오차 평균 약 2.7주"><b>예상 정점</b> ${esc(fc)}</div>` : ""}</div>
     <div class="strip">${DIF_AGES.map((a) => {
       const g = it.ages?.[a]; if (!g) return "";
@@ -934,60 +1354,154 @@ function beliefBadge(b, stage) {
   const agrees = PHASE_OF[stage] === b.phase;
   const days = b.streak ? `${b.streak}회 연속` : "첫 관측";
   const tip = `며칠에 걸쳐 갱신한 국면 확률 — ${b.phase} ${pct}% (${days}). ${agrees ? "오늘 판정과 같은 국면" : "오늘 판정과 다름: 아직 며칠 더 봐야 함"}`;
-  return `<span class="badge ${agrees ? "b-flat" : (PHASE_BADGE[b.phase] || "b-flat")}" title="${esc(tip)}">🎯 ${esc(b.phase)} ${pct}%${agrees ? "" : " ≠ 판정"}</span> `;
+  return `<span class="badge ${agrees ? "b-flat" : (PHASE_BADGE[b.phase] || "b-flat")}" title="${esc(tip)}">누적 판단 ${esc(b.phase)} ${pct}%${agrees ? "" : " ≠ 판정"}</span>`;
+}
+function renderFlash() {
+  const tracked = new Set(DIF.tracked.items.map((i) => i.keyword));
+  const a = (ALERTS?.recent || []).find((x) => x.kind === "stage");
+  const go = $("#d-flash-go");
+  if (!a) {
+    $("#d-flash-k").textContent = "단계 변화";
+    $("#d-flash-t").textContent = "최근 며칠 사이 단계가 바뀐 키워드는 없어요.";
+    go.hidden = true;
+    return;
+  }
+  const [stage, ...rest] = a.message.split(": ");
+  $("#d-flash-k").textContent = `단계 변화 · ${md(a.date)}`;
+  $("#d-flash-t").innerHTML = `<b>${esc(a.keyword)}</b> — <em>${esc(stage)}</em>${rest.length ? ` · ${esc(rest.join(": "))}` : ""}`;
+  go.hidden = !tracked.has(a.keyword);
+  go.dataset.k = a.keyword;
+}
+function renderStages() {
+  const by = {};
+  for (const it of DIF.tracked.items) (by[it.stage] ||= []).push(it);
+  $("#d-stages").innerHTML = STAGE_CARDS.map((s) => {
+    const kws = by[s.stage] || [];
+    return `<div class="stage" style="--c:${s.c}">
+      <div class="stage-top"><span>${s.step}</span><b>${kws.length}</b></div>
+      <div><h3>${s.stage}</h3><p>${s.desc}</p></div>
+      <div class="kchips">${kws.slice(0, 12).map((it) => `<button type="button" class="kchip" data-k="${esc(it.keyword)}" aria-pressed="${isSel("tracked", it.keyword)}">${esc(it.keyword)}</button>`).join("")
+        || `<span class="dim" style="font-size:14px">지금은 없어요</span>`}${kws.length > 12 ? `<span class="dim" style="font-size:13px">외 ${kws.length - 12}개</span>` : ""}</div>
+    </div>`; }).join("");
+  $("#d-others").innerHTML = STAGE_OTHERS.map(([st, desc]) => `<span><b>${st}</b> <i>${(by[st] || []).length}</i> — ${desc}</span>`).join("");
+}
+/** 고른 키워드의 연령 × 주 히트맵. 각 줄은 자기 최고치 기준이라 양이 아니라 "언제"를 비교한다. */
+function renderDifDetail() {
+  const it = difItem(), box = $("#d-detail");
+  if (!it) { box.innerHTML = `<p class="empty">추적할 키워드가 아직 없습니다</p>`; return; }
+  const isCase = dsel.kind === "case";
+  const [from, to] = isCase ? it.window : DIF.tracked.period;
+  const ages = DIF_AGES.filter((a) => it.ages?.[a]?.strip?.length);
+  const n = Math.max(1, ...ages.map((a) => it.ages[a].strip.length));
+  const t0 = Date.parse(from), t1 = Date.parse(to), long = (t1 - t0) > 200 * 864e5;
+  const tick = (i) => { const d = new Date(t0 + (t1 - t0) * (n > 1 ? i / (n - 1) : 0)); return long ? `${String(d.getUTCFullYear()).slice(2)}.${d.getUTCMonth() + 1}` : `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
+  const step = n > 24 ? 8 : 4;
+  const axis = Array.from({ length: n }, (_, i) => (i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2)) ? tick(i) : "");
+  const grow = ["10대", "20대"].filter((a) => it.momentum?.[a]?.growth_3w_pct != null).map((a) => `${a} ${it.momentum[a].growth_3w_pct >= 0 ? "+" : ""}${it.momentum[a].growth_3w_pct}%`).join(" · ");
+  const fc = difForecast(it);
+  const note = [difWhy(it), grow ? `최근 3주 ${grow}` : "", fc ? `예상 정점 ${fc}` : ""].filter(Boolean).join(". ");
+  const tags = difTags(it) + catTag(it.category);
+  box.innerHTML = `
+    <div class="det-h">
+      <div><span>연령별 흐름 · ${isCase ? `과거 사례 ${from.slice(0, 7)} ~ ${to.slice(0, 7)}` : `최근 ${n}주`}</span>
+        <h2 id="det-h">${esc(it.keyword)} <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span></h2>
+        ${tags ? `<div class="det-x">${tags}</div>` : ""}</div>
+      <p>${esc(note)}</p>
+    </div>
+    <div class="hscroll"><div class="hgrid${n > 24 ? " dense" : ""}" style="--n:${n}">
+      ${ages.map((a) => { const g = it.ages[a]; return `<div class="hrow${g.thin ? " thin" : ""}"><span>${a}</span>${g.strip.map((v) =>
+        `<i style="--p:${Math.round(Math.max(0, Math.min(1, v)) * 100)}%" title="${a} · ${g.thin ? "측정 안 됨" : Math.round(v * 100) + "%"}"></i>`).join("")}</div>`; }).join("")}
+      <div class="hrow haxis"><span></span>${axis.map((x) => `<span>${x}</span>`).join("")}</div>
+    </div></div>
+    <div class="legendrow">
+      <span>낮음 <i class="ramp"></i> 그 연령의 최고치</span>
+      <span><i class="hatch"></i> 검색량이 적어 측정 안 됨</span>
+      <span>각 줄은 자기 최고치 기준 — 양이 아니라&nbsp;<b>언제 뜨는지</b>를 비교해요</span>
+    </div>`;
 }
 function renderAccuracy(a) {
-  if (!a || !a.waiting) { $("#dif-acc").innerHTML = `<div class="empty">채점할 "확산 대기" 판정이 아직 없습니다</div>`; return; }
-  const pct = (x) => x == null ? "–" : `${Math.round(x * 100)}%`;
-  const kpi = (h) => { const m = a[`${h}w`]; return `<div class="kpi"><div class="vs">"확산 대기" 후 ${h}주 안에 40대+가 실제로 오름</div>
-    <div class="big">${pct(m.precision)}</div><div class="vs">${m.hits}/${a.waiting}건 · 전체 평균 ${pct(m.base_rate)} → <b>${m.lift ?? "–"}배</b></div></div>`; };
+  const box = $("#dif-acc");
+  if (a?.cutoffs) $("#acc-sub").textContent = `과거 ${a.cutoffs}개 시점에서 다시 판정해 보고, 실제로 윗세대가 따라왔는지 채점`;
+  if (!a || !a.waiting) { box.innerHTML = `<p class="empty">채점할 "확산 대기" 판정이 아직 없습니다</p>`; return; }
+  const pct = (x) => x == null ? "–" : `${(x * 100).toFixed(1)}%`;
+  const wd = (x) => `${Math.min(100, (x || 0) * 100).toFixed(1)}%`;
+  const row = (h) => { const m = a[`${h}w`]; return `<div class="accrow"><b>${h}주 안</b>
+      <span class="abar"><i style="width:${wd(m.precision)}"></i></span><span class="v">${pct(m.precision)}</span>
+      <span class="abar base"><i style="width:${wd(m.base_rate)}"></i></span><span class="v base">${pct(m.base_rate)}</span></div>`; };
+  const l4 = a["4w"].lift, l8 = a["8w"].lift;
+  const fine = [`"확산 대기" 판정 ${a.waiting}건 중 4주 안 ${a["4w"].hits}건 · 8주 안 ${a["8w"].hits}건이 실제로 40대+로 번졌어요.`];
   const m = DIF?.tracked?.momentum_accuracy;
-  const mk = m?.steady?.precision != null ? `<div class="kpi"><div class="vs">"3주 연속 증가" 후 2주 안에 20%+ 더 오름 (매일 재측정)</div>
-    <div class="big">${pct(m.steady.precision)}</div><div class="vs">${m.steady.flagged}건 · 평균 ${pct(m.base_rate)} → <b>${m.steady.lift}배</b> · 반짝 급등은 ${m.spike.lift ?? "–"}배 — 1배 근처면 예측력 없음</div></div>` : "";
-  const un = DIF?.tracked?.accuracy_unadjusted?.["8w"];
+  if (m?.steady?.precision != null) fine.push(`"3주 연속 증가" 후 2주 안에 20%+ 더 오른 비율 ${Math.round(m.steady.precision * 100)}% (${m.steady.flagged}건 · 평균 ${Math.round(m.base_rate * 100)}% → ${m.steady.lift}배). 반짝 급등은 ${m.spike.lift ?? "–"}배 — 1배 근처면 예측력 없음.`);
   const ba = DIF?.tracked?.belief_accuracy, b8 = ba?.["8w"];
-  const pa = ba?.alerts, det = DIF?.cases?.detection;
-  const polTxt = pa?.verdict?.alerts ? ` · 조기 알림(40대+ 조용할 때): 원판정 ${pa.verdict.alerts}건 중 ${pa.verdict.hits} 적중 → 게이트 <b>${pa.belief.alerts}건 중 ${pa.belief.hits}</b>` : "";
-  const detTxt = det?.cases ? ` · 과거 사례 ${det.cases}건 검출 지연 중앙값: 판정 +${det.verdict ?? "–"}주 / 누적 판단 +${det.belief ?? "–"}주` : "";
-  const bk = ba && ba.waiting ? `<div class="kpi"><div class="vs">누적 판단이 "청년 상승"일 때 8주 안에 40대+가 실제로 오름 (같은 백테스트)</div>
-    <div class="big">${pct(b8?.precision)}</div><div class="vs">${b8?.hits ?? 0}/${ba.waiting}건 → <b>${b8?.lift ?? "–"}배</b> · 주간 판정 흔들림 키워드당 ${ba.flips?.verdict}회 → 믿음 <b>${ba.flips?.belief}회</b>${polTxt}${detTxt}${DIF?.tracked?.model?.label_locked ? " · 모델 재학습 보류(초기값 유지)" : ""} · 모델 학습 수열 ${DIF?.tracked?.model?.sequences ?? 0}개</div></div>` : "";
-  $("#dif-acc").innerHTML = `<div class="acc">${kpi(4)}${kpi(8)}${mk}${bk}</div>
-    <div class="legend" style="margin-top:8px">키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}) —
-    "N배" = 판정 없이 아무 키워드나 찍었을 때보다 얼마나 더 맞히는지. 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}. 표본이 작아 참고용.</div>`;
+  if (ba?.waiting) {
+    const pa = ba.alerts, det = DIF?.cases?.detection;
+    fine.push(`누적 판단이 "청년 상승"일 때 8주 안 적중 ${b8?.precision == null ? "–" : Math.round(b8.precision * 100) + "%"} (${b8?.hits ?? 0}/${ba.waiting}건 → ${b8?.lift ?? "–"}배). 주간 판정 흔들림 키워드당 ${ba.flips?.verdict}회 → 누적 판단 ${ba.flips?.belief}회.`);
+    if (pa?.verdict?.alerts) fine.push(`조기 알림(40대+ 조용할 때): 원판정 ${pa.verdict.alerts}건 중 ${pa.verdict.hits} 적중 → 게이트 ${pa.belief.alerts}건 중 ${pa.belief.hits}.`);
+    if (det?.cases) fine.push(`과거 사례 ${det.cases}건 검출 지연 중앙값: 판정 +${det.verdict ?? "–"}주 / 누적 판단 +${det.belief ?? "–"}주.`);
+  }
+  const model = DIF?.tracked?.model;
+  if (model) fine.push(`모델 학습 수열 ${model.sequences ?? 0}개${model.label_locked ? " · 재학습 보류(초기값 유지)" : ""}.`);
+  const un = DIF?.tracked?.accuracy_unadjusted?.["8w"];
+  fine.push(`키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}). 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}.`);
+  box.innerHTML = `<div class="accrows">${row(4)}${row(8)}</div>
+    <div class="keyrow"><span><i class="sw" style="background:var(--accent)"></i>"번진다"고 판정했을 때 적중</span><span><i class="sw" style="background:var(--gray)"></i>아무거나 골랐을 때 (기본 확률)</span></div>
+    <p class="callout">"번진다"고 본 판정의 적중률은 무작위의 <b>${l4 ?? "–"}배</b>(4주 안) · <b>${l8 ?? "–"}배</b>(8주 안)예요. 1배면 예측력이 없다는 뜻이고, 표본이 작아 참고용이에요.</p>
+    <details class="fine"><summary>채점 세부</summary><ul>${fine.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>`;
 }
-const ALERT_ICON = { stage: "🔄", youth: "🔥", forecast: "⏱", watchlist: "🔖" };
+function renderCases() {
+  const items = DIF.cases?.items || [];
+  if (items.length) $("#case-sub").textContent = `같은 방법으로 계산한 실제 유행 ${items.length}개 — 누르면 위에 연령별 흐름이 보여요`;
+  const groups = [["확산형", "spread", "젊은 층 → 몇 주~몇 년 뒤 윗세대"], ["동시형", "same", "모든 연령이 거의 같은 때 뜸"]];
+  const known = new Set(groups.map((g) => g[0]));
+  for (const s of new Set(items.map((i) => i.stage))) if (!known.has(s)) groups.push([s, "", STAGE_NOTE[s] || ""]);
+  $("#dif-cases").innerHTML = groups.map(([stage, cls, desc]) => {
+    const its = items.filter((i) => i.stage === stage);
+    return its.length ? `<div class="casebox ${cls}"><header><b>${esc(stage)}</b><span>${esc(desc)}</span></header>
+      <div class="wchips">${its.map((i) => `<button type="button" data-case="${esc(i.keyword)}" aria-pressed="${isSel("case", i.keyword)}">${esc(i.keyword)}</button>`).join("")}</div></div>` : "";
+  }).join("") || `<p class="empty">사례 계산 중입니다</p>`;
+}
+const ALERT_KIND = { stage: "단계", youth: "10·20대", forecast: "예상", watchlist: "관심" };
 function renderAlerts() {
   const recent = ALERTS?.recent || [];
   $("#alert-card").hidden = !recent.length;
   const days = new Set(recent.map((a) => a.date));
-  $("#alert-sub").innerHTML = `최근 ${days.size}일 ${recent.length}건 · 변화가 생겼을 때만 — <a href="feed.xml">RSS 구독</a>`
-    + (ALERTS?.watchlist?.length ? ` · 관심 키워드 ${ALERTS.watchlist.length}개 추적 중` : " · watchlist.txt 에 키워드를 적으면 고정 추적");
+  $("#alert-count").textContent = `최근 ${days.size}일 ${recent.length}건` + (ALERTS?.watchlist?.length ? ` · 관심 키워드 ${ALERTS.watchlist.length}개 추적 중` : "");
   $("#alerts").innerHTML = recent.slice(0, 15).map((a) => `<li>
-      <span>${ALERT_ICON[a.kind] || "•"}</span>
-      <a href="#diffusion" style="flex:1"><b>${esc(a.keyword)}</b>${a.watched ? " 🔖" : ""}${catTag(a.category)} <span class="muted">${esc(a.message)}</span></a>
-      <span class="tag">${esc(a.date.slice(5))}</span></li>`).join("");
+      <span class="tag${a.kind === "stage" ? " t-shop" : ""}">${ALERT_KIND[a.kind] || "알림"}</span>
+      <a><b>${esc(a.keyword)}</b>${a.watched && a.kind !== "watchlist" ? ` <span class="tag">관심</span>` : ""}${catTag(a.category)} <span class="dim">${esc(a.message)}</span></a>
+      <small>${md(a.date)}</small></li>`).join("");
+}
+function pickDif(kind, keyword, scroll) {
+  dsel = { kind, keyword };
+  renderStages(); renderCases(); renderDifDetail();
+  if (scroll) $("#d-detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 function renderDiffusion() {
   if (!DIF) return;
-  renderAlerts();
-  renderAccuracy(DIF.tracked.accuracy);
   const t = DIF.tracked, [s, e] = t.period;
-  $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${s} ~ ${e}`;
+  $("#d-eyebrow").textContent = `한국 · 키워드 ${t.items.length}개 추적 중 · 매일 판정 · ${md(s)}–${md(e)}`;
+  $("#d-warn").hidden = !(t.synthetic || DIF.cases?.synthetic);
+  if (!dsel || !difItem()) {  // 기본: 가장 진행된 단계의 첫 키워드
+    const first = STAGE_ORDER.map((st) => t.items.find((i) => i.stage === st)).find(Boolean) || t.items[0];
+    dsel = first ? { kind: "tracked", keyword: first.keyword } : null;
+  }
+  renderFlash(); renderStages(); renderDifDetail(); renderAccuracy(t.accuracy); renderCases(); renderAlerts();
+  $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${md(s)}–${md(e)} — 이름을 누르면 위에 크게 보여요`;
   renderCatChips($("#d-cchips"), t.items, dcat, (c) => { dcat = c; renderDiffusion(); });
-  $("#dif-now").innerHTML = (t.synthetic ? `<div class="banner" style="margin:0 0 8px">⚠ 샘플 데이터 — 실제 값이 아닙니다</div>` : "")
-    + (byCat(t.items, dcat).map((it) => difRow(it, s.slice(5), e.slice(5))).join("") || `<div class="empty">추적할 키워드가 아직 없습니다</div>`);
-  $("#dif-cases").innerHTML = DIF.cases.items.map((it) => difRow(it, it.window[0].slice(0, 7), it.window[1].slice(0, 7))).join("")
-    || `<div class="empty">사례 계산 중입니다</div>`;
+  const rows = byCat(t.items, dcat);
+  $("#dif-now").innerHTML = rows.slice(0, dall ? rows.length : DIF_FOLD).map((it) => difRow(it, md(s), md(e))).join("") || `<p class="empty">추적할 키워드가 아직 없습니다</p>`;
+  $("#dif-more").hidden = rows.length <= DIF_FOLD;
+  $("#dif-more").textContent = dall ? "접기" : `더보기 (${rows.length}개)`;
 }
 async function loadDiffusion() {
   if (!DIF) {
     try { DIF = await api("api/diffusion"); }
-    catch (e) { $("#dif-now").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+    catch (e) { $("#d-detail").innerHTML = `<p class="empty">${esc(e.message)}</p>`; $("#d-flash-t").textContent = e.message; return; }
   }
   if (!ALERTS) { try { ALERTS = await api("api/alerts"); } catch (_) { ALERTS = { recent: [] }; } }
   if (TRANSFER === undefined) { try { TRANSFER = await api("api/transfer"); } catch (_) { TRANSFER = null; } }
   renderDiffusion(); renderTransfer();
-  $("#gen").textContent = `검색 ${DIF.tracked.period[0]} ~ ${DIF.tracked.period[1]} · 매일 갱신`;
+  setStamp(`${md(DIF.tracked.period[0])}–${md(DIF.tracked.period[1])} 검색 · 매일 갱신`);
 }
 
 // 세대 전달 함수: 윗세대 곡선을 20대 곡선의 필터링 결과로 보고 그 필터 h(k)를 추정한다(kernel.py).
@@ -1011,19 +1525,19 @@ function renderTransfer() {
   }).join("");
   const c = t.contrast;
   $("#transfer").innerHTML = `
-    <table class="xt"><thead>
+    <div class="hscroll"><table class="xt"><thead>
       <tr><th></th>${names.map((n) => `<th colspan="3">${label[n]} (${t.groups[n].n_keywords}건)</th>`).join("")}</tr>
       <tr><th></th>${names.map(() => `<th>시차</th><th>전달</th><th>같은 주</th>`).join("")}</tr>
-    </thead><tbody>${rows}</tbody></table>
+    </thead><tbody>${rows}</tbody></table></div>
     ${names.map((n) => { const st = t.groups[n].stability; return st
-      ? `<div class="note">${label[n]}: 키워드를 하나씩 빼고 다시 재면 40대 전달이 ${st.gain[0]}~${st.gain[1]},
-         같은 주 비율이 ${pct(st.instant_share[0])}~${pct(st.instant_share[1])} 사이에서 움직입니다 (표본 ${t.groups[n].n_keywords}건)</div>` : ""; }).join("")}
-    ${c ? `<div class="note">유행은 ${pct(c.fad_instant)}만 같은 주에 함께 움직이고 나머지는 시차를 두고 넘어갑니다 —
+      ? `<p class="note" style="margin-top:10px">${label[n]}: 키워드를 하나씩 빼고 다시 재면 40대 전달이 ${st.gain[0]}~${st.gain[1]},
+         같은 주 비율이 ${pct(st.instant_share[0])}~${pct(st.instant_share[1])} 사이에서 움직입니다 (표본 ${t.groups[n].n_keywords}건)</p>` : ""; }).join("")}
+    ${c ? `<p class="note" style="margin-top:10px">유행은 ${pct(c.fad_instant)}만 같은 주에 함께 움직이고 나머지는 시차를 두고 넘어갑니다 —
       일반 이슈는 ${pct(c.plain_instant)}가 같은 주입니다. <b>전달</b>은 20대 파도의 모양이 그 연령에서 얼마나 재현되는지로,
       시차와 달리 단계 판정에 쓰이지 않은 정보입니다.
       ${c.separated ? (c.separated.gain
         ? " 키워드를 하나씩 빼봐도 두 집단의 전달 범위는 겹치지 않습니다."
-        : " 다만 키워드를 하나 빼면 두 집단의 전달 범위가 겹칩니다 — 아직 표본이 얇습니다.") : ""}</div>` : ""}`;
+        : " 다만 키워드를 하나 빼면 두 집단의 전달 범위가 겹칩니다 — 아직 표본이 얇습니다.") : ""}</p>` : ""}`;
 }
 
 // ---- init ---------------------------------------------------------------------------
@@ -1031,8 +1545,9 @@ function renderTransfer() {
   META = await api("api/meta");
   if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모 모드 — 녹화된 샘플 데이터로 동작 중입니다.</div>`;
   if (STATIC) $("#kwrow").hidden = true;
-  else { $("#refresh").hidden = false; $("#refresh").onclick = () => view === "country" ? loadCountry(true) : null; }
+  else $("#refresh").onclick = () => view === "country" ? loadCountry(true) : null;
   try { region = localStorage.getItem("te.region") || region; group = localStorage.getItem("te.group") || group; } catch (_) {}
+  if (!BASIC_SEGS.includes(group)) group = "20대";
   readHash();
   if (!countries().some((r) => r.code === region)) region = countries()[0]?.code || "KR";
   renderRegions();
@@ -1040,14 +1555,18 @@ function renderTransfer() {
   $("#regions").onclick = (e) => {
     const b = e.target.closest("[data-code]"); if (!b) return;
     region = b.dataset.code; try { localStorage.setItem("te.region", region); } catch (_) {}
-    renderRegions(); writeHash(); showAll = false; loadCountry();
+    renderRegions(); writeHash(); showAll = false; ccat = ""; loadCountry();
   };
-  $("#groups").onclick = (e) => {
+  $("#heat").onclick = (e) => {  // 열 머리글 = 그룹 고르기
     const b = e.target.closest("[data-g]"); if (!b) return;
     group = b.dataset.g; try { localStorage.setItem("te.group", group); } catch (_) {}
-    writeHash(); loadAge();
+    writeHash();
+    for (const x of $$("#heat thead [data-g]")) x.setAttribute("aria-pressed", String(x.dataset.g === group));
+    const i = $$("#heat thead [data-g]").findIndex((x) => x.dataset.g === group);
+    for (const tr of $$("#heat tbody tr")) [...tr.querySelectorAll("td")].forEach((td, k) => td.classList.toggle("on", k === i));
+    renderIssues(); renderShopping();
   };
-  $$(".tab").forEach((t) => t.onclick = () => setView(t.dataset.view));
+  for (const t of $$("[data-view]")) t.onclick = (e) => { e.preventDefault(); setView(t.dataset.view); };
   $("#ygroups").onclick = (e) => {
     const b = e.target.closest("[data-g]"); if (!b) return;
     ygroup = b.dataset.g; writeHash(); renderYouth();
@@ -1056,11 +1575,16 @@ function renderTransfer() {
     const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === yperiod) return;
     yperiod = b.dataset.p; writeHash(); loadYouth();
   };
+  $("#view-diffusion").onclick = (e) => {
+    const c = e.target.closest("[data-case]");
+    if (c) return pickDif("case", c.dataset.case, true);
+    const b = e.target.closest("[data-k]");
+    if (b) pickDif("tracked", b.dataset.k, !b.classList.contains("kchip"));
+  };
+  $("#dif-more").onclick = () => { dall = !dall; renderDiffusion(); };
   $("#rank").onclick = (e) => {
     const li = e.target.closest("[data-i]"); if (!li) return;
     selected = +li.dataset.i; renderRank();
-    const pd = periodData();
-    if (pd) renderPeriodDetail(pd.items[selected], pd); else renderDetail(REPORT.clusters[selected]);
   };
   $("#cperiod").onclick = (e) => {
     const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === cperiod) return;
@@ -1077,6 +1601,7 @@ function renderTransfer() {
     const url = (REPORT[list] || [])[+a.getAttribute(attr)]?.url;
     if (url) window.open(url, "_blank", "noopener");
   };
+  $("#apps").onclick = openItem("apps", "data-a");
   $("#yt").onclick = openItem("videos", "data-v");
   $("#news").onclick = openItem("news", "data-n");
   $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadAge(v); };

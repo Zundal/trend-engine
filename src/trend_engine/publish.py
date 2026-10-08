@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 VIDEO_SOURCES = ("youtube",)
 NEWS_SOURCES = ("google_news",)
+APP_CHARTS = (("apple_charts", "topfreeapplications"),)  # (source, chart): the same source also carries songs
 
 
 def public_report(r: dict[str, Any]) -> dict[str, Any]:
@@ -61,6 +62,8 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
             for s in VIDEO_SOURCES for v in content.get(s, [])
         ],
         "news": [{"title": n["keyword"], "url": n.get("url")} for s in NEWS_SOURCES for n in content.get(s, [])],
+        "apps": [{"title": a["keyword"], "url": a.get("url")} for s, chart in APP_CHARTS for a in content.get(s, [])
+                 if (a.get("meta") or {}).get("chart") == chart],
     }
 
 
@@ -105,7 +108,10 @@ def public_crosscountry(c: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_meta(m: dict[str, Any]) -> dict[str, Any]:
-    return {"regions": m["regions"], "offline": m.get("offline", False), "static": m.get("static", False)}
+    out = {"regions": m["regions"], "offline": m.get("offline", False), "static": m.get("static", False)}
+    if m.get("generated_at"):  # static builds only: every file is written in one run, so one time covers all tabs
+        out["generated_at"] = m["generated_at"]
+    return out
 
 
 # --- encryption ---------------------------------------------------------------------------
