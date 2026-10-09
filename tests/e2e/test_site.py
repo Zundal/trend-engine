@@ -109,10 +109,10 @@ def test_country_tab_periods_and_detail(page, site):
     page.goto(site + "#country/KR/live")
     wait_rows(page, "#rank li[data-i]", 10)
     assert page.locator("#regions [data-code]").count() == 3
-    page.wait_for_selector("#detail h2")  # the first row is open without a click
-    first = page.locator("#detail h2").inner_text()
+    page.wait_for_selector("#sel-h")  # the first row is open without a click
+    first = page.locator("#sel-h").inner_text()
     page.click("#rank li[data-i='1']")
-    page.wait_for_function("t => document.querySelector('#detail h2').textContent !== t", arg=first)
+    page.wait_for_function("t => document.querySelector('#sel-h').textContent !== t", arg=first)
     assert page.locator("#rank li[data-i='1'] .row").get_attribute("aria-pressed") == "true"
     page.click("#cperiod [data-p=week]")
     page.wait_for_function("document.querySelector('#rank-title').textContent.includes('7일')")
@@ -198,7 +198,7 @@ def test_country_ranking_shows_themes(page, site):
     # the last row is where the two lists have drifted furthest apart.
     for i in (0, len(labels) - 1):
         page.click(f"#rank li[data-i='{i}']")
-        page.wait_for_function("t => document.querySelector('#detail h2')?.textContent === t", arg=labels[i].strip())
+        page.wait_for_function("t => document.querySelector('#sel-h')?.textContent === t", arg=labels[i].strip())
     assert not page.errors, page.errors
 
 
@@ -212,7 +212,7 @@ def test_country_detail_says_who_searches_more_and_side_lists(page, site):
     assert page.locator("#news li").count() >= 1
     page.click("#regions [data-code='US']")
     page.wait_for_function("REPORT && REPORT.region === 'US'")
-    page.wait_for_selector("#detail h2")
+    page.wait_for_selector("#sel-h")
     page.wait_for_timeout(500)
     assert page.locator("#aff .affrow").count() == 0  # no Korean age data for other countries
     assert not page.errors, page.errors
