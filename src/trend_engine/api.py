@@ -34,6 +34,14 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     def index():
         return FileResponse(WEB / "index.html")
 
+    @app.get("/favicon-48x48.png", include_in_schema=False)
+    def icon_png():
+        return FileResponse(WEB / "favicon-48x48.png")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def icon_ico():
+        return FileResponse(WEB / "favicon.ico")
+
     # Dashboard endpoints return source-neutral public views (publish.py); raw data stays
     # available via the CLI (`trend-engine collect --json`).
     @app.get("/api/meta")

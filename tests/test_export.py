@@ -2,6 +2,7 @@
 
 import json
 import re
+import struct
 
 import pytest
 
@@ -64,6 +65,12 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert feed.startswith("<?xml") and not PROVIDERS.search(feed)  # public RSS: source-free
     assert "let STATIC = true;" in page and f'const DATA_KEY = "{KEY_HEX}";' in page
     assert not PROVIDERS.search(page), PROVIDERS.search(page)
+    # the site icon ships as real files: search engines fetch it by URL and want a multiple of 48px
+    png = (tmp_path / "favicon-48x48.png").read_bytes()
+    assert png[:8] == b"\x89PNG\r\n\x1a\n" and struct.unpack(">II", png[16:24]) == (48, 48)
+    ico = (tmp_path / "favicon.ico").read_bytes()
+    assert ico[:4] == b"\x00\x00\x01\x00" and ico[6:8] == bytes([48, 48])
+    assert 'href="favicon-48x48.png"' in page and 'href="favicon.ico"' in page and 'rel="icon" href="data:' not in page
     assert (tmp_path / ".nojekyll").exists()
     assert any("report KR" in line for line in lines)
 

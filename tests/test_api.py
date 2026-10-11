@@ -10,6 +10,8 @@ from trend_engine.api import create_app
 def test_end_to_end_offline(service):
     client = TestClient(create_app(service))
     assert client.get("/").status_code == 200
+    assert client.get("/favicon-48x48.png").headers["content-type"] == "image/png"
+    assert client.get("/favicon.ico").status_code == 200
 
     meta = client.get("/api/meta").json()
     assert meta["offline"] is True and any(r["code"] == "KR" for r in meta["regions"])
