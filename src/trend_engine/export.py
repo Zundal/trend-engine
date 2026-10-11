@@ -25,6 +25,8 @@ WEB = Path(__file__).parent / "web"
 SEGMENT_REFRESH = timedelta(hours=3)
 STATIC_MARKER = "let STATIC = false;"
 KEY_MARKER = 'const DATA_KEY = "";'
+# Published next to index.html as-is: crawlers fetch the site icon by URL.
+ICONS = ("favicon-48x48.png", "favicon.ico")
 
 
 def build_page(key: bytes) -> str:
@@ -49,6 +51,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         (api / f"{name}.dat").write_text(publish.encrypt(data, key), encoding="ascii")
 
     (out / "index.html").write_text(build_page(key), encoding="utf-8")
+    for icon in ICONS:
+        (out / icon).write_bytes((WEB / icon).read_bytes())
     (out / ".nojekyll").write_text("")
 
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
