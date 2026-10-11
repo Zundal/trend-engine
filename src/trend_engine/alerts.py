@@ -75,9 +75,9 @@ def evaluate(tracked: dict[str, Any], youth: dict[str, Any] | None, previous: di
         if believed:
             gated[kw] = stage
         if stage in STAGE_ALERTS and believed and prev_gated.get(kw) != stage:
-            msg = {"확산 대기": "10·20대에서 뜨는 중 — 윗세대는 아직 조용",
-                   "확산 중": f"윗세대로 번지는 중{f' (40대+ {it['old_lag_weeks']}주 차이)' if it.get('old_lag_weeks') else ''}",
-                   "윗세대 상승": "윗세대에서 오르기 시작"}[stage]
+            msg = {"확산 대기": "10·20대만 늘었고 윗세대는 아직",
+                   "확산 중": f"윗세대로 번지는 중{f' (40대 이상이 {it['old_lag_weeks']}주 늦게 늘어남)' if it.get('old_lag_weeks') else ''}",
+                   "윗세대 상승": "지금 40대 이상이 늘고 있음"}[stage]
             alerts.append(Alert(today, "stage", kw, it.get("category") or "기타", f"{stage}: {msg}", is_watched))
         ages = (it.get("forecast") or {}).get("ages") or {}
         soon = {a: f for a, f in ages.items() if 1 <= f.get("weeks_from_now", 99) <= FORECAST_WEEKS}  # 0 = now, not a forecast
@@ -91,11 +91,11 @@ def evaluate(tracked: dict[str, Any], youth: dict[str, Any] | None, previous: di
             youth_max[kw] = max(youth_max.get(kw, 0), vs)
     for kw, vs in youth_max.items():
         if vs >= VS_OLDER_ALERT and prev_youth.get(kw, 0) < VS_OLDER_ALERT:
-            alerts.append(Alert(today, "youth", kw, "", f"10·20대가 30대 이상보다 {vs:.1f}배 검색", kw in watched))
+            alerts.append(Alert(today, "youth", kw, "", f"10·20대 검색이 30대 이상 대비 {vs:.1f}배 ({VS_OLDER_ALERT:g}배를 새로 넘음)", kw in watched))
 
     for kw in watched:  # a watched keyword showing up at all is worth knowing
         if kw in stages and kw not in prev_stage:
-            alerts.append(Alert(today, "watchlist", kw, "", "관심 키워드가 추적 목록에 들어옴", True))
+            alerts.append(Alert(today, "watchlist", kw, "", "관심 키워드 추적을 시작함", True))
 
     alerts.sort(key=lambda a: (not a.watched, a.kind, a.keyword))
     return alerts, {"stages": stages, "youth": youth_max, "gated": gated}
@@ -126,7 +126,7 @@ def to_rss(alerts: list[dict[str, Any]], site_url: str, now: datetime | None = N
   <channel>
     <title>Trend Engine 알림</title>
     <link>{esc(site_url)}</link>
-    <description>10·20대에서 뜨는 것, 윗세대로 번지는 것, 관심 키워드 변화</description>
+    <description>10·20대가 새로 유독 찾는 키워드, 윗세대로 번지는 단계 변화, 관심 키워드 소식</description>
     <language>ko</language>
     <lastBuildDate>{now.strftime("%a, %d %b %Y %H:%M:%S +0000")}</lastBuildDate>
 {chr(10).join(items)}

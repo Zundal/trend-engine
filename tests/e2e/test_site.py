@@ -70,7 +70,7 @@ def test_youth_tab_is_default_and_renders(page, site):
     # the lead card: the top keyword, then every measured row with its multiple
     top = page.locator("#y-top .top1-k").inner_text().strip()
     assert top and top == page.locator("#y-disc li[data-cat] .k b").first.inner_text().strip()
-    assert page.locator("#y-disc li[data-cat] .x").first.inner_text().endswith("×")
+    assert page.locator("#y-disc li[data-cat] .x").first.inner_text().endswith("배")
     assert page.locator("#y-vs > div").count() == 3  # 10대만 / 둘 다 / 20대만
     page.click("#ygroups [data-g='20대 여성']")
     assert "20대 여성" in page.locator("#y-title").inner_text()

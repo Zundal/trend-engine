@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trend Engine</title>
-<meta name="description" content="지금 사람들의 관심사 — 10·20대가 유독 찾는 것, 세대 확산, 나라별 이슈, 연령·성별 관심">
+<meta name="description" content="지금 사람들의 관심사 — 10·20대가 유독 찾는 것, 윗세대로 번지는 유행, 나라별 이슈, 연령·성별 관심">
 <!-- 아이콘은 파일로 둔다 (검색 결과 옆 아이콘은 주소로 받아 가고, 한 변이 48의 배수여야 한다) -->
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
 <link rel="icon" sizes="48x48" href="favicon.ico">
@@ -414,7 +414,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   .lead-list { background: var(--panel); border-radius: 16px; padding: 8px 16px; box-shadow: 0 1px 0 var(--line); gap: 8px; }
   .lead-list h3 { margin: 12px 0 0; }
   .colhead { display: none; }
-  .xrows li { grid-template-columns: 16px minmax(0, 1fr) 44px; grid-template-areas: "n k x" ". bar bar"; gap: 8px 10px; padding: 14px 0; min-height: 0; border-bottom: 0; border-top: 1px solid var(--hair); }
+  .xrows li { grid-template-columns: 16px minmax(0, 1fr) 52px; grid-template-areas: "n k x" ". bar bar"; gap: 8px 10px; padding: 14px 0; min-height: 0; border-bottom: 0; border-top: 1px solid var(--hair); }
   .xrows .n { grid-area: n; }
   .xrows .k { grid-area: k; }
   .xrows .k b { flex: 1; white-space: normal; overflow-wrap: anywhere; }
@@ -450,10 +450,10 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
       <span>Trend Engine</span>
     </a>
     <nav class="tabs" aria-label="화면">
-      <a class="tab" id="tab-youth" href="#youth" data-view="youth" aria-current="page"><b>10·20대</b><span>젊은 층이 유독 찾는 것</span></a>
+      <a class="tab" id="tab-youth" href="#youth" data-view="youth" aria-current="page"><b>10·20대</b><span>30대 이상보다 유독 찾는 것</span></a>
       <a class="tab" id="tab-diffusion" href="#diffusion" data-view="diffusion"><b>세대 확산</b><span>윗세대로 번지나</span></a>
       <a class="tab" id="tab-country" href="#country" data-view="country"><b>나라별</b><span>지금 뜨는 이슈</span></a>
-      <a class="tab" id="tab-age" href="#age" data-view="age"><b>전체 연령</b><span>그룹별 관심</span></a>
+      <a class="tab" id="tab-age" href="#age" data-view="age"><b>전체 연령</b><span>연령·성별 비교</span></a>
     </nav>
     <div class="stamp"><i class="dot" aria-hidden="true"></i><span id="gen"></span><button type="button" id="refresh" hidden>새로 수집</button></div>
   </div>
@@ -473,29 +473,29 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
       </div>
     </section>
     <div class="chips" id="ygroups" role="group" aria-label="그룹"></div>
-    <div class="warn" id="y-warn" hidden>샘플 데이터 — 실제 값이 아닙니다</div>
+    <div class="warn" id="y-warn" hidden>샘플 데이터예요. 실제 값이 아니에요.</div>
     <p class="note" id="y-note" hidden></p>
   </div>
 
   <section class="sec" aria-labelledby="y-s1">
-    <header class="sec-h"><div class="sec-t"><h2 id="y-s1">이번 주 순위</h2><p>30대 이상보다 몇 배 더 찾는지 순서예요 — 오늘 이슈와 쇼핑에서 두드러진 것도 함께 봐요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="y-s1">지금 순위</h2><p>30대 이상보다 몇 배 찾는지, 배수가 큰 순서예요</p></div></header>
     <div class="grid2">
       <section class="card lead" id="y-lead" aria-label="순위">
         <div class="top1" id="y-top" hidden></div>
         <div class="lead-list">
           <h3 class="m-only">전체 순위</h3>
           <div class="cchips" id="y-cchips"></div>
-          <div class="colhead"><span>키워드</span><span>30대 이상 대비 (세로선 = 같은 수준)</span></div>
+          <div class="colhead"><span>키워드</span><span>30대 이상 대비 배수 (세로선 = 1배)</span></div>
           <ol class="xrows" id="y-disc"><li class="empty">불러오는 중…</li></ol>
         </div>
       </section>
       <div class="stack">
         <section class="card sm" aria-labelledby="iss-h">
-          <div class="card-h"><h3 id="iss-h">오늘 이슈 중 더 관심 있는 것</h3><span>실시간 이슈 가운데 30대 이상보다 많이 찾은 것</span></div>
+          <div class="card-h"><h3 id="iss-h">오늘 이슈 중 유독 찾는 것</h3><span>30대 이상 대비 1.2배 이상인 이슈</span></div>
           <ul class="pills" id="y-issues"></ul>
         </section>
         <section class="card sm" aria-labelledby="shop-h">
-          <div class="card-h"><h3 id="shop-h">쇼핑에서 유독 찾는 것</h3><span id="y-title2">전체 인기어에는 없는, 이 그룹만의 검색어</span></div>
+          <div class="card-h"><h3 id="shop-h">쇼핑에서 유독 찾는 것</h3><span id="y-title2">전체 인기 검색어에 없는, 이 그룹만의 검색어</span></div>
           <dl class="kv" id="y-shop"><div class="empty">불러오는 중…</div></dl>
         </section>
       </div>
@@ -503,14 +503,14 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec" aria-labelledby="vs-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="vs-h">10대와 20대 비교</h2><p>겹치는 관심과 다른 관심 — 둘 다 유독 찾는 것은 가운데에 모았어요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="vs-h">10대와 20대 비교</h2><p>한쪽만 유독 찾는 것과 둘 다 유독 찾는 것을 나눴어요</p></div></header>
     <div class="vs" id="y-vs"><p class="empty">불러오는 중…</p></div>
   </section>
 
   <section class="sec" aria-labelledby="y-s3">
     <header class="sec-h"><div class="sec-t"><h2 id="y-s3">분야별로 보기</h2><p>어느 분야에서 무엇을 유독 찾는지</p></div></header>
     <section class="card">
-      <div class="card-h"><h3 id="y-cat-title">분야별 한눈에</h3><span>분야를 누르면 위 순위를 그 분야로 걸러요</span></div>
+      <div class="card-h"><h3 id="y-cat-title">분야별 상위 3개</h3><span>분야를 누르면 위 순위에 그 분야만 남아요</span></div>
       <div class="ctiles" id="y-cats"><p class="empty">불러오는 중…</p></div>
     </section>
     <section class="card">
@@ -523,11 +523,11 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     <header class="sec-h"><div class="sec-t"><h2 id="y-s4">시간 흐름으로 보기</h2><p>계속 오르는 키워드와, 관심이 옮겨가는 분야</p></div></header>
     <div class="grid2">
       <section class="card" id="y-rise-card" hidden>
-        <div class="card-h"><h3>10·20대 사이 3주 연속 증가</h3><span>설명용 신호예요 — 계속 오를지는 보장되지 않아요 (세대 확산에서 적중률 확인)</span></div>
+        <div class="card-h"><h3>10·20대 검색이 3주 연속 늘어난 키워드</h3><span>숫자는 3주 전 대비 증가율이에요. 계속 오른다는 뜻은 아니에요 (적중률은 세대 확산 탭).</span></div>
         <ol class="toplist" id="y-rise"></ol>
       </section>
       <section class="card" id="y-trend-card">
-        <div class="card-h"><h3>관심 분야 이동</h3><span id="y-trend-sub">그룹의 관심이 어느 분야로 옮겨가는지 (매일 기록)</span></div>
+        <div class="card-h"><h3>관심 분야 이동</h3><span id="y-trend-sub">유독 찾는 키워드의 분야별 비중이 날마다 어떻게 변하는지</span></div>
         <div id="y-trend"><p class="empty">불러오는 중…</p></div>
       </section>
     </div>
@@ -535,9 +535,9 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 
   <section class="howto" aria-labelledby="y-how">
     <h2 id="y-how">읽는 법</h2>
-    <p><b id="y-how-x">3.7×</b> — 이 그룹의 검색에서 차지하는 비중이 30대 이상보다 그만큼 크다는 뜻이에요. 검색한 사람 수의 비율은 아니에요.</p>
-    <p><b id="y-how-n">후보</b> — 오늘 이슈, 인기 영상 태그, 10·20대 쇼핑어에서 골라 연령별 검색량을 쟀어요.</p>
-    <p><b>세로선</b> — 30대 이상과 같은 수준(1×)이에요. 막대가 선을 넘은 만큼 더 찾는 거예요.</p>
+    <p><b id="y-how-x">3.7배</b> — 이 그룹의 검색 중 그 키워드가 차지하는 비중이 30대 이상의 몇 배인지예요. 검색한 사람 수의 비율이 아니에요.</p>
+    <p><b id="y-how-n">후보</b> — 오늘 이슈, 인기 영상 태그, 10·20대 쇼핑 검색어에서 골라 연령별 검색량을 쟀어요. 30대 이상 대비 1.5배 이상만 순위에 넣어요.</p>
+    <p><b>세로선</b> — 30대 이상과 같은 수준(1배)이에요. 막대가 선보다 길수록 더 많이 찾는 거예요.</p>
   </section>
 </main>
 
@@ -550,16 +550,16 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
         <h1>10·20대의 유행, <em>윗세대로 번지고</em> 있나</h1>
       </div>
     </section>
-    <div class="warn" id="d-warn" hidden>샘플 데이터 — 실제 값이 아닙니다</div>
+    <div class="warn" id="d-warn" hidden>샘플 데이터예요. 실제 값이 아니에요.</div>
     <section class="flash" id="d-flash" aria-label="단계 변화">
       <span class="kicker" id="d-flash-k">단계 변화</span>
       <span class="flash-t" id="d-flash-t">불러오는 중…</span>
-      <button type="button" class="btn-line" id="d-flash-go" hidden>자세히</button>
+      <button type="button" class="btn-line" id="d-flash-go" hidden>연령별 흐름 보기</button>
     </section>
   </div>
 
   <section class="sec" aria-labelledby="flow-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="flow-h">지금 어디쯤 있나</h2><p>키워드를 누르면 아래에 연령별 흐름이 보여요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="flow-h">지금 몇 단계인가</h2><p>키워드를 누르면 아래에 연령별 흐름이 보여요</p></div></header>
     <div class="stages" id="d-stages"></div>
     <div class="others" id="d-others"></div>
     <section class="card" id="d-detail" aria-labelledby="det-h"><p class="empty">불러오는 중…</p></section>
@@ -569,21 +569,21 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     <header class="sec-h"><div class="sec-t"><h2 id="chk-h">얼마나 믿을 만한가</h2><p>같은 방법을 과거 시점에 적용해 채점하고, 실제 유행으로 검증했어요</p></div></header>
     <div class="grid2">
       <section class="card" aria-labelledby="acc-h">
-        <div class="card-h"><h3 id="acc-h">예측이 맞았나</h3><span id="acc-sub">과거 시점에서 다시 판정해 보고, 실제로 윗세대가 따라왔는지 채점</span></div>
+        <div class="card-h"><h3 id="acc-h">예측이 맞았나</h3><span id="acc-sub">과거 시점에서 다시 판정하고, 그 뒤 윗세대가 실제로 늘었는지 채점했어요</span></div>
         <div id="dif-acc"><p class="empty">불러오는 중…</p></div>
       </section>
       <section class="card" aria-labelledby="case-h">
-        <div class="card-h"><h3 id="case-h">과거 유행으로 검증</h3><span id="case-sub">같은 방법으로 계산한 실제 유행 — 누르면 위에 연령별 흐름이 보여요</span></div>
+        <div class="card-h"><h3 id="case-h">과거 유행으로 검증</h3><span id="case-sub">실제 유행을 같은 방법으로 계산했어요. 누르면 위에 연령별 흐름이 보여요.</span></div>
         <div id="dif-cases"><p class="empty">불러오는 중…</p></div>
       </section>
     </div>
   </section>
 
   <section class="sec" aria-labelledby="ntf-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="ntf-h">변화 알림</h2><p>새로 잡힌 키워드와 단계 변화를 날짜별로 모았어요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="ntf-h">변화 알림</h2><p>단계가 바뀐 키워드와 10·20대가 새로 유독 찾는 키워드를 날짜순으로 모았어요</p></div></header>
     <div class="notify">
-      <b>변화가 생길 때만 알려드려요</b>
-      <span id="alert-sub">watchlist.txt 에 키워드를 적으면 매일 추적하고, 단계가 바뀌면 알림이 와요.</span>
+      <b>변화가 있을 때만 알림이 와요</b>
+      <span id="alert-sub">RSS를 구독하면 받을 수 있어요. watchlist.txt에 적은 키워드는 매일 추적해요.</span>
       <a class="btn" href="feed.xml" id="feed-link">RSS 구독</a>
     </div>
     <section class="card" id="alert-card" hidden>
@@ -593,7 +593,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec" aria-labelledby="trk-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="trk-h">추적 중인 키워드 전체</h2><p id="dif-sub">10·20대가 유독 찾는 키워드 — 이름을 누르면 위에 크게 보여요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="trk-h">추적 중인 키워드 전체</h2><p id="dif-sub">10·20대가 유독 찾는 키워드 · 이름을 누르면 위에 연령별 흐름이 보여요</p></div></header>
     <section class="card" aria-labelledby="trk-h">
       <div class="cchips" id="d-cchips"></div>
       <div id="dif-now"><p class="empty">불러오는 중…</p></div>
@@ -602,7 +602,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec opt" aria-labelledby="tr-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="tr-h">세대 전달 함수</h2><p>20대의 관심 곡선이 윗세대에 <b>얼마나</b>, <b>몇 주 뒤에</b> 도착하는지</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="tr-h">윗세대에 나타나는 시차와 크기</h2><p>20대의 검색 변화가 각 연령에 <b>몇 주 뒤</b>, <b>어느 크기로</b> 나타나는지 쟀어요</p></div></header>
     <section class="card" id="transfer-card" aria-labelledby="tr-h" hidden>
       <div id="transfer"></div>
     </section>
@@ -610,9 +610,9 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 
   <section class="howto" aria-labelledby="d-how">
     <h2 id="d-how">읽는 법</h2>
-    <p><b>단계</b> — 연령별 주간 검색 흐름에서 급상승 시점을 찾아, 10·20대와 40대 이상의 시차로 매일 판정해요.</p>
-    <p><b>누적 판단</b> — 매일의 판정을 잡음 섞인 관측으로 보고 며칠에 걸쳐 확률을 갱신한 값이에요. 판정이 오락가락해도 천천히 움직이고, 알림은 누적 판단이 판정에 동의할 때만 나가요.</p>
-    <p><b>N배</b> — 판정 없이 아무 키워드나 골랐을 때보다 얼마나 더 맞히는지예요. 표본이 작아 참고용이에요.</p>
+    <p><b>단계</b> — 연령별 주간 검색량에서 급상승한 주를 찾고, 10·20대와 윗세대(40대 이상)가 몇 주 차이인지로 매일 판정해요.</p>
+    <p><b>누적 판단</b> — 하루 판정은 틀릴 수 있어서, 여러 날의 판정을 합쳐 확률로 계산한 값이에요. 하루 판정이 바뀌어도 조금씩만 변하고, 알림은 누적 판단이 그날 판정과 같을 때만 보내요.</p>
+    <p><b>N배</b> — 무작위로 키워드를 골랐을 때보다 판정이 몇 배 더 맞았는지예요. 표본이 작아서 참고용이에요.</p>
   </section>
 </main>
 
@@ -633,11 +633,11 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </div>
 
   <section class="sec" aria-labelledby="rank-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="rank-h">관심 랭킹</h2><p>줄을 누르면 그 이슈를 자세히 보여줘요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="rank-h">이슈 순위</h2><p id="rank-sub">줄을 누르면 자세한 내용이 나와요. 막대는 여러 목록에 함께, 높은 순위로 나올수록 길어요.</p></div></header>
     <div class="split">
       <section class="card rankcard" aria-label="순위">
         <div class="cchips" id="c-cchips"></div>
-        <div class="rank-head" id="rank-head"><span>순위</span><span>이슈</span><span>변화</span><span>교차 점수</span></div>
+        <div class="rank-head" id="rank-head"><span>순위</span><span>이슈</span><span>변화</span><span>점수</span></div>
         <ol class="rank" id="rank"></ol>
         <button type="button" class="ghost more" id="more" hidden></button>
       </section>
@@ -666,19 +666,19 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec opt" aria-labelledby="ana-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="ana-h">흐름 읽기</h2><p>관심이 얼마나 빨리 바뀌고, 어디로 번지고, 어떤 모양으로 지나가는지</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="ana-h">변화 분석</h2><p>순위가 얼마나 빨리 바뀌는지, 다른 나라로 언제 번지는지, 관심이 어떻게 오르내렸는지</p></div></header>
     <div class="grid3">
       <section class="card sm" id="card-att" hidden>
-        <div class="card-h"><h3>관심의 속도</h3><span>이 나라의 평소와 비교</span></div>
+        <div class="card-h"><h3>순위 교체 · 관심 쏠림</h3><span>이 나라의 평소 값과 비교</span></div>
         <div id="att"></div>
       </section>
       <section class="card sm" id="card-flow" hidden>
-        <div class="card-h"><h3>국가 간 전파</h3><span>같은 주제가 나라를 건너는 데 걸리는 시간</span></div>
+        <div class="card-h"><h3>국가 간 전파</h3><span>한 나라에서 뜬 주제가 다른 나라에서 뜨기까지 걸린 주 수</span></div>
         <ul class="list" id="flow"></ul>
         <p class="note" id="flow-note"></p>
       </section>
       <section class="card sm" id="card-shape" hidden>
-        <div class="card-h"><h3>유행의 모양</h3><span>정점 일주일 뒤부터 읽혀요</span></div>
+        <div class="card-h"><h3>유행의 모양</h3><span>정점 앞뒤 7일의 관심 변화로 네 가지로 나눠요</span></div>
         <ul class="list" id="shape"></ul>
         <p class="note" id="shape-note"></p>
       </section>
@@ -699,14 +699,14 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 
   <section class="sec" aria-labelledby="mx-h">
     <header class="sec-h">
-      <div class="sec-t"><h2 id="mx-h">이슈 × 연령·성별</h2><p>열 이름을 누르면 그 그룹 기준으로 아래가 바뀌어요</p></div>
+      <div class="sec-t"><h2 id="mx-h">이슈 × 연령·성별</h2><p>열 이름을 누르면 아래에 그 그룹이 유독 찾는 이슈와 쇼핑 검색어가 나와요</p></div>
       <div class="scale"><span>덜 찾음</span><i></i><span>더 찾음</span></div>
     </header>
     <section class="card" aria-labelledby="mx-h">
       <div class="kwrow" id="kwrow">
-        <input id="kwinput" placeholder="직접 비교할 키워드 (쉼표 구분)" aria-label="키워드">
+        <input id="kwinput" placeholder="비교할 키워드를 쉼표로 나눠 입력" aria-label="키워드">
         <button type="button" class="ghost" id="kwgo">비교</button>
-        <button type="button" class="ghost" id="kwreset">오늘 이슈로</button>
+        <button type="button" class="ghost" id="kwreset">오늘 이슈로 돌아가기</button>
       </div>
       <div id="heat"><p class="empty">불러오는 중…</p></div>
     </section>
@@ -714,19 +714,19 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 
   <section class="sec" aria-labelledby="pick-h">
     <header class="sec-h">
-      <div class="sec-t"><h2 id="pick-h">선택한 그룹 · <em id="g-pick">20대</em></h2><p>위 표에서 고른 그룹이 특히 찾는 이슈와 쇼핑어</p></div>
+      <div class="sec-t"><h2 id="pick-h">선택한 그룹 · <em id="g-pick">20대</em></h2><p>위 표에서 고른 그룹이 유독 찾는 이슈와 쇼핑 검색어</p></div>
       <div class="seg" id="aperiod" role="group" aria-label="기간">
         <button type="button" data-p="week" aria-pressed="true">7일</button><button type="button" data-p="month" aria-pressed="false">30일</button>
       </div>
     </header>
     <div class="grid2">
       <section class="card" id="card-issues" aria-labelledby="g-title">
-        <div class="card-h"><h3 id="g-title">20대가 특히 관심 있는 이슈</h3><span id="issues-sub">평균보다 많이 찾은 순서</span></div>
+        <div class="card-h"><h3 id="g-title">20대가 유독 찾는 이슈</h3><span id="issues-sub">전체 평균 대비 배수가 큰 순서</span></div>
         <p class="note" id="issues-note" hidden></p>
         <ol class="toplist" id="issues"></ol>
       </section>
       <section class="card" aria-labelledby="g-title2">
-        <div class="card-h"><h3 id="g-title2">20대 쇼핑 관심</h3><span id="shop-sub">전체 인기어엔 없는 이 그룹만의 검색어</span></div>
+        <div class="card-h"><h3 id="g-title2">20대가 쇼핑에서 유독 찾는 것</h3><span id="shop-sub">전체 인기 검색어에 없는, 이 그룹만의 검색어</span></div>
         <dl class="kv" id="shop"><div class="empty">불러오는 중…</div></dl>
       </section>
     </div>
@@ -807,7 +807,9 @@ function josa(word) {  // 이/가: '여성이', '20대가'
   return c && (c.charCodeAt(0) - 0xac00) % 28 ? "이" : "가";
 }
 const chipHTML = (label, on, attr) => `<button type="button" class="chip" aria-pressed="${on}" ${attr}>${esc(label)}</button>`;
-const WARN = `<div class="warn">샘플 데이터 — 실제 값이 아닙니다</div>`;
+/** 기간 기록이 덜 찼을 때의 안내 (나라별·10·20대·전체 연령이 같은 문장을 쓴다) */
+const partialNote = (p) => `${p.days}일 중 ${p.days_available}일치만 기록됐어요. 매일 하루씩 늘어요.`;
+const WARN = `<div class="warn">샘플 데이터예요. 실제 값이 아니에요.</div>`;
 
 // Static mode (published site): data is pre-built into encrypted api/*.dat files by `trend-engine export`.
 let STATIC = false; // export.py rewrites this to true
@@ -815,7 +817,7 @@ const DATA_KEY = ""; // export.py injects the AES-256-GCM key (hex)
 const HISTORY = {};
 let CRYPTO_KEY = null;
 async function decrypt(b64) {
-  if (!crypto.subtle) throw new Error("보안 연결(https)로 접속해 주세요");
+  if (!crypto.subtle) throw new Error("https:// 주소로 접속해 주세요");
   CRYPTO_KEY ??= await crypto.subtle.importKey("raw", Uint8Array.from(DATA_KEY.match(/../g), (h) => parseInt(h, 16)), "AES-GCM", false, ["decrypt"]);
   const raw = Uint8Array.from(atob(b64.trim()), (c) => c.charCodeAt(0));
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: raw.slice(0, 12) }, CRYPTO_KEY, raw.slice(12));
@@ -823,7 +825,7 @@ async function decrypt(b64) {
 }
 async function staticGet(name) {
   const r = await fetch(`api/${name}.dat`, { cache: "no-cache" });
-  if (!r.ok) throw new Error("데이터가 아직 없습니다");
+  if (!r.ok) throw new Error("데이터가 아직 없어요. 1시간 뒤에 다시 열어 주세요.");
   return decrypt(await r.text());
 }
 async function api(path, opts) {
@@ -831,15 +833,15 @@ async function api(path, opts) {
     const u = new URL(path, location.href);
     const name = u.pathname.split("/").pop();
     const r = u.searchParams.get("region") || region;
-    if (name === "keyword") throw new Error("이 페이지에서는 직접 비교를 지원하지 않습니다");
+    if (name === "keyword") throw new Error("공개 사이트에서는 직접 비교를 쓸 수 없어요");
     if (name === "history") { HISTORY[r] ??= await staticGet(`history-${r}`); return HISTORY[r][u.searchParams.get("key")] || []; }
     if (name === "shopping") return staticGet(u.searchParams.get("days") === "30" ? "shopping-month" : "shopping");
     return staticGet(["meta", "age-period", "youth", "youth-period", "youth-trend", "diffusion", "alerts", "transfer", "crosscountry"].includes(name) ? name : `${name}-${r}`);
   }
   const r = await fetch(path, { cache: "no-cache", ...opts });
   const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(body.detail || (STATIC && r.status === 404 ? "데이터가 아직 없습니다" : r.statusText));
-  if (body && body.error) throw new Error("데이터를 불러오지 못했습니다");
+  if (!r.ok) throw new Error(body.detail || (STATIC && r.status === 404 ? "데이터가 아직 없어요. 1시간 뒤에 다시 열어 주세요." : r.statusText));
+  if (body && body.error) throw new Error("데이터를 불러오지 못했어요. 새로고침해 주세요.");
   return body;
 }
 
@@ -887,8 +889,10 @@ function renderRank() {
   $("#rank-title").innerHTML = cperiod === "live" ? `지금 <em>${esc(name)}</em>에서 뜨는 이슈` : `최근 ${PLABEL[cperiod]}, <em>${esc(name)}</em>에서 뜬 이슈`;
   const note = $("#rank-note");
   note.hidden = !(pd && pd.days_available < pd.days);
-  if (pd) note.textContent = `기록 ${pd.days_available}일째 — 매일 쌓여서 ${pd.days}일이 되면 꽉 찹니다`;
-  $("#rank-head").innerHTML = pd ? `<span>순위</span><span>이슈</span><span>순위권</span><span>노출</span>` : `<span>순위</span><span>이슈</span><span>변화</span><span>교차 점수</span>`;
+  if (pd) note.textContent = partialNote(pd);
+  $("#rank-head").innerHTML = pd ? `<span>순위</span><span>이슈</span><span>일수 · 최고</span><span>누적 점수</span>` : `<span>순위</span><span>이슈</span><span>변화</span><span>점수</span>`;
+  $("#rank-sub").textContent = pd ? "줄을 누르면 날짜별 순위가 나와요. 막대는 순위권에 오래 있고 점수가 높을수록 길어요."
+    : "줄을 누르면 자세한 내용이 나와요. 막대는 여러 목록에 함께, 높은 순위로 나올수록 길어요.";
   const src = rankSource();
   renderCatChips($("#c-cchips"), src, ccat, (c) => { ccat = c; selected = null; renderRank(); });
   const rows = byCat(src.map((c, i) => ({ ...c, _i: i })), ccat).slice(0, showAll ? 50 : 20);
@@ -897,15 +901,15 @@ function renderRank() {
   const max = Math.max(...rows.map(val), 1);
   $("#rank").innerHTML = rows.map((c) => {
     const sub = [c.category && c.category !== "기타" ? `<span class="rcat">${esc(c.category)}</span>` : "",
-      c.members?.length > 1 ? `외 ${c.members.length - 1}건 묶음` : "",
-      !pd && (c.days_seen ?? c.members?.[0]?.days_seen ?? 0) >= 7 ? `<span title="지난 30일 중 자주 순위권 — 점수 낮춤">단골</span>` : ""].filter(Boolean).join(" · ");
+      c.members?.length > 1 ? `비슷한 이슈 ${c.members.length - 1}건 포함` : "",
+      !pd && (c.days_seen ?? c.members?.[0]?.days_seen ?? 0) >= 7 ? `<span title="지난 30일 중 7일 이상 순위권에 있어서 점수를 낮췄어요">자주 등장</span>` : ""].filter(Boolean).join(" · ");
     const mid = pd ? `<span class="pmeta">${c.new_in_period ? `<b>NEW</b> ` : ""}${c.days}일 · ${c.best_rank}위</span>` : statusCell(c);
     return `<li data-i="${c._i}"><button type="button" class="row" aria-pressed="${selected === c._i}">
       <span class="rn">${c._i + 1}</span>
       <span class="rl"><span class="label" title="${esc((c.members || []).map((m) => m.label).join(" · ") || c.label)}">${esc(c.label)}</span>${sub ? `<span class="rsub">${sub}</span>` : ""}</span>
       ${mid}
       <span class="score"><i style="width:${(val(c) / max * 100).toFixed(1)}%"></i></span>
-    </button></li>`; }).join("") || `<li class="empty">${pd ? "아직 기록이 없습니다" : "데이터가 없습니다"}</li>`;
+    </button></li>`; }).join("") || `<li class="empty">${pd ? "아직 기록이 없어요" : "데이터가 없어요"}</li>`;
   $("#more").hidden = src.length <= 20;
   $("#more").textContent = showAll ? "접기" : `더보기 (${src.length}개)`;
   renderSelected();
@@ -923,11 +927,11 @@ function renderSelected() {
 const detailHead = (n, cat, label) => `<div class="d-head"><span class="kicker">${n}위${cat && cat !== "기타" ? " · " + esc(cat) : ""}</span><h3 id="sel-h">${esc(label)}</h3></div>`;
 function renderPeriodDetail(c, pd, n) {
   $("#detail").innerHTML = `${detailHead(n, c.category, c.label)}
-    <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>누적 ${c.hours}시간</span><span>처음 ${md(c.since)}</span></div>
+    <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>순위권 ${c.hours}시간</span><span>첫 등장 ${md(c.since)}</span></div>
     <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
 }
 function sparkDays(dates, series) {
-  if (dates.length < 2) return `<div class="dim">기록이 2일 이상 쌓이면 표시됩니다</div>`;
+  if (dates.length < 2) return `<div class="dim">기록이 2일 이상이면 그래프가 나와요</div>`;
   const ranks = Object.values(series);
   const w = 300, hgt = 46, maxR = Math.max(10, ...ranks);
   const x = (i) => (i / (dates.length - 1) * w).toFixed(1);
@@ -939,7 +943,7 @@ function sparkDays(dates, series) {
   return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="날짜별 순위 (위쪽이 상위)">
     ${segs.map((sg) => `<polyline points="${sg.join(" ")}" fill="none" stroke="var(--spark, var(--accent))" stroke-width="2" vector-effect="non-scaling-stroke"/>`).join("")}</svg>
     <div class="legend"><span>${md(dates[0])}</span><span style="margin-left:auto">${md(dates.at(-1))}</span></div>
-    <div class="dim" style="font-size:12px">위쪽이 1위 · 아래 끝 ${maxR}위 · 끊긴 날 = 순위권 밖</div>`;
+    <div class="dim" style="font-size:12px">선이 위에 있을수록 순위가 높아요 (맨 아래 ${maxR}위). 끊긴 날은 순위권 밖이에요.</div>`;
 }
 async function renderDetail(t, n) {
   const c = t.members?.[0] || t;  // theme -> its strongest member carries the evidence
@@ -947,12 +951,12 @@ async function renderDetail(t, n) {
   const wantKey = c.key || t.key, wantRegion = region, wantSig = detailSig;
   const facts = [];
   if (c.volume) facts.push(`검색량 ${c.volume.toLocaleString()}+`);
-  if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권 (신규성 ${Math.round(c.novelty * 100)}%)` : "지난 30일 동안 처음 등장");
+  if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권` : "지난 30일 동안 처음 등장");
   const more = [...(c.related || []).slice(1), ...(c.mentions || [])];
   $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label)}
     ${c.related?.[0] ? `<p class="quote">“${esc(c.related[0])}”</p>` : ""}
     ${facts.length ? `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>` : ""}
-    ${others.length ? `<p class="quote">같은 이야기로 묶임: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
+    ${others.length ? `<p class="quote">함께 묶은 이슈: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
     <div id="aff"></div>
     <div class="d-sec"><b>순위 추이</b><div id="spark" class="dim">…</div></div>
     ${more.length ? `<div class="d-sec"><b>함께 나온 제목</b><ul>${more.slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`;
@@ -961,7 +965,7 @@ async function renderDetail(t, n) {
     const h = await api(`api/history?region=${wantRegion}&key=${encodeURIComponent(wantKey)}`);
     // 나라·기간·선택이 바뀌면 이 응답은 버린다 (비동기 경쟁으로 #spark 가 이미 다른 항목의 것)
     if (detailSig !== wantSig || !$("#spark")) return;
-    $("#spark").innerHTML = h.length < 2 ? "기록이 쌓이면 표시됩니다" : spark(h.map((x) => x.rank));
+    $("#spark").innerHTML = h.length < 2 ? "수집이 2회 이상이면 그래프가 나와요" : spark(h.map((x) => x.rank));
   } catch (e) {
     if (detailSig === wantSig && $("#spark")) $("#spark").textContent = e.message;
   }
@@ -983,14 +987,14 @@ async function renderAffinity(labels) {
   box.innerHTML = `<div class="d-sec">${segs.length
     ? `<b>누가 더 찾나 <small>(100 = 평균${SEG.synthetic ? " · 샘플 데이터" : ""})</small></b>` + segs.map((g) => `<div class="affrow">
         <span>${esc(g)}</span><span class="affbar"><i class="${aff[g] >= 100 ? "hi" : ""}" style="width:${Math.min(100, aff[g] / 2).toFixed(0)}%"></i></span><span>${Math.round(aff[g])}</span></div>`).join("")
-    : `<span class="dim">연령·성별 관심은 상위 이슈만 재서, 이 이슈는 측정되지 않았어요.</span>`}</div>`;
+    : `<span class="dim">이 이슈는 연령·성별 관심을 재지 않았어요. 상위 이슈만 재요.</span>`}</div>`;
 }
 function spark(ranks) {
   const w = 300, hgt = 40, maxR = Math.max(...ranks, 10);
   const pts = ranks.map((r, i) => `${(i / (ranks.length - 1) * w).toFixed(1)},${((r - 1) / (maxR - 1 || 1) * (hgt - 6) + 3).toFixed(1)}`).join(" ");
   return `<svg class="spark" viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="none" role="img" aria-label="순위 추이 (위쪽이 상위)">
     <polyline points="${pts}" fill="none" stroke="var(--spark, var(--accent))" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
-    <div class="dim" style="font-size:12px">최근 ${ranks.length}회 · 현재 ${ranks.at(-1)}위 (위쪽이 상위)</div>`;
+    <div class="dim" style="font-size:12px">최근 수집 ${ranks.length}회 · 지금 ${ranks.at(-1)}위 · 선이 위에 있을수록 순위가 높아요</div>`;
 }
 function renderContent() {
   // Link targets stay in memory (opened on click) so addresses don't show on hover.
@@ -999,9 +1003,9 @@ function renderContent() {
   // 세 목록은 한 줄에 나란히 놓이므로 같은 개수로 맞춘다
   $("#apps").innerHTML = apps.slice(0, 8).map((a, i) => `<li><span class="n">${i + 1}</span><a href="#" data-a="${i}">${esc(a.title)}</a></li>`).join("");
   $("#yt").innerHTML = (REPORT.videos || []).slice(0, 8).map((v, i) => `<li><a href="#" data-v="${i}">${esc(v.title)}</a>
-    <small>${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</small></li>`).join("") || `<li class="empty">데이터가 없습니다</li>`;
+    <small>${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</small></li>`).join("") || `<li class="empty">데이터가 없어요</li>`;
   $("#news").innerHTML = (REPORT.news || []).slice(0, 8).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
-    || `<li class="empty">데이터가 없습니다</li>`;
+    || `<li class="empty">데이터가 없어요</li>`;
 }
 function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 1e4 ? Math.round(v / 1e4) + "만회" : Math.round(v).toLocaleString() + "회"; }
 async function loadCountry(refresh = false) {
@@ -1034,12 +1038,14 @@ async function renderAttention() {
   const t = s.turnover;
   const rows = [];
   if (t) rows.push(`<div class="attrow"><b>${t.new_of_n}/${t.n}</b>
-    <span>상위 ${t.n}개 중 어제 없던 항목 — ${esc(t.label)} <small>(평소 ${Math.round(t.median * t.n)}개)</small></span>
+    <span>${esc(t.label)} — 인기 문서 상위 ${t.n}개 중 어제 없던 문서 수 <small>(평소 ${Math.round(t.median * t.n)}개)</small></span>
     ${miniSpark((s.spark || []).filter((v) => v !== null))}</div>`);
   rows.push(`<div class="attrow"><b>${Math.round(s.concentration.value * 100)}%</b>
-    <span>상위 ${s.concentration.n}개가 가져간 관심 — ${esc(s.concentration.label)}
+    <span>${esc(s.concentration.label)} — 상위 ${s.concentration.n}개 문서가 차지한 조회 비율
     <small>(평소 ${Math.round(s.concentration.median * 100)}%, ${gap(s.concentration.gap_pp)})</small></span></div>`);
-  if (a.trend) rows.push(`<p class="note">1년 전 같은 기간보다 교체가 ${gap(a.trend.change_pp)} ${a.trend.change_pp > 0 ? "빨라졌습니다" : "느려졌습니다"}</p>`);
+  const pp = a.trend?.change_pp;  // 부호와 낱말이 같은 뜻을 두 번 말하지 않게, 크기만 쓰고 방향은 낱말로
+  if (a.trend) rows.push(`<p class="note">${pp ? `1년 전 같은 기간보다 새로 들어온 문서 비율이 ${Math.abs(pp).toFixed(1)}%p ${pp > 0 ? "늘었어요" : "줄었어요"}`
+    : "새로 들어온 문서 비율이 1년 전 같은 기간과 같아요"}</p>`);
   rows.push(`<p class="note">최근 ${a.days}일 기록 기준</p>`);
   box.innerHTML = rows.join("");
 }
@@ -1065,19 +1071,19 @@ async function renderFlows() {
   $("#flow").innerHTML = order.map((src) => `<li class="col ${src === lang ? "mine" : ""}">
       <span><b>${name(src)}</b>에서 먼저 뜬 주제는</span>
       <small>${by[src].sort((a, b) => a.lag - b.lag).map((f) =>
-        `${name(f.to)}에 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
+        `${name(f.to)}에 ${f.lag.toFixed(1)}주 뒤 (주제 ${f.entities}개)`).join(" · ")}</small>
     </li>`).join("") + (into.length ? `<li class="col mine">
-      <span><b>${name(lang)}</b>에 도착하는 주제는</span>
-      <small>${into.map((f) => `${name(f.from)}에서 ${f.lag.toFixed(1)}주 뒤 (${f.entities}개)`).join(" · ")}</small>
+      <span>다른 나라에서 먼저 뜨고 <b>${name(lang)}</b>에서 뒤따라 뜬 주제는</span>
+      <small>${into.map((f) => `${name(f.from)}보다 ${f.lag.toFixed(1)}주 뒤 (주제 ${f.entities}개)`).join(" · ")}</small>
     </li>` : "");
   const mine = rows.some((f) => f.from === lang || f.to === lang);
   const m = FLOWS.measured?.[lang], o = FLOWS.origins?.[lang];
   const depth = lang && !mine && m != null
-    ? ` ${name(lang)}은 아직 방향이 잡히지 않았습니다 — 측정 개체 ${m}개, ${name(lang)}발 주제 ${o}개${FLOWS.filling ? " (더 채우는 중)" : ""}.`
+    ? ` ${name(lang)}은 아직 방향을 알 수 없어요. 측정한 주제 ${m}개, ${name(lang)}에서 시작한 주제 ${o}개${FLOWS.filling ? " (더 모으는 중)" : ""}.`
     : "";
-  $("#flow-note").textContent = `주제가 처음 등장한 나라를 기준으로만 잽니다 — 반대 방향은 ${
-    rows.every((f) => f.back_lag < 0.5) ? "모두 0주 근처로 무너집니다" : "일부만 무너집니다"}. 개체 ${FLOWS.entities}개, ${
-    (FLOWS.langs || []).length}개 언어권을 같은 깊이로 측정.` + depth;
+  $("#flow-note").textContent = `주제가 처음 등장한 나라에서 다른 나라로 가는 방향만 쟀어요. 거꾸로 재면 ${
+    rows.every((f) => f.back_lag < 0.5) ? "시차가 모두 0.5주 미만이라 방향이 분명해요" : "0.5주 넘게 시차가 남는 곳이 있어 그곳은 방향이 덜 분명해요"}. 주제 ${FLOWS.entities}개 · 언어권 ${
+    (FLOWS.langs || []).length}곳을 고르게 측정.` + depth;
 }
 
 // 유행의 모양: 정점 앞뒤 일주일에 관심이 어떻게 갈렸는지로 네 가지 중 하나를 붙인다.
@@ -1095,10 +1101,11 @@ async function renderShapes() {
   $("#shape").innerHTML = d.items.slice(0, 8).map((i) => `<li>
       <span class="st tag ${SHAPE_TONE[i.shape] || ""}">${esc(i.shape)}</span>
       <a title="${esc(d.classes[i.shape] || "")}">${esc(i.label)}</a>
-      <small>정점 ${i.days_since_peak === 0 ? "어제" : `${i.days_since_peak}일 전`}${i.recurring ? " · 해마다 돌아옴" : ""}</small>
+      <small>정점 ${i.days_since_peak === 0 ? "어제" : `${i.days_since_peak}일 전`}${i.recurring ? " · 해마다 반복" : ""}</small>
     </li>`).join("");
-  const mix = Object.entries(d.mix).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(" · ");
-  $("#shape-note").textContent = `${mix} — ${d.classes[Object.entries(d.mix).sort((a, b) => b[1] - a[1])[0][0]]}`;
+  // 이름표만으로는 뜻을 알 수 없으니, 지금 목록에 있는 모양마다 뜻을 한 줄씩 붙인다
+  $("#shape-note").innerHTML = Object.entries(d.mix).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `<b>${esc(k)}</b> ${v}개 — ${esc(d.classes[k] || "")}`).join("<br>");
 }
 
 // ---- 전체 연령 ------------------------------------------------------------------------
@@ -1113,47 +1120,47 @@ function renderHeat(s) {
   const rows = s.keywords.filter((k) => segs.some((g) => s.affinity[k]?.[g] != null));
   const warn = s.synthetic ? WARN : "";
   if (s.period) $("#a-eyebrow").textContent = `한국 · ${rangeKo(s.period[0], s.period[1])} 검색 · 100 = 전체 평균`;
-  if (!rows.length) { $("#heat").innerHTML = warn + `<p class="empty">비교할 수 있는 키워드가 없습니다</p>`; return; }
+  if (!rows.length) { $("#heat").innerHTML = warn + `<p class="empty">비교할 수 있는 키워드가 없어요</p>`; return; }
   $("#heat").innerHTML = warn + `<div class="hscroll"><table class="heat"><thead><tr><th class="kw" scope="col">이슈</th>${
     segs.map((g) => `<th scope="col"><button type="button" data-g="${esc(g)}" aria-pressed="${g === group}">${esc(g)}</button></th>`).join("")}</tr></thead><tbody>${
     rows.map((k) => `<tr><th scope="row" title="${esc(labels[k] || k)}">${esc(labels[k] || k)}</th>${segs.map((g) => {
       const v = s.affinity[k][g], [cls, p] = heatCell(v);
-      return `<td class="${cls}${g === group ? " on" : ""}" style="--p:${p}%" title="${esc(g)}: ${v == null ? "데이터 없음" : (v / 100).toFixed(1) + "배"}">${v == null ? "·" : Math.round(v)}</td>`;
+      return `<td class="${cls}${g === group ? " on" : ""}" style="--p:${p}%" title="${esc(g)}: ${v == null ? "데이터 없음" : "평균의 " + (v / 100).toFixed(1) + "배"}">${v == null ? "·" : Math.round(v)}</td>`;
     }).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 function renderIssues() {
   $("#g-pick").textContent = group;
-  $("#g-title").innerHTML = `<em>${esc(group)}</em>${josa(group)} 특히 관심 있는 이슈`;
+  $("#g-title").innerHTML = `<em>${esc(group)}</em>${josa(group)} 유독 찾는 이슈`;
   const ap = AGEP?.[aperiod];
   const note = $("#issues-note");
   const rows = ap?.by_segment?.[group] || [];
   if (rows.length) {  // 기간 기록: 매일의 표를 쌓아 며칠이나 두드러졌는지
     note.hidden = ap.days_available >= ap.days;
-    note.textContent = `최근 ${PLABEL[aperiod]} 중 기록 ${ap.days_available}일 — 매일 쌓이는 중`;
-    $("#issues-sub").textContent = `최근 ${PLABEL[aperiod]} · 평균보다 더 찾은 날 수와 평균 대비 배수`;
+    note.textContent = partialNote(ap);
+    $("#issues-sub").textContent = `최근 ${PLABEL[aperiod]} · 평균보다 더 찾은 날 수 · 평균 대비 배수`;
     $("#issues").innerHTML = rows.map((r, i) => `<li><span class="n">${i + 1}</span><b title="${esc(r.keyword)}">${esc(r.keyword)}</b>
       <span class="x">${r.days}일 · ${(r.avg_affinity / 100).toFixed(1)}배</span></li>`).join("");
     return;
   }
   // 기록이 아직 없으면 위 표의 이 그룹 열을 그대로 줄 세운다
   note.hidden = true;
-  $("#issues-sub").textContent = "오늘 이슈 가운데 평균보다 많이 찾은 순서";
+  $("#issues-sub").textContent = "오늘 이슈 중 전체 평균 대비 배수가 큰 순서";
   const top = !SEG ? [] : SEG.keywords.map((k) => ({ k: SEG.labels?.[k] || k, r: (SEG.affinity[k]?.[group] ?? 0) / 100 }))
     .filter((x) => x.r >= 1.1).sort((a, b) => b.r - a.r).slice(0, 6);
   $("#issues").innerHTML = top.map((x, i) => `<li><span class="n">${i + 1}</span><b title="${esc(x.k)}">${esc(x.k)}</b><span class="x">${x.r.toFixed(1)}배</span></li>`).join("")
-    || `<li class="empty">${SEG ? "오늘 이슈 중 평균보다 눈에 띄게 더 찾은 건 없어요." : "불러오는 중…"}</li>`;
+    || `<li class="empty">${SEG ? "오늘 이슈 중 평균의 1.1배 이상 찾은 것이 없어요." : "불러오는 중…"}</li>`;
 }
 /** 쇼핑: 전체 인기어에는 없는 이 그룹만의 말(distinctive)을 분야별로 */
 function shopHTML(cats) {
   const rows = Object.entries(cats || {}).filter(([, v]) => v.distinctive?.length)
     .map(([cat, v]) => `<div><dt>${esc(cat)}</dt><dd>${v.distinctive.slice(0, 3).map(esc).join(" · ")}</dd></div>`).join("");
-  return rows || `<div class="empty">${cats ? "이 그룹만의 검색어가 아직 없어요." : "이 그룹의 쇼핑 데이터가 없습니다"}</div>`;
+  return rows || `<div class="empty">${cats ? "이 그룹만의 검색어가 아직 없어요." : "이 그룹의 쇼핑 데이터가 없어요."}</div>`;
 }
 function renderShopping() {
   const SHOP = SHOPS[aperiod];
-  $("#g-title2").innerHTML = `<em>${esc(group)}</em> 쇼핑 관심`;
+  $("#g-title2").innerHTML = `<em>${esc(group)}</em>${josa(group)} 쇼핑에서 유독 찾는 것`;
   if (!SHOP) return;
-  $("#shop-sub").textContent = `${SHOP.period ? rangeKo(SHOP.period[0], SHOP.period[1]) : PLABEL[aperiod]} · 전체 인기어엔 없는 이 그룹만의 검색어`;
+  $("#shop-sub").textContent = `${SHOP.period ? rangeKo(SHOP.period[0], SHOP.period[1]) : PLABEL[aperiod]} · 전체 인기 검색어에 없는, 이 그룹만의 검색어`;
   $("#shop").innerHTML = shopHTML(SHOP.by_segment[group]);
 }
 async function loadAge(custom) {
@@ -1190,14 +1197,14 @@ function xRowsHTML(rows, max, empty) {
   return rows.map((r, i) => `<li data-cat="${esc(r.category || "기타")}">
       <span class="n">${i + 1}</span>
       <span class="k"><b title="${esc(r.keyword)}">${esc(r.keyword)}</b>${r.kind ? `<span class="tag ${KIND_TAG[r.kind] || ""}">${esc(r.kind)}</span>` : ""}${r.days ? `<small>${r.days}일</small>` : ""}</span>
-      ${r.shopOnly ? `<span class="xbar off"></span><span class="x off" title="이 그룹 쇼핑 검색에만 나오는 말 — 배수는 재지 않았어요">–</span>`
-        : `<span class="xbar"><i style="width:${Math.min(100, (r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span><span class="x">${xfmt(r)}×</span>`}
+      ${r.shopOnly ? `<span class="xbar off"></span><span class="x off" title="이 그룹의 쇼핑 검색어라서 배수는 재지 않았어요">–</span>`
+        : `<span class="xbar"><i style="width:${Math.min(100, (r.vs_older || 0) / max * 100).toFixed(1)}%"></i></span><span class="x">${xfmt(r)}배</span>`}
     </li>`).join("") || `<li class="empty">${empty}</li>`;
 }
 function renderYouth() {
   $("#ygroups").innerHTML = YGROUPS.map((g) => chipHTML(g, g === ygroup, `data-g="${esc(g)}"`)).join("");
   for (const b of $$("#yperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === yperiod));
-  const pl = yperiod === "now" ? "이번 주" : `최근 ${PLABEL[yperiod]}`;
+  const pl = yperiod === "now" ? "지금" : `최근 ${PLABEL[yperiod]}`;
   const per = YOUTH?.discover.period;
   $("#y-title").innerHTML = `${esc(ygroup)}${josa(ygroup)} 30대 이상보다 <em>유독 더</em> 찾는 것`;
   $("#y-s1").textContent = `${pl} 순위`;
@@ -1206,7 +1213,7 @@ function renderYouth() {
   const pd = yperiod === "now" ? null : YPER?.[yperiod];
   const note = $("#y-note");
   note.hidden = !(pd && pd.days_available < pd.days);
-  if (pd) note.textContent = `최근 ${PLABEL[yperiod]} 중 기록 ${pd.days_available}일 — 매일 쌓이는 중`;
+  if (pd) note.textContent = partialNote(pd);
 
   const disc = youthRows(ygroup), iss = YOUTH?.issues.groups[ygroup] || [], shopRows = youthShopRows(ygroup);
   const forFilter = [...disc, ...iss, ...shopRows];
@@ -1218,21 +1225,21 @@ function renderYouth() {
   $("#y-top").hidden = !top;
   if (top) $("#y-top").innerHTML = `<span class="kicker">${pl} 1위</span>
     <div class="top1-r"><span class="top1-k${top.keyword.length > 9 ? " long" : ""}">${esc(top.keyword)}</span>
-    <span class="top1-x">30대 이상보다 <b>${xfmt(top)}배</b> 더 검색</span></div>`;
+    <span class="top1-x">30대 이상 대비 <b>${xfmt(top)}배</b></span></div>`;
   // 순위는 잰 것만. 분야를 고르면 그 분야의 쇼핑 고유어도 함께 보여 타일↔칩↔목록이 이어지게 한다
   const list = ycat ? byCat([...disc, ...shopRows], ycat) : disc;
   const max = Math.max(6, Math.ceil(Math.max(0, ...list.map((r) => r.vs_older || 0))));
   $("#y-disc").style.setProperty("--one", `${(100 / max).toFixed(2)}%`);
-  $("#y-disc").innerHTML = xRowsHTML(list, max, !YOUTH ? "불러오는 중…" : ycat ? `이 분야(${esc(ycat)})에서 두드러진 키워드가 없습니다` : "이 그룹이 두드러지게 찾는 키워드가 아직 없습니다");
-  $("#y-issues").innerHTML = byCat(iss, ycat).map((r) => `<li data-cat="${esc(r.category || "기타")}"><b>${esc(r.keyword)}</b><span>${xfmt(r)}×</span></li>`).join("")
-    || `<li class="empty">${YOUTH ? "오늘 이슈 중 눈에 띄게 더 찾는 것은 없어요." : "불러오는 중…"}</li>`;
+  $("#y-disc").innerHTML = xRowsHTML(list, max, !YOUTH ? "불러오는 중…" : ycat ? `${esc(ycat)} 분야에서 유독 찾는 키워드가 없어요` : "이 그룹이 유독 찾는 키워드가 아직 없어요");
+  $("#y-issues").innerHTML = byCat(iss, ycat).map((r) => `<li data-cat="${esc(r.category || "기타")}"><b>${esc(r.keyword)}</b><span>${xfmt(r)}배</span></li>`).join("")
+    || `<li class="empty">${YOUTH ? "오늘 이슈 중 30대 이상 대비 1.2배 이상인 것이 없어요." : "불러오는 중…"}</li>`;
   const shop = SHOPS[yperiod === "month" ? "month" : "week"];
-  $("#y-title2").textContent = `최근 ${yperiod === "month" ? "30일" : "7일"} · 전체 인기어에는 없는, 이 그룹만의 검색어`;
+  $("#y-title2").textContent = `최근 ${yperiod === "month" ? "30일" : "7일"} · 전체 인기 검색어에 없는, 이 그룹만의 검색어`;
   $("#y-shop").innerHTML = !shop ? `<div class="empty">불러오는 중…</div>` : shopHTML(shop.by_segment[ygroup]);
-  if (top) $("#y-how-x").textContent = `${xfmt(top)}×`;
+  if (top) $("#y-how-x").textContent = `${xfmt(top)}배`;
   $("#y-how-n").textContent = YOUTH?.discover.candidates ? `후보 ${YOUTH.discover.candidates}개` : "후보";
 
-  renderVs(pl + (yperiod === "now" ? "는" : "은"));
+  renderVs(pl + "은");
   renderCatTiles(disc, iss);
   renderMatrix();
   renderYouthTrend();
@@ -1250,13 +1257,13 @@ function renderVs(when) {
   const both = a.filter((r) => bm.has(r.keyword)).slice(0, 6);
   const only = (rows, other, who) => {
     const mine = rows.filter((r) => !other.has(r.keyword)).slice(0, 6);
-    return mine.length ? `<div class="wchips">${mine.map((r) => `<span>${esc(r.keyword)} <b>${xfmt(r)}×</b></span>`).join("")}</div>`
+    return mine.length ? `<div class="wchips">${mine.map((r) => `<span>${esc(r.keyword)} <b>${xfmt(r)}배</b></span>`).join("")}</div>`
       : `<p>${when} ${who}만 유독 찾는 키워드가 없어요.</p>`;
   };
   $("#y-vs").innerHTML = !YOUTH ? `<p class="empty">불러오는 중…</p>` : `
     <div class="only10"><h3>10대만</h3>${only(a, bm, "10대")}</div>
     <div class="both"><h3>둘 다</h3>${both.length ? `<div class="bothgrid"><small></small><small>10대</small><small>20대</small>${
-      both.map((r) => `<span>${esc(r.keyword)}</span><b>${xfmt(r)}×</b><b>${xfmt(bm.get(r.keyword))}×</b>`).join("")}</div>` : `<p>${when} 둘 다 유독 찾는 키워드가 없어요.</p>`}</div>
+      both.map((r) => `<span>${esc(r.keyword)}</span><b>${xfmt(r)}배</b><b>${xfmt(bm.get(r.keyword))}배</b>`).join("")}</div>` : `<p>${when} 둘 다 유독 찾는 키워드가 없어요.</p>`}</div>
     <div class="only20"><h3>20대만</h3>${only(b, am, "20대")}</div>`;
 }
 function miniSpark(strip) {
@@ -1283,18 +1290,18 @@ function renderMatrix() {
   const head = `<tr><th>분야</th>${GENDER_COLS.map((g) => `<th>${esc(g)}</th>`).join("")}</tr>`;
   const body = cats.map((c) => `<tr><td class="cat" style="--c:${CAT_COLOR[c]}">${esc(c)}</td>${
     GENDER_COLS.map((g) => `<td>${(rows[c][g] || []).slice(0, 2).map((r) =>
-      `<span class="kw"><b>${esc(r.keyword)}</b> <span>${xfmt(r)}×</span>${miniSpark(stripFor(r.keyword, g))}</span>`).join("") || `<span class="dim">–</span>`}</td>`).join("")}</tr>`).join("");
+      `<span class="kw"><b>${esc(r.keyword)}</b> <span>${xfmt(r)}배</span>${miniSpark(stripFor(r.keyword, g))}</span>`).join("") || `<span class="dim">–</span>`}</td>`).join("")}</tr>`).join("");
   $("#y-matrix").innerHTML = cats.length ? `<thead>${head}</thead><tbody>${body}</tbody>`
-    : `<tbody><tr><td class="empty">성별 데이터가 아직 없습니다</td></tr></tbody>`;
+    : `<tbody><tr><td class="empty">성별 데이터가 아직 없어요</td></tr></tbody>`;
 }
 function renderYouthTrend() {
   const t = YTREND;
   if (!t) return;
   const cats = t.by_group?.[ygroup] || {};
   const names = CATS.filter((c) => cats[c]?.some((v) => v > 0));
-  $("#y-trend-sub").textContent = `${ygroup} · 기록 ${t.days_available}일` + (t.days_available < 7 ? " — 며칠 더 쌓이면 이동이 보입니다" : "");
+  $("#y-trend-sub").textContent = `${ygroup} · 분야별 비중 · 기록 ${t.days_available}일` + (t.days_available < 7 ? " (7일부터 변화가 보여요)" : "");
   if (!names.length || t.days_available < 2) {
-    $("#y-trend").innerHTML = `<p class="empty">기록이 2일 이상 쌓이면 표시됩니다 (현재 ${t.days_available}일)</p>`;
+    $("#y-trend").innerHTML = `<p class="empty">기록이 2일 이상이면 그래프가 나와요 (지금 ${t.days_available}일)</p>`;
     return;
   }
   const w = 600, h = 120, n = t.dates.length;
@@ -1309,7 +1316,7 @@ function renderYouthTrend() {
       <span style="margin-left:auto">${md(t.dates[0])} → ${md(t.dates[n - 1])}</span></div>`;
 }
 function renderCatTiles(disc, iss) {
-  $("#y-cat-title").textContent = `${ygroup} 분야별 한눈에`;
+  $("#y-cat-title").textContent = `${ygroup} 분야별 상위 3개`;
   const shopRows = youthShopRows(ygroup);
   const groups = {};
   for (const r of [...disc, ...iss, ...shopRows]) {
@@ -1322,10 +1329,10 @@ function renderCatTiles(disc, iss) {
     const kws = [...groups[c].entries()].sort((a, b) => b[1] - a[1]);
     const items = kws.slice(0, 3).map(([k, v]) => {
       const shop = shopRows.some((r) => r.keyword === k && r.category === c);
-      return `${esc(k)} <span class="dim">${shop && v <= 1 ? "쇼핑" : v.toFixed(1) + "×"}</span>`;
+      return `${esc(k)} <span class="dim">${shop && v <= 1 ? "쇼핑" : v.toFixed(1) + "배"}</span>`;
     });
     return `<button type="button" class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ycat}" data-c="${esc(c)}"><h3><span>${esc(c)}</span><span>${groups[c].size}</span></h3><ol>${items.map((x) => `<li>${x}</li>`).join("")}</ol></button>`;
-  }).join("") || `<p class="empty">${YOUTH ? "분야별 데이터가 아직 없습니다" : "불러오는 중…"}</p>`;
+  }).join("") || `<p class="empty">${YOUTH ? "분야별 데이터가 아직 없어요" : "불러오는 중…"}</p>`;
   $("#y-cats").onclick = (e) => {
     const b = e.target.closest("[data-c]"); if (!b) return;
     ycat = ycat === b.dataset.c ? "" : b.dataset.c; renderYouth();
@@ -1355,10 +1362,10 @@ async function loadYouth() {
 const DIF_AGES = ["10대", "20대", "30대", "40대", "50대", "60대+"];
 const BADGE = { "확산 중": "b-spread", "확산형": "b-spread", "윗세대 상승": "b-up", "확산 대기": "b-wait" };
 const STAGE_CARDS = [
-  { stage: "확산 대기", step: "1단계", desc: "10·20대만 유독 찾는 중", c: "var(--st1)" },
-  { stage: "확산 중", step: "2단계", desc: "윗세대가 따라오기 시작", c: "var(--st2)" },
-  { stage: "윗세대 상승", step: "3단계", desc: "윗세대 관심이 커지는 중", c: "var(--st3)" }];
-const STAGE_OTHERS = [["전 연령 동시", "처음부터 모든 연령이 함께 찾음"], ["상시 관심", "늘 비슷하게 찾음"], ["지나감", "고점이 지나 식는 중"]];
+  { stage: "확산 대기", step: "1단계", desc: "10·20대만 늘었고, 윗세대(40대 이상)는 아직이에요", c: "var(--st1)" },
+  { stage: "확산 중", step: "2단계", desc: "10·20대보다 2주 이상 늦게 윗세대도 늘었어요", c: "var(--st2)" },
+  { stage: "윗세대 상승", step: "3단계", desc: "지금은 윗세대만 늘고 있어요", c: "var(--st3)" }];
+const STAGE_OTHERS = [["전 연령 동시", "모든 연령이 1주 안에 함께 늘어남"], ["상시 관심", "급상승 없이 늘 비슷하게 찾음"], ["지나감", "정점이 지나 줄어드는 중"]];
 const STAGE_ORDER = ["확산 중", "윗세대 상승", "확산 대기", "전 연령 동시", "지나감", "상시 관심"];
 let dsel = null;  // 크게 보는 키워드: { kind: "tracked" | "case", keyword }
 const DIF_FOLD = 8;
@@ -1373,42 +1380,44 @@ function stripSVG(vals, thin) {
   return `<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">${vals.map((v, i) =>
     `<rect x="${(i * w).toFixed(2)}" y="0" width="${(w + 0.05).toFixed(2)}" height="10" fill="var(--accent)" fill-opacity="${thin ? 0.08 : (0.06 + 0.94 * Math.max(0, Math.min(1, v))).toFixed(2)}"/>`).join("")}</svg>`;
 }
-const STAGE_NOTE = { "확산 대기": "아직 10·20대만 — 윗세대는 조용", "전 연령 동시": "모든 연령이 같은 시기에",
-  "지나감": "고점이 지나감", "상시 관심": "뚜렷한 급상승 없이 꾸준함", "동시형": "모든 연령이 1주 안에 함께 뜸", "윗세대 상승": "지금 40대+가 오르는 중" };
+const STAGE_NOTE = { "확산 대기": "10·20대만 늘었고 윗세대는 아직", "전 연령 동시": "모든 연령이 1주 안에 함께 늘어남",
+  "지나감": "정점이 지나 줄어드는 중", "상시 관심": "급상승 없이 늘 비슷하게 찾음", "동시형": "모든 연령이 1주 안에 함께 늘어남", "윗세대 상승": "지금 40대 이상이 늘고 있음" };
 function difWhy(it) {
   // Only 40대+ lags answer "did it spread?"; 30대 sits in between and is noisy on long windows.
   const lags = ["40대", "50대", "60대+"].filter((a) => it.lags?.[a] != null).map((a) => `${a} ${it.lags[a] >= 0 ? "+" : ""}${it.lags[a]}주`).join(" · ");
-  const det = it.detection?.old_takeoff ? ` · 검출 지연: 판정 ${it.detection.verdict == null ? "못 함" : `+${it.detection.verdict}주`} / 누적 판단 ${it.detection.belief == null ? "못 함" : `+${it.detection.belief}주`}` : "";
-  return it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 이미 꾸준히 찾는 중 → 윗세대로 번지는 중"
-    : it.stage === "확산형" ? `20대보다 늦게: ${lags}${det}`
+  const det = it.detection?.old_takeoff ? ` · 윗세대가 늘기 시작한 뒤 알아채기까지: 판정 ${it.detection.verdict == null ? "못 알아챔" : `${it.detection.verdict}주`}, 누적 판단 ${it.detection.belief == null ? "못 알아챔" : `${it.detection.belief}주`}` : "";
+  return it.stage === "윗세대 상승" && it.young_steady ? "10·20대는 전부터 꾸준히 찾았고, 지금 윗세대로 번지는 중"
+    : it.stage === "확산형" ? `20대보다 늦게 늘어남: ${lags}${det}`
     : it.stage === "동시형" ? `${STAGE_NOTE[it.stage]}${det}`
-    : it.old_lag_weeks != null ? `40대+가 ${it.old_lag_weeks}주 뒤 따라옴` : (STAGE_NOTE[it.stage] || "");
+    : it.old_lag_weeks != null ? `40대 이상이 ${it.old_lag_weeks}주 늦게 늘어남` : (STAGE_NOTE[it.stage] || "");
 }
 const difForecast = (it) => Object.entries(it.forecast?.ages || {}).map(([a, f]) => `${a} ${f.weeks_from_now === 0 ? "이번 주" : `약 ${f.weeks_from_now}주 뒤`}`).join(" · ");
 function difTags(it) {
-  const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 증가 (설명용 — 예측력은 '예측이 맞았나'에서 매일 측정)">3주 연속 증가</span>`
-    : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 갑자기 튐 (설명용)">반짝 급등</span>` : "";
+  const mom = it.rising_now ? `<span class="badge b-flat" title="10·20대 검색이 3주 연속 늘었어요. 계속 오른다는 뜻은 아니에요 (적중률은 '예측이 맞았나' 카드).">3주 연속 증가</span>`
+    : it.spiking_now ? `<span class="badge b-flat" title="최근 3일 평균이 그 전 4주보다 1.5배 이상 높아요. 계속 오른다는 뜻은 아니에요.">3일 급등</span>` : "";
   return (it.belief ? beliefBadge(it.belief, it.stage) : "") + mom;
 }
 function difRow(it, from, to) {
   const fc = difForecast(it);
   return `<div class="dif"><div><button type="button" class="dif-k" data-k="${esc(it.keyword)}">${esc(it.keyword)}</button>${catTag(it.category)}
       <div class="tags"><span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span>${difTags(it)}</div><div class="why">${esc(difWhy(it))}</div>
-      ${fc ? `<div class="why" title="윗세대도 시작이 늦은 만큼 늦게 정점 — 과거 유행 검증 오차 평균 약 2.7주"><b>예상 정점</b> ${esc(fc)}</div>` : ""}</div>
+      ${fc ? `<div class="why" title="윗세대는 늘기 시작한 주가 늦은 만큼 정점도 늦다고 보고 계산했어요. 과거 유행에서는 평균 약 2.7주 차이가 났어요."><b>예상 정점</b> ${esc(fc)}</div>` : ""}</div>
     <div class="strip">${DIF_AGES.map((a) => {
       const g = it.ages?.[a]; if (!g) return "";
       return `<span>${a}${g.thin ? "·" : ""}</span>${stripSVG(g.strip, g.thin)}`;
     }).join("")}<div class="axis"><span>${esc(from)}</span><span>${esc(to)}</span></div></div></div>`;
 }
-// 누적 판단(POMDP): 오늘 판정과 같은 국면이면 확신만, 다르면 "판정은 X 인데 믿음은 Y" 를 드러낸다.
+// 누적 판단(POMDP): 국면 이름은 화면의 단계 이름으로 바꿔 보여준다. 오늘 판정과 같으면 확률만, 다르면 누적 판단이 가리키는 단계를 드러낸다.
 const PHASE_OF = { "확산 대기": "청년 상승", "확산 중": "확산", "윗세대 상승": "확산", "전 연령 동시": "전 연령", "지나감": "퇴조", "상시 관심": "휴면" };
+const PHASE_NAME = { "청년 상승": "확산 대기", "확산": "확산 중", "전 연령": "전 연령 동시", "퇴조": "지나감", "휴면": "상시 관심" };
 const PHASE_BADGE = { "청년 상승": "b-wait", "확산": "b-spread" };
 function beliefBadge(b, stage) {
   const pct = Math.round((b.confidence || 0) * 100);
   const agrees = PHASE_OF[stage] === b.phase;
-  const days = b.streak ? `${b.streak}회 연속` : "첫 관측";
-  const tip = `며칠에 걸쳐 갱신한 국면 확률 — ${b.phase} ${pct}% (${days}). ${agrees ? "오늘 판정과 같은 국면" : "오늘 판정과 다름: 아직 며칠 더 봐야 함"}`;
-  return `<span class="badge ${agrees ? "b-flat" : (PHASE_BADGE[b.phase] || "b-flat")}" title="${esc(tip)}">누적 판단 ${esc(b.phase)} ${pct}%${agrees ? "" : " ≠ 판정"}</span>`;
+  const name = agrees ? stage : (PHASE_NAME[b.phase] || b.phase);
+  const days = b.streak ? `${b.streak}회 연속 같은 판단` : "오늘 처음 계산";
+  const tip = `여러 날의 판정을 합쳐 계산한 확률이에요: ${name} ${pct}% (${days}). ${agrees ? "오늘 판정과 같아요." : "오늘 판정과 달라서 며칠 더 지켜봐야 해요."}`;
+  return `<span class="badge ${agrees ? "b-flat" : (PHASE_BADGE[b.phase] || "b-flat")}" title="${esc(tip)}">${agrees ? `누적 판단 ${pct}%` : `누적 판단은 ${esc(name)} ${pct}%`}</span>`;
 }
 function renderFlash() {
   const tracked = new Set(DIF.tracked.items.map((i) => i.keyword));
@@ -1416,7 +1425,7 @@ function renderFlash() {
   const go = $("#d-flash-go");
   if (!a) {
     $("#d-flash-k").textContent = "단계 변화";
-    $("#d-flash-t").textContent = "최근 며칠 사이 단계가 바뀐 키워드는 없어요.";
+    $("#d-flash-t").textContent = "최근 2주 동안 단계가 바뀐 키워드가 없어요.";
     go.hidden = true;
     return;
   }
@@ -1442,7 +1451,7 @@ function renderStages() {
 /** 고른 키워드의 연령 × 주 히트맵. 각 줄은 자기 최고치 기준이라 양이 아니라 "언제"를 비교한다. */
 function renderDifDetail() {
   const it = difItem(), box = $("#d-detail");
-  if (!it) { box.innerHTML = `<p class="empty">추적할 키워드가 아직 없습니다</p>`; return; }
+  if (!it) { box.innerHTML = `<p class="empty">추적 중인 키워드가 아직 없어요</p>`; return; }
   const isCase = dsel.kind === "case";
   const [from, to] = isCase ? it.window : DIF.tracked.period;
   const ages = DIF_AGES.filter((a) => it.ages?.[a]?.strip?.length);
@@ -1453,7 +1462,7 @@ function renderDifDetail() {
   const axis = Array.from({ length: n }, (_, i) => (i === n - 1 || (i % step === 0 && n - 1 - i >= step / 2)) ? tick(i) : "");
   const grow = ["10대", "20대"].filter((a) => it.momentum?.[a]?.growth_3w_pct != null).map((a) => `${a} ${it.momentum[a].growth_3w_pct >= 0 ? "+" : ""}${it.momentum[a].growth_3w_pct}%`).join(" · ");
   const fc = difForecast(it);
-  const note = [difWhy(it), grow ? `최근 3주 ${grow}` : "", fc ? `예상 정점 ${fc}` : ""].filter(Boolean).join(". ");
+  const note = [difWhy(it), grow ? `최근 3주 증가율 ${grow}` : "", fc ? `예상 정점 ${fc}` : ""].filter(Boolean).join(". ");
   const tags = difTags(it) + catTag(it.category);
   box.innerHTML = `
     <div class="det-h">
@@ -1470,49 +1479,49 @@ function renderDifDetail() {
     <div class="legendrow">
       <span>낮음 <i class="ramp"></i> 그 연령의 최고치</span>
       <span><i class="hatch"></i> 검색량이 적어 측정 안 됨</span>
-      <span>각 줄은 자기 최고치 기준 — 양이 아니라&nbsp;<b>언제 뜨는지</b>를 비교해요</span>
+      <span>각 줄은 그 연령의 최고치가 기준이라, 양이 아니라&nbsp;<b>언제 늘었는지</b>를 비교해요</span>
     </div>`;
 }
 function renderAccuracy(a) {
   const box = $("#dif-acc");
-  if (a?.cutoffs) $("#acc-sub").textContent = `과거 ${a.cutoffs}개 시점에서 다시 판정해 보고, 실제로 윗세대가 따라왔는지 채점`;
-  if (!a || !a.waiting) { box.innerHTML = `<p class="empty">채점할 "확산 대기" 판정이 아직 없습니다</p>`; return; }
+  if (a?.cutoffs) $("#acc-sub").textContent = `과거 ${a.cutoffs}개 시점에서 다시 판정하고, 그 뒤 윗세대가 실제로 늘었는지 채점했어요`;
+  if (!a || !a.waiting) { box.innerHTML = `<p class="empty">채점할 "확산 대기" 판정이 아직 없어요</p>`; return; }
   const pct = (x) => x == null ? "–" : `${(x * 100).toFixed(1)}%`;
   const wd = (x) => `${Math.min(100, (x || 0) * 100).toFixed(1)}%`;
   const row = (h) => { const m = a[`${h}w`]; return `<div class="accrow"><b>${h}주 안</b>
       <span class="abar"><i style="width:${wd(m.precision)}"></i></span><span class="v">${pct(m.precision)}</span>
       <span class="abar base"><i style="width:${wd(m.base_rate)}"></i></span><span class="v base">${pct(m.base_rate)}</span></div>`; };
   const l4 = a["4w"].lift, l8 = a["8w"].lift;
-  const fine = [`"확산 대기" 판정 ${a.waiting}건 중 4주 안 ${a["4w"].hits}건 · 8주 안 ${a["8w"].hits}건이 실제로 40대+로 번졌어요.`];
+  const fine = [`"확산 대기" 판정 ${a.waiting}건 중 4주 안에 ${a["4w"].hits}건, 8주 안에 ${a["8w"].hits}건이 실제로 40대 이상으로 번졌어요.`];
   const m = DIF?.tracked?.momentum_accuracy;
-  if (m?.steady?.precision != null) fine.push(`"3주 연속 증가" 후 2주 안에 20%+ 더 오른 비율 ${Math.round(m.steady.precision * 100)}% (${m.steady.flagged}건 · 평균 ${Math.round(m.base_rate * 100)}% → ${m.steady.lift}배). 반짝 급등은 ${m.spike.lift ?? "–"}배 — 1배 근처면 예측력 없음.`);
+  if (m?.steady?.precision != null) fine.push(`"3주 연속 증가" 표시 ${m.steady.flagged}건 중 ${Math.round(m.steady.precision * 100)}%가 2주 뒤 20% 이상 더 올랐어요. 전체 평균 ${Math.round(m.base_rate * 100)}%의 ${m.steady.lift}배예요. "3일 급등"은 ${m.spike.lift ?? "–"}배인데, 1배에 가까우면 예측에 쓸 수 없어요.`);
   const ba = DIF?.tracked?.belief_accuracy, b8 = ba?.["8w"];
   if (ba?.waiting) {
     const pa = ba.alerts, det = DIF?.cases?.detection;
-    fine.push(`누적 판단이 "청년 상승"일 때 8주 안 적중 ${b8?.precision == null ? "–" : Math.round(b8.precision * 100) + "%"} (${b8?.hits ?? 0}/${ba.waiting}건 → ${b8?.lift ?? "–"}배). 주간 판정 흔들림 키워드당 ${ba.flips?.verdict}회 → 누적 판단 ${ba.flips?.belief}회.`);
-    if (pa?.verdict?.alerts) fine.push(`조기 알림(40대+ 조용할 때): 원판정 ${pa.verdict.alerts}건 중 ${pa.verdict.hits} 적중 → 게이트 ${pa.belief.alerts}건 중 ${pa.belief.hits}.`);
-    if (det?.cases) fine.push(`과거 사례 ${det.cases}건 검출 지연 중앙값: 판정 +${det.verdict ?? "–"}주 / 누적 판단 +${det.belief ?? "–"}주.`);
+    fine.push(`누적 판단이 "확산 대기"였던 ${ba.waiting}건 중 ${b8?.hits ?? 0}건(${b8?.precision == null ? "–" : Math.round(b8.precision * 100) + "%"})이 8주 안에 번졌어요. 무작위의 ${b8?.lift ?? "–"}배예요. 키워드 하나에서 판정은 평균 ${ba.flips?.verdict}번, 누적 판단은 ${ba.flips?.belief}번 바뀌었어요.`);
+    if (pa?.verdict?.alerts) fine.push(`윗세대가 늘기 전에 보낸 알림은, 판정만 쓰면 ${pa.verdict.alerts}건 중 ${pa.verdict.hits}건이 맞았고 누적 판단이 같을 때만 보내면 ${pa.belief.alerts}건 중 ${pa.belief.hits}건이 맞았어요.`);
+    if (det?.cases) fine.push(`과거 유행 ${det.cases}건에서 윗세대가 늘기 시작한 뒤 알아채기까지 걸린 시간(중앙값)은 판정 ${det.verdict ?? "–"}주, 누적 판단 ${det.belief ?? "–"}주예요.`);
   }
   const model = DIF?.tracked?.model;
-  if (model) fine.push(`모델 학습 수열 ${model.sequences ?? 0}개${model.label_locked ? " · 재학습 보류(초기값 유지)" : ""}.`);
+  if (model) fine.push(`누적 판단은 키워드별 판정 기록 ${model.sequences ?? 0}개로 학습했어요.${model.label_locked ? " 학습 결과가 단계 뜻과 어긋나서 처음 설정값을 그대로 써요." : ""}`);
   const un = DIF?.tracked?.accuracy_unadjusted?.["8w"];
-  fine.push(`키워드 ${a.keywords}개 · ${a.history[0]} ~ ${a.history[1]} · 판정 시점 ${a.cutoffs}개 (그중 윗세대 조용 ${a.quiet}). 계절 보정 적용${un?.lift ? ` (미적용 시 8주 ${un.lift}배)` : ""}.`);
+  fine.push(`키워드 ${a.keywords}개를 ${a.history[0]} ~ ${a.history[1]} 사이 ${a.cutoffs}개 시점에서 판정했고, 그중 윗세대가 아직 늘지 않은 ${a.quiet}개 시점만 채점했어요. 방학·명절처럼 해마다 반복되는 증가는 빼고 계산했어요${un?.lift ? ` (빼지 않으면 8주 안 ${un.lift}배)` : ""}.`);
   box.innerHTML = `<div class="accrows">${row(4)}${row(8)}</div>
-    <div class="keyrow"><span><i class="sw" style="background:var(--accent)"></i>"번진다"고 판정했을 때 적중</span><span><i class="sw" style="background:var(--gray)"></i>아무거나 골랐을 때 (기본 확률)</span></div>
-    <p class="callout">"번진다"고 본 판정의 적중률은 무작위의 <b>${l4 ?? "–"}배</b>(4주 안) · <b>${l8 ?? "–"}배</b>(8주 안)예요. 1배면 예측력이 없다는 뜻이고, 표본이 작아 참고용이에요.</p>
-    <details class="fine"><summary>채점 세부</summary><ul>${fine.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>`;
+    <div class="keyrow"><span><i class="sw" style="background:var(--accent)"></i>"확산 대기" 판정 중 실제로 번진 비율</span><span><i class="sw" style="background:var(--gray)"></i>무작위로 골랐을 때 번진 비율</span></div>
+    <p class="callout">"확산 대기" 판정은 무작위로 고른 것보다 <b>${l4 ?? "–"}배</b>(4주 안) · <b>${l8 ?? "–"}배</b>(8주 안) 더 맞았어요. 1배면 무작위와 같고, 표본이 작아서 참고용이에요.</p>
+    <details class="fine"><summary>채점 세부 보기</summary><ul>${fine.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>`;
 }
 function renderCases() {
   const items = DIF.cases?.items || [];
-  if (items.length) $("#case-sub").textContent = `같은 방법으로 계산한 실제 유행 ${items.length}개 — 누르면 위에 연령별 흐름이 보여요`;
-  const groups = [["확산형", "spread", "젊은 층 → 몇 주~몇 년 뒤 윗세대"], ["동시형", "same", "모든 연령이 거의 같은 때 뜸"]];
+  if (items.length) $("#case-sub").textContent = `실제 유행 ${items.length}개를 같은 방법으로 계산했어요. 누르면 위에 연령별 흐름이 보여요.`;
+  const groups = [["확산형", "spread", "10·20대가 먼저 늘고, 윗세대는 몇 주~몇 년 뒤에 늘어남"], ["동시형", "same", "모든 연령이 1주 안에 함께 늘어남"]];
   const known = new Set(groups.map((g) => g[0]));
   for (const s of new Set(items.map((i) => i.stage))) if (!known.has(s)) groups.push([s, "", STAGE_NOTE[s] || ""]);
   $("#dif-cases").innerHTML = groups.map(([stage, cls, desc]) => {
     const its = items.filter((i) => i.stage === stage);
     return its.length ? `<div class="casebox ${cls}"><header><b>${esc(stage)}</b><span>${esc(desc)}</span></header>
       <div class="wchips">${its.map((i) => `<button type="button" data-case="${esc(i.keyword)}" aria-pressed="${isSel("case", i.keyword)}">${esc(i.keyword)}</button>`).join("")}</div></div>` : "";
-  }).join("") || `<p class="empty">사례 계산 중입니다</p>`;
+  }).join("") || `<p class="empty">사례를 계산하는 중이에요</p>`;
 }
 const ALERT_KIND = { stage: "단계", youth: "10·20대", forecast: "예상", watchlist: "관심" };
 function renderAlerts() {
@@ -1540,10 +1549,10 @@ function renderDiffusion() {
     dsel = first ? { kind: "tracked", keyword: first.keyword } : null;
   }
   renderFlash(); renderStages(); renderDifDetail(); renderAccuracy(t.accuracy); renderCases(); renderAlerts();
-  $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${md(s)}–${md(e)} — 이름을 누르면 위에 크게 보여요`;
+  $("#dif-sub").textContent = `10·20대가 유독 찾는 키워드 ${t.items.length}개 · ${md(s)}–${md(e)} · 이름을 누르면 위에 연령별 흐름이 보여요`;
   renderCatChips($("#d-cchips"), t.items, dcat, (c) => { dcat = c; renderDiffusion(); });
   const rows = byCat(t.items, dcat);
-  $("#dif-now").innerHTML = rows.slice(0, dall ? rows.length : DIF_FOLD).map((it) => difRow(it, md(s), md(e))).join("") || `<p class="empty">추적할 키워드가 아직 없습니다</p>`;
+  $("#dif-now").innerHTML = rows.slice(0, dall ? rows.length : DIF_FOLD).map((it) => difRow(it, md(s), md(e))).join("") || `<p class="empty">추적 중인 키워드가 아직 없어요</p>`;
   $("#dif-more").hidden = rows.length <= DIF_FOLD;
   $("#dif-more").textContent = dall ? "접기" : `더보기 (${rows.length}개)`;
 }
@@ -1568,7 +1577,7 @@ function renderTransfer() {
   if (!names.length) { card.hidden = true; return; }
   card.hidden = false;
   const pct = (v) => `${Math.round(v * 100)}%`;
-  const label = { "유행": "유행", "일반": "일반 이슈" };
+  const label = { "유행": "번진 키워드", "일반": "그 밖의 키워드" };
   const rows = t.ages.map((age) => {
     const cells = names.map((n) => {
       const k = t.groups[n].ages[age];
@@ -1581,23 +1590,23 @@ function renderTransfer() {
   $("#transfer").innerHTML = `
     <div class="hscroll"><table class="xt"><thead>
       <tr><th></th>${names.map((n) => `<th colspan="3">${label[n]} (${t.groups[n].n_keywords}건)</th>`).join("")}</tr>
-      <tr><th></th>${names.map(() => `<th>시차</th><th>전달</th><th>같은 주</th>`).join("")}</tr>
+      <tr><th></th>${names.map(() => `<th>평균 시차</th><th>전달 크기</th><th>같은 주 비율</th>`).join("")}</tr>
     </thead><tbody>${rows}</tbody></table></div>
     ${names.map((n) => { const st = t.groups[n].stability; return st
-      ? `<p class="note" style="margin-top:10px">${label[n]}: 키워드를 하나씩 빼고 다시 재면 40대 전달이 ${st.gain[0]}~${st.gain[1]},
-         같은 주 비율이 ${pct(st.instant_share[0])}~${pct(st.instant_share[1])} 사이에서 움직입니다 (표본 ${t.groups[n].n_keywords}건)</p>` : ""; }).join("")}
-    ${c ? `<p class="note" style="margin-top:10px">유행은 ${pct(c.fad_instant)}만 같은 주에 함께 움직이고 나머지는 시차를 두고 넘어갑니다 —
-      일반 이슈는 ${pct(c.plain_instant)}가 같은 주입니다. <b>전달</b>은 20대 파도의 모양이 그 연령에서 얼마나 재현되는지로,
-      시차와 달리 단계 판정에 쓰이지 않은 정보입니다.
-      ${c.separated ? (c.separated.gain
-        ? " 키워드를 하나씩 빼봐도 두 집단의 전달 범위는 겹치지 않습니다."
-        : " 다만 키워드를 하나 빼면 두 집단의 전달 범위가 겹칩니다 — 아직 표본이 얇습니다.") : ""}</p>` : ""}`;
+      ? `<p class="note" style="margin-top:10px">${label[n]} ${t.groups[n].n_keywords}건에서 키워드를 하나씩 빼고 다시 재면,
+         40대 전달 크기는 ${st.gain[0]}~${st.gain[1]}, 같은 주 비율은 ${pct(st.instant_share[0])}~${pct(st.instant_share[1])}예요.</p>` : ""; }).join("")}
+    <p class="note" style="margin-top:10px"><b>평균 시차</b>는 20대가 변한 뒤 그 연령이 변하기까지 걸린 주 수, <b>전달 크기</b>는 20대의 변화가 그 연령에서
+      어느 크기로 다시 나타나는지, <b>같은 주 비율</b>은 그 반응 중 같은 주에 나타난 몫이에요. 전달 크기는 단계 판정에 쓰지 않은 값이에요.</p>
+    ${c ? `<p class="note" style="margin-top:10px">번진 키워드는 윗세대 반응의 ${pct(c.fad_instant)}만 같은 주에 나타나고,
+      그 밖의 키워드는 ${pct(c.plain_instant)}가 같은 주에 나타나요.${c.separated ? (c.separated.gain
+        ? " 키워드를 하나씩 빼도 두 집단의 전달 크기 범위가 겹치지 않아요."
+        : " 키워드 하나를 빼면 두 집단의 전달 크기 범위가 겹쳐서, 표본이 아직 적어요.") : ""}</p>` : ""}`;
 }
 
 // ---- init ---------------------------------------------------------------------------
 (async function init() {
   META = await api("api/meta");
-  if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모 모드 — 녹화된 샘플 데이터로 동작 중입니다.</div>`;
+  if (META.offline) $("#banner").innerHTML = `<div class="banner">오프라인 데모예요. 저장해 둔 샘플 데이터를 보여줘요.</div>`;
   if (STATIC) $("#kwrow").hidden = true;
   else $("#refresh").onclick = () => view === "country" ? loadCountry(true) : null;
   try { region = localStorage.getItem("te.region") || region; group = localStorage.getItem("te.group") || group; } catch (_) {}
