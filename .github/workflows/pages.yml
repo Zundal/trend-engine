@@ -3,8 +3,10 @@
 name: Deploy dashboard
 
 on:
+  # GitHub 는 부하가 크면 스케줄 이벤트를 늦추거나 버린다 (2026-10-12 부터 하루 24회 중 3~6회만 실행됨).
+  # 그래서 시간당 4번 기회를 주고, 실제 수집 간격은 gate 잡이 45분 이상으로 묶는다 — 업스트림 호출은 매시 수준 그대로.
   schedule:
-    - cron: "7 * * * *"  # 매시 7분 (UTC)
+    - cron: "7,22,37,52 * * * *"  # UTC
   push:
     branches: [main]
   workflow_dispatch:
@@ -26,7 +28,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 스케줄 실행만: 직전 수집(스냅샷 캐시 저장)이 45분 안이면 건너뛴다. push·수동 실행은 항상 수집.
+  # 확인이 실패하면 수집한다 (게이트 때문에 사이트가 조용히 멈추면 안 됨).
+  gate:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          age=$(gh cache list -R "${{ github.repository }}" --key trend-db- --sort created_at --order desc --limit 1 --json createdAt \
+                  -q '.[0].createdAt | sub("\\.[0-9]+"; "") | now - fromdateiso8601 | floor') || age=""
+          if [ "$EVENT" = "schedule" ] && [ -n "$age" ] && [ "$age" -lt 2700 ]; then go=false; else go=true; fi
+          echo "event=$EVENT last_collect_age=${age:-unknown}s go=$go"
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -113,8 +137,8 @@ jobs:
 
   # 조용한 실패 방지: 문제가 있으면 실행을 빨간불로 + 경고 이슈 1개를 열고(이후엔 내용만 갱신), 복구되면 자동으로 닫는다.
   alert:
-    needs: [build, deploy]
-    if: always()
+    needs: [gate, build, deploy]
+    if: always() && needs.gate.outputs.go != 'false'  # 게이트가 건너뛴 실행은 판정하지 않는다 (게이트 자체가 죽으면 판정)
     runs-on: ubuntu-latest
     steps:
       - name: Open, update or close the warning issue
