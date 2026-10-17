@@ -91,7 +91,7 @@ button:disabled { opacity: .5; cursor: progress; }
 h1 { margin: 0; font-size: 34px; line-height: 1.25; letter-spacing: -.02em; font-weight: 700; text-wrap: pretty; }
 h1 em, h2 em, h3 em { font-style: normal; color: var(--accent-ink); }
 /* 한국어는 음절마다 줄이 바뀔 수 있어, 제목과 설명문은 낱말 단위로만 끊는다 */
-h1, h2, h3, .card-h, .sec-t, .howto, .note, .flash-t, .callout, .others, .notify, .det-h p, .quote, .legendrow, .vs p { word-break: keep-all; overflow-wrap: break-word; }
+h1, h2, h3, .card-h, .sec-t, .howto, .note, .flash-t, .callout, .others, .notify, .det-h p, .quote, .legendrow, .vs p, .gl-b small, .gl-sub { word-break: keep-all; overflow-wrap: break-word; }
 .seg { display: flex; background: var(--seg); border-radius: 10px; padding: 4px; gap: 4px; }
 .seg button { border: 0; border-radius: 7px; padding: 0 18px; min-height: 40px; font-size: 14px; background: transparent; color: var(--muted); cursor: pointer; }
 .seg button[aria-pressed="true"] { font-weight: 600; background: var(--seg-on); color: var(--ink); box-shadow: 0 1px 2px rgba(16, 18, 23, .12); }
@@ -142,6 +142,39 @@ svg.mini { width: 54px; height: 14px; vertical-align: middle; margin-left: 6px; 
 .cchip { border: 1px solid var(--edge); background: var(--panel); color: var(--ink2); border-radius: 999px; padding: 0 12px; min-height: 32px; font-size: 13px; cursor: pointer; }
 .cchip[aria-pressed="true"] { background: var(--on); border-color: var(--on); color: var(--on-ink); font-weight: 600; }
 .cchip .k { opacity: .65; margin-left: 4px; font-family: var(--mono); font-size: 12px; }
+
+/* 한눈에 */
+.gl-brief { list-style: none; margin: 0; padding: 4px 28px; border-radius: 16px; background: var(--inv); color: var(--inv-ink); }
+.gl-brief > li { border-top: 1px solid var(--inv-line); }
+.gl-brief > li:first-child { border-top: 0; }
+.gl-brief > li.empty { padding: 18px 0; color: var(--inv-muted); }
+.gl-b { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 4px 20px; align-items: baseline; width: 100%; padding: 18px 0; border: 0; background: none; color: inherit; text-align: left; }
+button.gl-b { cursor: pointer; }
+.gl-b .kicker { color: var(--inv-accent); }
+.gl-b > span:last-child { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gl-b b { font-size: 21px; font-weight: 700; letter-spacing: -.01em; overflow-wrap: anywhere; }
+button.gl-b:hover b { color: var(--inv-accent); }
+.gl-b small { font-size: 14px; color: var(--inv-ink2); }
+.gl-wv { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.gl-wv button { border: 0; background: none; padding: 0; color: var(--inv-ink2); font-size: 14px; text-align: left; cursor: pointer; }
+.gl-wv button b { font-size: 17px; margin-left: 4px; color: var(--inv-ink); }
+.gl-wv button:hover b { color: var(--inv-accent); }
+.gl-rows, .gl-mini { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.gl-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; min-height: 60px; padding: 12px 8px; border: 0; border-top: 1px solid var(--hair); background: none; text-align: left; cursor: pointer; }
+.gl-rows li:first-child .gl-row, .gl-mini li:first-child button { border-top: 0; }
+.gl-row:hover { background: var(--soft); }
+.gl-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.gl-k { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.gl-k b { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.gl-k .ctag { margin-left: 0; }
+.gl-sub { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gl-x { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font: 600 14px var(--mono); color: var(--accent-ink); white-space: nowrap; }
+.gl-row:hover .gl-k b, .gl-mini button:hover b { color: var(--accent-ink); }
+.gl-world { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 20px; }
+.gl-mini button { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 10px; width: 100%; padding: 10px 0; border: 0; border-top: 1px solid var(--hair); background: none; text-align: left; cursor: pointer; }
+.gl-mini button > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gl-mini b { font-weight: 600; overflow-wrap: anywhere; }
+.gl-mini small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* 10·20대 */
 .lead { gap: 20px; }
@@ -402,6 +435,12 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   .chip { flex: none; padding: 0 16px; }
   .card, .card.sm { padding: 18px 16px; gap: 12px; }
   .card h3 { font-size: 16px; }
+  .gl-brief { padding: 2px 16px; }
+  .gl-b { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 16px 0; }
+  .gl-b b { font-size: 19px; }
+  .gl-row { grid-template-columns: 16px minmax(0, 1fr); gap: 6px 10px; padding: 12px 0; }
+  .gl-x { grid-column: 2; flex-direction: row; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
+  .gl-world { gap: 14px; }
   .vs > div { padding: 18px 16px; }
   .lead { background: none; box-shadow: none; padding: 0; gap: 14px; border-radius: 0; }
   .top1 { background: var(--inv); color: var(--inv-ink); border: 0; border-radius: 16px; padding: 22px; gap: 6px; }
@@ -445,12 +484,13 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 <body>
 <header class="top">
   <div class="top-in">
-    <a class="brand" href="#youth" data-view="youth">
+    <a class="brand" href="#glance" data-view="glance">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#FB923C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h5l3-9 5 14 4-10 2 5h5"></path></svg>
       <span>Trend Engine</span>
     </a>
     <nav class="tabs" aria-label="화면">
-      <a class="tab" id="tab-youth" href="#youth" data-view="youth" aria-current="page"><b>10·20대</b><span>30대 이상보다 유독 찾는 것</span></a>
+      <a class="tab" id="tab-glance" href="#glance" data-view="glance" aria-current="page"><b>한눈에</b><span>오늘의 트렌드 정리</span></a>
+      <a class="tab" id="tab-youth" href="#youth" data-view="youth"><b>10·20대</b><span>30대 이상보다 유독 찾는 것</span></a>
       <a class="tab" id="tab-diffusion" href="#diffusion" data-view="diffusion"><b>세대 확산</b><span>윗세대로 번지나</span></a>
       <a class="tab" id="tab-country" href="#country" data-view="country"><b>나라별</b><span>지금 뜨는 이슈</span></a>
       <a class="tab" id="tab-age" href="#age" data-view="age"><b>전체 연령</b><span>연령·성별 비교</span></a>
@@ -460,8 +500,58 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 </header>
 <div id="banner"></div>
 
+<!-- 한눈에 -->
+<main id="view-glance" class="view">
+  <div class="intro">
+    <section class="hero">
+      <div class="hero-t">
+        <p class="eyebrow">검색 급상승 · 실시간 이슈 · 연령별 검색량을 한 화면에</p>
+        <h1>지금 뜨는 것, <em>한눈에</em></h1>
+      </div>
+    </section>
+    <div class="warn" id="g-warn" hidden>샘플 데이터예요. 실제 값이 아니에요.</div>
+  </div>
+
+  <section class="sec" aria-labelledby="gl-s1">
+    <header class="sec-h"><div class="sec-t"><h2 id="gl-s1">오늘 요약</h2><p>탭마다 맨 위에 있는 것을 모았어요. 줄을 누르면 그 탭으로 가요.</p></div></header>
+    <ul class="gl-brief" id="gl-brief"><li class="empty">불러오는 중…</li></ul>
+  </section>
+
+  <section class="sec" aria-labelledby="gl-s2">
+    <header class="sec-h"><div class="sec-t"><h2 id="gl-s2">한국에서 뜨는 이슈</h2><p>무슨 일인지 한 줄씩 붙였어요. 오른쪽 배수는 그 연령이 전체 평균보다 몇 배 찾는지예요.</p></div></header>
+    <section class="card" aria-labelledby="gl-s2"><ol class="gl-rows" id="gl-issues"><li class="empty">불러오는 중…</li></ol></section>
+  </section>
+
+  <section class="sec" aria-labelledby="gl-s3">
+    <header class="sec-h"><div class="sec-t"><h2 id="gl-s3">세대별로 보기</h2><p>10·20대가 먼저 찾는 것과, 그중 윗세대(40대 이상)로 번지는 것</p></div></header>
+    <div class="grid2">
+      <section class="card" aria-labelledby="gl-yh">
+        <div class="card-h"><h3 id="gl-yh">10·20대가 유독 찾는 것</h3><span>30대 이상 대비 배수예요. 같은 대상은 한 줄로 묶었어요.</span></div>
+        <ol class="gl-rows" id="gl-youth"><li class="empty">불러오는 중…</li></ol>
+      </section>
+      <section class="card" aria-labelledby="gl-dh">
+        <div class="card-h"><h3 id="gl-dh">윗세대로 번지는 중</h3><span>10·20대보다 늦게 40대 이상도 늘어난 키워드예요</span></div>
+        <ol class="gl-rows" id="gl-spread"><li class="empty">불러오는 중…</li></ol>
+        <p class="note" id="gl-wait" hidden></p>
+      </section>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="gl-s4">
+    <header class="sec-h"><div class="sec-t"><h2 id="gl-s4">다른 나라에서 뜨는 것</h2><p>나라마다 지금 순위 상위 3개예요. 누르면 그 나라 순위로 가요.</p></div></header>
+    <div class="gl-world" id="gl-world"><p class="empty">불러오는 중…</p></div>
+  </section>
+
+  <section class="howto" aria-labelledby="g-how">
+    <h2 id="g-how">읽는 법</h2>
+    <p><b>40대 1.8배</b> — 이슈 줄의 배수는 그 연령의 검색 비중이 전체 평균의 몇 배인지예요. 1.2배 이상인 연령만 적어요.</p>
+    <p><b>10대 11.0배</b> — 10·20대 줄의 배수는 30대 이상 대비예요. 검색한 사람 수의 비율이 아니에요.</p>
+    <p><b>윗세대</b> — 40대 이상이에요. 10·20대보다 2주 이상 늦게 늘면 번지는 중으로 봐요.</p>
+  </section>
+</main>
+
 <!-- 10·20대 -->
-<main id="view-youth" class="view">
+<main id="view-youth" class="view" hidden>
   <div class="intro">
     <section class="hero">
       <div class="hero-t">
@@ -740,7 +830,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const BASIC_SEGS = ["10대", "20대", "30대", "40대", "50대", "60대+", "남성", "여성"];
 const HIDDEN_REGIONS = new Set(["KR-11", "KR-26"]); // 서울·부산은 나라 탭에서 제외
 let META = null, REPORT = null, SEG = null;
-let view = "youth", region = "KR", group = "20대", selected = null, showAll = false;
+let view = "glance", region = "KR", group = "20대", selected = null, showAll = false;
 let cperiod = "live", aperiod = "week", yperiod = "now", ygroup = "10대";
 const YGROUPS = ["10대", "20대", "10대 여성", "10대 남성", "20대 여성", "20대 남성"];
 let YOUTH = null, YPER = null, DIF = null, ALERTS = null, YTREND = null;
@@ -848,21 +938,150 @@ async function api(path, opts) {
 // ---- routing: #country/KR, #age/20대 -------------------------------------------------
 function readHash() {
   const [v, arg, p] = decodeURIComponent(location.hash.slice(1)).split("/");
-  if (v === "diffusion") { view = "diffusion"; }
+  if (v === "glance") { view = "glance"; }
+  else if (v === "diffusion") { view = "diffusion"; }
   else if (v === "youth") { view = "youth"; if (YGROUPS.includes(arg)) ygroup = arg; if (p === "now" || PLABEL[p]) yperiod = p; }
   else if (v === "age") { view = "age"; if (BASIC_SEGS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
   else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; }
 }
 function writeHash() {
-  const h = view === "diffusion" ? "#diffusion" : view === "youth" ? `#youth/${ygroup}/${yperiod}` : view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
+  const h = view === "glance" ? "#glance" : view === "diffusion" ? "#diffusion" : view === "youth" ? `#youth/${ygroup}/${yperiod}` : view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
   if (location.hash !== h) history.replaceState(null, "", h);
 }
 function setView(v) {
   view = v; writeHash();
   for (const t of $$(".tab")) { if (t.dataset.view === v) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); }
-  for (const name of ["youth", "diffusion", "country", "age"]) $(`#view-${name}`).hidden = name !== v;
+  for (const name of ["glance", "youth", "diffusion", "country", "age"]) $(`#view-${name}`).hidden = name !== v;
   $("#refresh").hidden = STATIC || v !== "country";
-  if (v === "youth") loadYouth(); else if (v === "diffusion") loadDiffusion(); else if (v === "country") loadCountry(); else loadAge();
+  if (v === "glance") loadGlance(); else if (v === "youth") loadYouth(); else if (v === "diffusion") loadDiffusion(); else if (v === "country") loadCountry(); else loadAge();
+}
+
+// ---- 한눈에: 탭마다 맨 위에 있는 것을 한 화면에 (새로 재지 않고, 탭들이 받는 데이터를 그대로 쓴다) ----------
+const GL = { reports: {}, fail: {} };
+const YOUNG = ["10대", "20대"];
+const glWait = (k) => esc(GL.fail[k] || "불러오는 중…");
+const glTop = (rep, n) => (rep?.themes?.length ? rep.themes : rep?.clusters || []).slice(0, n);
+/** 무슨 일인지: 이야기의 대표 묶음에 붙은 첫 제목 (나라별 상세의 인용과 같은 것) */
+function glLead(t) {
+  const c = t.members?.[0] || t;
+  return c.related?.[0] || c.mentions?.[0] || "";
+}
+/** 전체 평균의 1.2배 이상인 연령을 큰 순서로 두 개까지 */
+function whoMore(labels) {
+  const aff = segAffinity(labels);
+  return DIF_AGES.filter((a) => aff?.[a] >= 120).sort((a, b) => aff[b] - aff[a]).slice(0, 2).map((a) => `${a} ${(aff[a] / 100).toFixed(1)}배`);
+}
+/** 10대·20대 순위를 합치고, 한 이름이 다른 이름을 품으면(우사기 ⊂ 우사기인형) 배수가 큰 줄에 묶는다 */
+function youthMerged() {
+  const norm = (s) => s.toLowerCase().replace(/\s+/g, "");
+  const rows = new Map();
+  for (const g of YOUNG) {
+    for (const r of YOUTH?.discover.groups[g] || []) {
+      if (!rows.has(r.keyword)) rows.set(r.keyword, { keyword: r.keyword, kind: r.kind, x: {} });
+      rows.get(r.keyword).x[g] = r.vs_older;
+    }
+  }
+  const best = (r) => Math.max(...Object.values(r.x));
+  const out = [];
+  for (const r of [...rows.values()].sort((a, b) => best(b) - best(a))) {
+    const k = norm(r.keyword);
+    const host = out.find((o) => { const h = norm(o.keyword); return Math.min(h.length, k.length) >= 2 && (k.includes(h) || h.includes(k)); });
+    if (host) host.with.push(r.keyword); else out.push({ ...r, with: [] });
+  }
+  return out;
+}
+const youthX = (r) => YOUNG.filter((g) => r.x[g]).map((g) => `${g} ${r.x[g].toFixed(1)}배`);
+const SPREAD = ["확산 중", "윗세대 상승"];
+/** 윗세대로 번지는 키워드. 윗세대가 먼저 늘었다는 시차(음수)는 "늦게 늘었다"는 판정과 맞지 않아 뺀다. */
+const spreading = () => (DIF?.tracked.items || []).filter((it) => SPREAD.includes(it.stage) && !(it.old_lag_weeks < 0))
+  .sort((a, b) => SPREAD.indexOf(a.stage) - SPREAD.indexOf(b.stage));
+const foreign = () => countries().filter((r) => r.code !== "KR");
+
+function renderGlanceBrief() {
+  const rows = [];
+  const kr = glTop(GL.reports.KR, 1)[0];
+  if (kr) rows.push(`<button type="button" class="gl-b" data-go="country" data-r="KR" data-k="${esc(kr.key)}"><span class="kicker">한국 1위 이슈</span>
+    <span><b>${esc(kr.label)}</b>${glLead(kr) ? `<small>${esc(glLead(kr))}</small>` : ""}</span></button>`);
+  const y = YOUTH && youthMerged()[0];
+  if (y) rows.push(`<button type="button" class="gl-b" data-go="youth" data-g="${y.x["10대"] >= (y.x["20대"] || 0) ? "10대" : "20대"}"><span class="kicker">10·20대가 유독 찾는 것</span>
+    <span><b>${esc(y.keyword)}</b><small>${esc(youthX(y).join(" · "))} (30대 이상 대비)</small></span></button>`);
+  const s = spreading()[0];
+  if (s) rows.push(`<button type="button" class="gl-b" data-go="diffusion" data-k="${esc(s.keyword)}"><span class="kicker">윗세대로 번지는 중</span>
+    <span><b>${esc(s.keyword)}</b><small>${esc(difWhy(s))}</small></span></button>`);
+  const w = foreign().map((r) => [r, glTop(GL.reports[r.code], 1)[0]]).filter(([, t]) => t);
+  if (w.length) rows.push(`<div class="gl-b"><span class="kicker">다른 나라 1위</span><span class="gl-wv">${w.map(([r, t]) =>
+    `<button type="button" data-go="country" data-r="${esc(r.code)}" data-k="${esc(t.key)}">${esc(r.name)}<b>${esc(t.label)}</b></button>`).join("")}</span></div>`);
+  $("#gl-brief").innerHTML = rows.map((x) => `<li>${x}</li>`).join("") || `<li class="empty">${glWait("KR")}</li>`;
+}
+function renderGlanceIssues() {
+  const rep = GL.reports.KR;
+  $("#gl-issues").innerHTML = !rep ? `<li class="empty">${glWait("KR")}</li>` : glTop(rep, 5).map((t, i) => {
+    const c = t.members?.[0] || t;
+    const who = whoMore([t.label, c.label, ...(t.members || []).slice(1).map((m) => m.label)]);
+    const lead = glLead(t);
+    return `<li><button type="button" class="gl-row" data-go="country" data-r="KR" data-k="${esc(t.key)}">
+      <span class="n">${i + 1}</span>
+      <span class="gl-main"><span class="gl-k"><b>${esc(t.label)}</b>${t.category !== "기타" ? catTag(t.category) : ""}</span>${lead ? `<span class="gl-sub">${esc(lead)}</span>` : ""}</span>
+      <span class="gl-x">${who.map((w) => `<span>${esc(w)}</span>`).join("")}</span></button></li>`;
+  }).join("") || `<li class="empty">데이터가 없어요</li>`;
+}
+function renderGlanceYouth() {
+  $("#gl-youth").innerHTML = !YOUTH ? `<li class="empty">${glWait("youth")}</li>` : youthMerged().slice(0, 6).map((r, i) => `<li>
+    <button type="button" class="gl-row" data-go="youth" data-g="${r.x["10대"] >= (r.x["20대"] || 0) ? "10대" : "20대"}">
+      <span class="n">${i + 1}</span>
+      <span class="gl-main"><span class="gl-k"><b>${esc(r.keyword)}</b>${r.kind ? `<span class="tag ${KIND_TAG[r.kind] || ""}">${esc(r.kind)}</span>` : ""}</span>${
+        r.with.length ? `<span class="gl-sub">${esc(r.with.join(" · "))} 포함</span>` : ""}</span>
+      <span class="gl-x">${youthX(r).map((x) => `<span>${esc(x)}</span>`).join("")}</span></button></li>`).join("")
+    || `<li class="empty">10·20대가 유독 찾는 키워드가 아직 없어요</li>`;
+}
+function renderGlanceSpread() {
+  $("#gl-spread").innerHTML = !DIF ? `<li class="empty">${glWait("diffusion")}</li>` : spreading().slice(0, 5).map((it, i) => {
+    const fc = difForecast(it);
+    return `<li><button type="button" class="gl-row" data-go="diffusion" data-k="${esc(it.keyword)}">
+      <span class="n">${i + 1}</span>
+      <span class="gl-main"><span class="gl-k"><b>${esc(it.keyword)}</b><span class="badge ${BADGE[it.stage]}">${esc(it.stage)}</span></span>
+        <span class="gl-sub">${esc(difWhy(it))}${fc ? ` · 예상 정점 ${esc(fc)}` : ""}</span></span>
+      <span class="gl-x"></span></button></li>`;
+  }).join("") || `<li class="empty">지금 윗세대로 번지는 키워드가 없어요</li>`;
+  const wait = (DIF?.tracked.items || []).filter((it) => it.stage === "확산 대기").length;
+  $("#gl-wait").hidden = !wait;
+  $("#gl-wait").textContent = `다음 후보: 10·20대만 늘고 윗세대는 아직인 키워드가 ${wait}개예요 (세대 확산 탭).`;
+}
+function renderGlanceWorld() {
+  $("#gl-world").innerHTML = foreign().map((r) => {
+    const rep = GL.reports[r.code];
+    const rows = !rep ? `<li class="empty">${glWait(r.code)}</li>` : glTop(rep, 3).map((t, i) => `<li>
+      <button type="button" data-go="country" data-r="${esc(r.code)}" data-k="${esc(t.key)}"><span class="n">${i + 1}</span>
+        <span><b>${esc(t.label)}</b>${glLead(t) ? `<small>${esc(glLead(t))}</small>` : ""}</span></button></li>`).join("")
+      || `<li class="empty">데이터가 없어요</li>`;
+    return `<section class="card sm"><h3>${esc(r.name)}</h3><ol class="gl-mini">${rows}</ol></section>`;
+  }).join("") || `<p class="empty">다른 나라 데이터가 없어요</p>`;
+}
+function renderGlance() {
+  $("#g-warn").hidden = !(YOUTH?.discover.synthetic || DIF?.tracked.synthetic || SEG?.synthetic);
+  renderGlanceBrief(); renderGlanceIssues(); renderGlanceYouth(); renderGlanceSpread(); renderGlanceWorld();
+}
+async function loadGlance() {
+  renderGlance();
+  const get = (k, path, keep) => api(path).then(keep, (e) => { GL.fail[k] = e.message; }).then(renderGlance);
+  const jobs = [];
+  for (const r of [{ code: "KR" }, ...foreign()]) {
+    if (!GL.reports[r.code]) jobs.push(get(r.code, `api/report?region=${r.code}`, (d) => { GL.reports[r.code] = d; }));
+  }
+  // 이슈 줄의 "누가 유독 찾나"는 나라별 상세와 같은 연령 응답을 쓴다 (실패해도 줄은 그대로)
+  if (!SEG && !SEG_TRIED) { SEG_TRIED = true; jobs.push(get("seg", "api/segments?region=KR&top=14", (d) => { SEG = d; })); }
+  if (!YOUTH) jobs.push(get("youth", "api/youth", (d) => { YOUTH = d; }));
+  if (!DIF) jobs.push(get("diffusion", "api/diffusion", (d) => { DIF = d; }));
+  await Promise.all(jobs);
+  setStamp();
+}
+/** 한눈에의 줄을 누르면 그 항목이 열린 채로 해당 탭으로 간다 */
+function glanceGo(d) {
+  if (d.go === "country") { region = d.r; cperiod = "live"; ccat = ""; showAll = false; wantKey = d.k; renderRegions(); }
+  else if (d.go === "youth") { ygroup = d.g; yperiod = "now"; ycat = ""; }
+  else if (d.go === "diffusion") { dsel = { kind: "tracked", keyword: d.k }; dcat = ""; }
+  setView(d.go);
+  window.scrollTo(0, 0);
 }
 
 // ---- 나라별 --------------------------------------------------------------------------
@@ -883,6 +1102,7 @@ function rankSource() {
   return REPORT?.themes?.length ? REPORT.themes : (REPORT?.clusters || []);
 }
 let detailSig = null;
+let wantKey = null;  // 한눈에에서 고른 이슈: 순위가 그려질 때 그 줄을 연다
 function renderRank() {
   const pd = periodData();
   const name = REPORT?.region_name || META.regions.find((r) => r.code === region)?.name || region;
@@ -894,6 +1114,11 @@ function renderRank() {
   $("#rank-sub").textContent = pd ? "줄을 누르면 날짜별 순위가 나와요. 막대는 순위권에 오래 있고 점수가 높을수록 길어요."
     : "줄을 누르면 자세한 내용이 나와요. 막대는 여러 목록에 함께, 높은 순위로 나올수록 길어요.";
   const src = rankSource();
+  if (wantKey != null) {
+    const i = src.findIndex((c) => c.key === wantKey);
+    if (i >= 0) { selected = i; showAll ||= i >= 20; }
+    wantKey = null;
+  }
   renderCatChips($("#c-cchips"), src, ccat, (c) => { ccat = c; selected = null; renderRank(); });
   const rows = byCat(src.map((c, i) => ({ ...c, _i: i })), ccat).slice(0, showAll ? 50 : 20);
   if (!rows.some((c) => c._i === selected)) selected = rows[0]?._i ?? null;  // 첫 줄을 기본 선택
@@ -972,6 +1197,11 @@ async function renderDetail(t, n) {
 }
 // 누가 더 찾나: 연령·성별 관심은 한국 검색 기준이라 한국에서만, 그리고 상위 이슈만 잰다 (전체 연령 탭과 같은 응답을 쓴다).
 let SEG_TRIED = false;
+/** 이슈 이름들로 연령·성별 관심(100 = 평균)을 찾는다. 재지 않은 이슈면 null. */
+function segAffinity(labels) {
+  const key = SEG?.keywords.find((k) => labels.includes(SEG.labels?.[k] || k) || labels.includes(k));
+  return key ? SEG.affinity[key] : null;
+}
 async function renderAffinity(labels) {
   if (region !== "KR") return;
   const sig = detailSig;
@@ -981,8 +1211,7 @@ async function renderAffinity(labels) {
   }
   const box = $("#aff");
   if (!SEG || detailSig !== sig || !box) return;
-  const key = SEG.keywords.find((k) => labels.includes(SEG.labels?.[k] || k) || labels.includes(k));
-  const aff = key ? SEG.affinity[key] : null;
+  const aff = segAffinity(labels);
   const segs = BASIC_SEGS.filter((g) => aff?.[g] != null);
   box.innerHTML = `<div class="d-sec">${segs.length
     ? `<b>누가 더 찾나 <small>(100 = 평균${SEG.synthetic ? " · 샘플 데이터" : ""})</small></b>` + segs.map((g) => `<div class="affrow">
@@ -1630,6 +1859,7 @@ function renderTransfer() {
     renderIssues(); renderShopping();
   };
   for (const t of $$("[data-view]")) t.onclick = (e) => { e.preventDefault(); setView(t.dataset.view); };
+  $("#view-glance").onclick = (e) => { const b = e.target.closest("[data-go]"); if (b) glanceGo(b.dataset); };
   $("#ygroups").onclick = (e) => {
     const b = e.target.closest("[data-g]"); if (!b) return;
     ygroup = b.dataset.g; writeHash(); renderYouth();
