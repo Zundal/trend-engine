@@ -100,7 +100,7 @@ class TrendService:
 
     async def diffusion(self, max_age: timedelta = timedelta(hours=20)) -> dict[str, Any]:
         """세대 확산 감지 (Korea): stage of each youth interest + validated past cases."""
-        if hit := self.store.cache_get("diffusion:v10", max_age):
+        if hit := self.store.cache_get("diffusion:v11", max_age):
             return hit
         y = await self.youth()
         report = await self.report("KR")
@@ -129,7 +129,7 @@ class TrendService:
                     "case_stages": {c["keyword"]: c.get("stage") for c in cases.get("items", [])}}
         self.store.cache_set("age-weeklies:v1", weeklies)
         result = {"tracked": tracked, "cases": cases, "watchlist": watchlist}
-        self.store.cache_set("diffusion:v10", result)
+        self.store.cache_set("diffusion:v11", result)
         archive.record_daily(self.store, archive.kst_today(), "diffusion", {
             "stages": {i["keyword"]: {"stage": i["stage"], "old_lag_weeks": i["old_lag_weeks"]} for i in tracked["items"]}})
         return result

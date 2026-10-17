@@ -996,8 +996,7 @@ function youthMerged() {
 }
 const youthX = (r) => YOUNG.filter((g) => r.x[g]).map((g) => `${g} ${r.x[g].toFixed(1)}배`);
 const SPREAD = ["확산 중", "윗세대 상승"];
-/** 윗세대로 번지는 키워드. 윗세대가 먼저 늘었다는 시차(음수)는 "늦게 늘었다"는 판정과 맞지 않아 뺀다. */
-const spreading = () => (DIF?.tracked.items || []).filter((it) => SPREAD.includes(it.stage) && !(it.old_lag_weeks < 0))
+const spreading = () => (DIF?.tracked.items || []).filter((it) => SPREAD.includes(it.stage))
   .sort((a, b) => SPREAD.indexOf(a.stage) - SPREAD.indexOf(b.stage));
 const foreign = () => countries().filter((r) => r.code !== "KR");
 

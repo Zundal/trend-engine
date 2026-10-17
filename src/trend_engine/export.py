@@ -100,10 +100,10 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         # Korean search data only describes Korean users — skip foreign regions (saves quota).
         if code.startswith("KR"):
             try:
-                seg = svc.store.cache_get(f"segments-latest:{code}", SEGMENT_REFRESH)
+                seg = svc.store.cache_get(f"segments-latest:v2:{code}", SEGMENT_REFRESH)
                 if seg is None:
                     seg = await svc.report_segments(code)
-                    svc.store.cache_set(f"segments-latest:{code}", seg)
+                    svc.store.cache_set(f"segments-latest:v2:{code}", seg)
                     lines.append(f"segments {code}: refreshed")
                 else:
                     lines.append(f"segments {code}: reused (<3h)")
