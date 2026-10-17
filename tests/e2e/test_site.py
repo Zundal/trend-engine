@@ -61,8 +61,56 @@ def wait_rows(page, selector, n=1):
     page.wait_for_function(f"document.querySelectorAll({selector!r}).length >= {n}", timeout=15000)
 
 
-def test_youth_tab_is_default_and_renders(page, site):
+def test_glance_is_default_and_opens_each_tab(page, site):
     page.goto(site)
+    wait_rows(page, "#gl-issues .gl-row", 5)
+    assert page.locator(".tab[aria-current=page] b").inner_text() == "한눈에"
+    assert "KST 업데이트" in page.locator("#gen").inner_text()
+    assert not page.locator("#g-warn").is_hidden()  # offline numbers are synthetic and say so
+    # 오늘 요약: one line per tab's top item (no spreading line when nothing spreads), the other countries on one line
+    page.wait_for_function("document.querySelector('#gl-brief')?.textContent.includes('다른 나라 1위')")
+    page.wait_for_function("!document.querySelector('#gl-spread').textContent.includes('불러오는 중')")
+    kickers = page.locator("#gl-brief .kicker").all_inner_texts()
+    assert kickers[0] == "한국 1위 이슈" and "10·20대가 유독 찾는 것" in kickers
+    assert ("윗세대로 번지는 중" in kickers) == (page.locator("#gl-spread .gl-row").count() > 0)
+    wait_rows(page, "#gl-youth .gl-row")
+    assert page.locator("#gl-youth .gl-x").first.inner_text().endswith("배")
+    wait_rows(page, "#gl-world .card", 2)  # every exported country but Korea
+
+    # a Korean issue opens that same story in the country tab
+    label = page.locator("#gl-issues .gl-k b").nth(2).inner_text().strip()
+    page.locator("#gl-issues .gl-row").nth(2).click()
+    page.wait_for_function("t => document.querySelector('#sel-h')?.textContent === t", arg=label)
+    assert "#country/KR/live" in page.evaluate("decodeURIComponent(location.hash)")
+
+    # another country's issue opens in that country
+    page.click("#tab-glance")
+    wait_rows(page, "#gl-world [data-r='US']")
+    us = page.locator("#gl-world [data-r='US'] b").first.inner_text().strip()
+    page.locator("#gl-world [data-r='US']").first.click()
+    page.wait_for_function("t => REPORT?.region === 'US' && document.querySelector('#sel-h')?.textContent === t", arg=us)
+
+    # a youth keyword opens the 10·20대 tab on the group that searches it most
+    page.click("#tab-glance")
+    wait_rows(page, "#gl-youth .gl-row")
+    group = page.locator("#gl-youth .gl-row").first.get_attribute("data-g")
+    page.locator("#gl-youth .gl-row").first.click()
+    page.wait_for_function("g => document.querySelector('#y-title')?.textContent.startsWith(g)", arg=group)
+
+    # a spreading keyword (if any today) opens its age x week heatmap
+    page.click("#tab-glance")
+    spread = page.locator("#gl-spread .gl-row")
+    if spread.count():
+        kw = spread.first.get_attribute("data-k")
+        spread.first.click()
+        page.wait_for_function("k => document.querySelector('#det-h')?.textContent.includes(k)", arg=kw)
+    else:
+        assert page.locator("#gl-spread .empty").inner_text().strip()
+    assert not page.errors, page.errors
+
+
+def test_youth_tab_renders(page, site):
+    page.goto(site + "#youth")
     wait_rows(page, "#y-disc li[data-cat]")
     assert page.locator(".tab[aria-current=page] b").inner_text() == "10·20대"
     assert "KST 업데이트" in page.locator("#gen").inner_text()  # static build stamps one time for every tab
@@ -138,16 +186,17 @@ def test_all_ages_tab(page, site):
 
 
 def test_no_source_names_leak_and_mobile_fits(page, site):
-    for route in ("", "#diffusion", "#country/KR/live", "#age/20대/week"):
+    for route in ("", "#youth", "#diffusion", "#country/KR/live", "#age/20대/week"):
         page.goto(site + route)
         page.wait_for_timeout(600)
         html = page.content()
         assert not PROVIDERS.search(html), (route, PROVIDERS.search(html).group(0))
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto(site)
-    wait_rows(page, "#y-disc li[data-cat]")
+    wait_rows(page, "#gl-world .card", 2)
     assert page.evaluate("document.documentElement.scrollWidth") <= 391
-    for route, ready in (("#diffusion", "#dif-now .dif"), ("#country/KR/live", "#rank li[data-i]"), ("#age/20대/week", "#heat table")):
+    for route, ready in (("#youth", "#y-disc li[data-cat]"), ("#diffusion", "#dif-now .dif"), ("#country/KR/live", "#rank li[data-i]"),
+                         ("#age/20대/week", "#heat table")):
         page.goto(site + route)
         page.wait_for_selector(ready)
         page.wait_for_timeout(300)
