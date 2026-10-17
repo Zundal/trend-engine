@@ -14,8 +14,8 @@ async def test_beliefs_persist_and_items_carry_them(service):
     saved = service.store.cache_get("belief:v1", timedelta(days=1))
     assert saved and set(saved) >= {it["keyword"] for it in items}
     # the same day again: the observation is not double counted
-    service.store.cache_set("diffusion:v10", None)
-    service.store.db.execute("DELETE FROM cache WHERE key='diffusion:v10'"); service.store.db.commit()
+    service.store.cache_set("diffusion:v11", None)
+    service.store.db.execute("DELETE FROM cache WHERE key='diffusion:v11'"); service.store.db.commit()
     again = await service.diffusion()
     b1 = {it["keyword"]: it["belief"]["b"] for it in items}
     b2 = {it["keyword"]: it["belief"]["b"] for it in again["tracked"]["items"]}

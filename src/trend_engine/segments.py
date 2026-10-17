@@ -5,9 +5,10 @@ Why an anchor keyword?
   groups per request. To compare 20 trending keywords inside one segment we send
   batches of [anchor + 4 keywords] and express each keyword relative to the anchor:
       rel_s(k) = Σ ratio_s(k) / Σ ratio_s(anchor)
-  Then, per segment s:
-      share_s(k)    = rel_s(k) / Σ_k rel_s(k)
-      affinity_s(k) = share_s(k) / share_all(k) × 100     (100 = average, 150 = 1.5× over-indexed)
+  Then, per segment s, against the *other* keywords of the batch (k itself left out — a keyword that is
+  most of the batch's volume would otherwise be its own baseline and sit at 100 everywhere):
+      affinity_s(k) = [rel_s(k) / rel_all(k)] / [Σ_{j≠k} rel_s(j) / Σ_{j≠k} rel_all(j)] × 100
+                      (100 = average, 150 = 1.5× over-indexed)
   Affinity answers "which of today's trends does this group care about MORE than everyone
   else". It is NOT a headcount share — DataLab never exposes absolute volumes. See docs/SEGMENTS.md.
 """
@@ -150,6 +151,20 @@ def parse_web_result(page: str) -> dict[str, Any]:
                         for r in rows]}
 
 
+def _affinity(own: float | None, own_all: float | None, seg_total: float, all_total: float) -> float | None:
+    """affinity_s(k) × 100: k 의 그룹 s 비중이 나머지 키워드들의 그룹 s 비중의 몇 배인지.
+
+    k 자신은 기준(묶음 합계)에서 뺀다. 한 키워드가 묶음 검색량을 거의 다 차지하면 기준이 곧 자기 자신이 되어
+    어느 그룹에서나 ≈100 에 붙었다(2026-10-17 '닥터X'). 나머지가 없으면 비교할 수 없어 None.
+    """
+    if not own or not own_all:
+        return None
+    rest, rest_all = seg_total - own, all_total - own_all
+    if rest <= 1e-12 or rest_all <= 1e-12:
+        return None
+    return round(own / own_all / (rest / rest_all) * 100, 1)
+
+
 class SegmentProfiler:
     def __init__(self, settings: Settings, store: Store | None = None, anchor: str = "날씨", days: int = 7,
                  poster: Poster | None = None, concurrency: int = 4):
@@ -287,21 +302,19 @@ class SegmentProfiler:
                 res = {}
             rel[seg.name] = res
 
-        def shares(seg_name: str) -> dict[str, float]:
-            vals = {k: v for k, v in rel.get(seg_name, {}).items() if v}
-            total = sum(vals.values())
-            return {k: v / total for k, v in vals.items()} if total else {}
+        def total(seg_name: str) -> float:
+            return sum(v for v in rel.get(seg_name, {}).values() if v)
 
-        base = shares(ALL.name)
+        base, base_total = rel.get(ALL.name, {}), total(ALL.name)
         affinity: dict[str, dict[str, float | None]] = {k: {} for k in keywords}
         relative: dict[str, dict[str, float | None]] = {k: {} for k in keywords}
         top: dict[str, list[dict[str, Any]]] = {}
         for seg in segments:
-            sh = shares(seg.name)
+            own, own_total = rel.get(seg.name, {}), total(seg.name)
             for k in keywords:
-                r = rel.get(seg.name, {}).get(k)
+                r = own.get(k)
                 relative[k][seg.name] = round(r * 100, 2) if r is not None else None
-                affinity[k][seg.name] = round(sh[k] / base[k] * 100, 1) if k in sh and base.get(k) else None
+                affinity[k][seg.name] = _affinity(r, base.get(k), own_total, base_total)
             ranked = sorted(
                 (k for k in keywords if affinity[k].get(seg.name) is not None and (rel[ALL.name].get(k) or 0) >= MIN_RELATIVE),
                 key=lambda k: -(affinity[k][seg.name] or 0),

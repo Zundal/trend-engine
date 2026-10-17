@@ -127,6 +127,9 @@ def classify(stats: dict[str, AgeStats]) -> dict[str, Any]:
     lags = {a: ((s.rise - base).days // 7 if base and s.rise else None) for a, s in stats.items()}
     young_active = any(stats[a].active for a in YOUNG if a in stats)
     old_active = [a for a in OLD if a in stats and stats[a].active]
+    # 시차는 단계를 정하는 연령(활성인 40대 이상)에서만 잰다. 얇거나 조용한 연령의 이른 시작점까지 넣으면
+    # '확산 중'인데 시차가 음수(윗세대가 먼저)로 보고된다 (2026-10-17 이타백 -74주).
+    old_lags = [lags[a] for a in old_active if lags.get(a) is not None]
 
     if not young_active and not old_active:
         stage = "지나감" if any(s.boom for s in stats.values()) else "상시 관심"
@@ -135,16 +138,14 @@ def classify(stats: dict[str, AgeStats]) -> dict[str, Any]:
     elif not young_active:
         stage = "윗세대 상승"
     else:
-        old_lags = [lags[a] for a in old_active if lags.get(a) is not None]
         stage = "확산 중" if old_lags and LAG_WEEKS <= min(old_lags) <= MAX_LAG_WEEKS else "전 연령 동시"
-    old_lag = [lags[a] for a in OLD if lags.get(a) is not None and lags[a] <= MAX_LAG_WEEKS]
     vy = [stats[a].volume_pct for a in YOUNG if a in stats and stats[a].volume_pct is not None]
     vo = [stats[a].volume_pct for a in OLD if a in stats and stats[a].volume_pct is not None]
     return {
         "stage": stage,
         "young_steady": stage == "윗세대 상승" and bool(vy and vo) and max(vy) >= 2 * max(vo),
         "young_start": base.isoformat() if base else None,
-        "old_lag_weeks": min(old_lag) if old_lag and stage == "확산 중" else None,
+        "old_lag_weeks": min(old_lags) if stage == "확산 중" else None,
         "lags": lags,
     }
 

@@ -65,6 +65,16 @@ def test_thin_older_ages_do_not_count():
     assert thin["stage"] == "상시 관심" and thin["ages"]["60대+"]["thin"] is True
 
 
+def test_reported_lag_comes_from_the_ages_that_decided_the_stage():
+    """이타백(2026-10-17): 40대가 3주 늦게 늘어 '확산 중'인데, 검색량이 적어 판정에서 빠진 60대+의
+    이른 시작점(-74주)이 시차로 보고됐다. 시차는 단계를 정한 연령(활성인 40대 이상)에서만 잰다."""
+    series = ages(**{"10대": 6, "20대": 6, "30대": 7, "40대": 9, "50대": 9, "60대p": 1})
+    vol = {a: (0.001 if a == "60대+" else 1.0) for a in dif.AGE_NAMES}
+    r = dif.analyze(series, volume_pct=vol)
+    assert r["ages"]["60대+"]["thin"] is True and r["lags"]["60대+"] < 0
+    assert r["stage"] == "확산 중" and r["old_lag_weeks"] == r["lags"]["40대"] == 3
+
+
 def test_older_rising_after_young_adopted_is_flagged():
     series = {a: [((START + timedelta(days=d)).strftime("%Y%m%d"), 50.0) for d in range(119)] if a in ("10대", "20대")
               else curve(12) for a in dif.AGE_NAMES}
