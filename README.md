@@ -70,10 +70,15 @@ uv run trend-engine --offline serve    # 네트워크 없이 녹화 데이터로
 `.github/workflows/pages.yml` 이 **매시간** 수집 → `trend-engine export` 로 정적 JSON 생성 → Pages 배포.
 스냅샷 DB 는 Actions 캐시로 이어받아 추이(NEW/▲▼)가 누적됩니다.
 
+매시 실행은 사슬로 돕니다: 수집이 끝나면 `next-run.yml` 이 `hourly` 환경의 대기 타이머(50분)만큼 기다렸다가
+다시 수집을 부릅니다. GitHub 예약(cron)은 부하가 크면 대부분 버려져서(2026-10-17 측정: 약 7%만 생성) 끊긴 사슬을 다시 잇는 용도입니다.
+
 1. 저장소 Settings → Pages → Source: **GitHub Actions**
-2. (선택) Settings → Secrets and variables → Actions 에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`,
+2. Settings → Environments → New environment `hourly` → **Wait timer 50분**
+   (없으면 사슬이 바로 돌아오지만 게이트가 45분 안의 실행을 건너뛰어, 예약 실행에만 기대게 됩니다)
+3. (선택) Settings → Secrets and variables → Actions 에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`,
    `YOUTUBE_API_KEY`(선택: `NAVER_CLIENT_ID`/`NAVER_CLIENT_SECRET`) 추가 → 다음 실행부터 반영
-3. Actions → Deploy dashboard → Run workflow (즉시 1회 실행)
+4. Actions → Deploy dashboard → Run workflow (즉시 1회 실행, 이후 사슬 시작)
 
 공개 사이트의 데이터 파일은 소스 정보를 제거한 뒤 AES-256-GCM 으로 암호화되어(`api/*.dat`) 브라우저에서 복호화됩니다
 (키: 저장소 Secret `TREND_ENGINE_DATA_KEY`, 64자리 hex). https 로만 열립니다.

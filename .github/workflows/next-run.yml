@@ -1,0 +1,25 @@
+# 다음 수집 예약 (pages.yml 의 next 잡이 부른다).
+# 'hourly' 환경의 대기 타이머(저장소 Settings → Environments → hourly → Wait timer 50분)가 지나면
+# 배포 워크플로를 chain=true 로 다시 부른다. 기다리는 동안은 실행기를 쓰지 않는다.
+# 새 예약이 오면 기다리던 예약은 취소된다 → 언제나 가장 최근 수집 기준의 예약 하나만 남는다.
+# 타이머가 없으면 바로 다시 부르지만, pages.yml 게이트가 45분 안의 사슬 실행을 건너뛰어 연속 수집은 되지 않는다.
+name: Next run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: next-run
+  cancel-in-progress: true
+
+jobs:
+  wait:
+    runs-on: ubuntu-latest
+    environment: hourly
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml -R "${{ github.repository }}" -f chain=true
