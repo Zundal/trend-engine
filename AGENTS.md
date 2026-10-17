@@ -41,7 +41,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (빌드 없는 단일 HTML. 외부 자원은 웹폰트뿐이고 없어도 동작. 사이트 아이콘은 `web/favicon-48x48.png`·`favicon.ico` 파일이고 `export.py` 가 함께 복사) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
 | `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지) |
-| `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환 |
+| `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환. 매시 실행은 `next-run.yml`(환경 `hourly` 대기 50분) 사슬이 주 경로, cron 은 보조 |
 
 ## 반드시 지킬 불변식
 1. **`Source.parse()` 는 순수 함수.** 네트워크·시간·난수 금지. fixture 로 테스트 가능해야 한다 (`tests/test_contract.py` 가 검사).
