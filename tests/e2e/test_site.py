@@ -203,6 +203,31 @@ def test_no_source_names_leak_and_mobile_fits(page, site):
         assert page.evaluate("document.documentElement.scrollWidth") <= 391, route
 
 
+NEAR_BLACK = """() => {
+  const cv = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+  const dark = [];
+  for (const el of document.querySelectorAll("body *")) {
+    const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue;
+    cv.clearRect(0, 0, 1, 1); cv.fillStyle = "#fff0"; cv.fillStyle = getComputedStyle(el).backgroundColor; cv.fillRect(0, 0, 1, 1);
+    const [R, G, B, A] = cv.getImageData(0, 0, 1, 1).data; if (A < 128) continue;
+    const f = (v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; };
+    if (.2126 * f(R) + .7152 * f(G) + .0722 * f(B) < .03) dark.push(el.id || el.className || el.tagName);
+  }
+  return dark;
+}"""
+
+
+def test_light_mode_has_no_near_black_surfaces(page, site):
+    """밝은 화면에 검은 판(머리말·요약·상세·선택 칩)을 두지 않는다 — 대비가 너무 커서 보기 불편하다는 요청."""
+    page.emulate_media(color_scheme="light")
+    for route, ready in (("", "#gl-world .card"), ("#youth", "#y-vs .both"), ("#country/KR/live", "#sel-h"), ("#diffusion", "#dif-now .dif")):
+        page.goto(site + route)
+        page.wait_for_selector(ready)
+        page.wait_for_timeout(300)
+        assert page.evaluate(NEAR_BLACK) == [], route
+    assert not page.errors, page.errors
+
+
 def test_categories_overview_and_filters(page, site):
     """분야 칩/타일 필터 — 세그먼트·분야 개수가 바뀌어도 동적으로 고른다."""
     page.goto(site + "#youth/20대/now")
