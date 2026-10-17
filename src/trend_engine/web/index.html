@@ -20,9 +20,10 @@
   --accent: #EA580C; --accent-ink: #C2410C; --accent-deep: #9A3412; --accent-soft: #FFF4EC; --accent-tag: #FFF1E6;
   --blue: #1D4ED8; --blue-ink: #1E40AF; --blue-deep: #1E3A8A; --blue-soft: #EEF3FD; --blue-tag: #E8EFFD;
   --violet-ink: #5B21B6; --violet-tag: #F1ECFE;
-  --inv: #101217; --inv-ink: #FFFFFF; --inv-ink2: #D5D8DE; --inv-muted: #A9AEB8; --inv-line: #2A2E36; --inv-edge: #3A3F4A;
-  --inv-accent: #FDBA74; --inv-bar: #FB923C;
-  --on: #101217; --on-ink: #FFFFFF;
+  /* 강조 면: 밝은 화면에 검은 판을 두면 대비가 너무 커서, 옅은 회청색 면 + 진한 글자로 강조한다 */
+  --inv: #E9ECF1; --inv-ink: #101217; --inv-ink2: #3A3F4A; --inv-muted: #5B606B; --inv-line: #D5D9E0; --inv-edge: #C4C9D1;
+  --inv-accent: #9A3412; --inv-bar: #EA580C;
+  --on: #3F4652; --on-ink: #FFFFFF;
   --heat-hot: color-mix(in oklab, #EA580C 85%, #F7F8FA); --heat-cold: color-mix(in oklab, #1D4ED8 70%, #F7F8FA);
   --st1: #FDBA74; --st2: #EA580C; --st3: #9A3412;
   --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
@@ -36,7 +37,8 @@
     --accent: #F97316; --accent-ink: #FB923C; --accent-deep: #FDBA74; --accent-soft: #2E1D12; --accent-tag: #3A2414;
     --blue: #60A5FA; --blue-ink: #93C5FD; --blue-deep: #BFDBFE; --blue-soft: #16223D; --blue-tag: #1B2A4A;
     --violet-ink: #C4B5FD; --violet-tag: #2A2145;
-    --inv: #232730; --inv-line: #343945; --inv-edge: #4A505C;
+    --inv: #232730; --inv-ink: #F2F3F5; --inv-ink2: #D5D8DE; --inv-muted: #A9AEB8; --inv-line: #343945; --inv-edge: #4A505C;
+    --inv-accent: #FDBA74; --inv-bar: #FB923C;
     --on: #F2F3F5; --on-ink: #101217;
     --heat-hot: #B4470F; --heat-cold: #2449B8;
   }
@@ -56,20 +58,21 @@ button:disabled { opacity: .5; cursor: progress; }
 .m-only { display: none; }
 
 /* 머리말 */
-.top { background: #101217; color: #FFFFFF; }
+.top { background: var(--panel); color: var(--ink); border-bottom: 1px solid var(--line); }
 .top-in { max-width: 1240px; margin: 0 auto; padding: 0 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 32px; min-height: 72px; }
-.brand { display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
-.brand:hover { color: #FFFFFF; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+.brand:hover { color: var(--ink); }
+.brand svg { color: var(--accent); }
 .tabs { display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto; }
-.tab { display: flex; flex-direction: column; padding: 14px 14px 12px; color: #A9AEB8; text-decoration: none; border-bottom: 3px solid transparent; }
+.tab { display: flex; flex-direction: column; padding: 14px 14px 12px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; }
 .tab b { font-weight: 600; font-size: 15px; }
 .tab span { font-size: 12px; }
-.tab:hover { color: #FFFFFF; }
-.tab[aria-current="page"] { color: #FFFFFF; border-bottom-color: #FB923C; }
-.tab[aria-current="page"] span { color: #C9CDD4; }
-.stamp { display: flex; align-items: center; gap: 8px; font: 500 12px var(--mono); color: #A9AEB8; }
-.stamp .dot { width: 8px; height: 8px; border-radius: 4px; background: #4ADE80; }
-.stamp button { margin-left: 8px; background: none; border: 1px solid #3A3F4A; border-radius: 8px; padding: 6px 12px; color: #FFFFFF; font: 600 12px var(--sans); cursor: pointer; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab[aria-current="page"] span { color: var(--muted); }
+.stamp { display: flex; align-items: center; gap: 8px; font: 500 12px var(--mono); color: var(--muted); }
+.stamp .dot { width: 8px; height: 8px; border-radius: 4px; background: #22C55E; }
+.stamp button { margin-left: 8px; background: none; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 12px; color: var(--ink); font: 600 12px var(--sans); cursor: pointer; }
 #banner { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
 .banner, .warn { padding: 10px 16px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-deep); font-size: 13px; }
 .banner { margin-top: 16px; }
@@ -136,12 +139,13 @@ svg.mini { width: 54px; height: 14px; vertical-align: middle; margin-left: 6px; 
 .legend { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 /* 분야 */
 .ctag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 5px; margin-left: 6px; vertical-align: 1px; white-space: nowrap;
-  color: color-mix(in oklab, var(--c, var(--muted)) 70%, var(--ink)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); }
+  color: color-mix(in oklab, var(--c, var(--muted)) 60%, var(--ink)); background: color-mix(in srgb, var(--c, var(--muted)) 14%, transparent); }
 .cchips { display: flex; gap: 6px; flex-wrap: wrap; }
 .cchips:empty { display: none; }
 .cchip { border: 1px solid var(--edge); background: var(--panel); color: var(--ink2); border-radius: 999px; padding: 0 12px; min-height: 32px; font-size: 13px; cursor: pointer; }
 .cchip[aria-pressed="true"] { background: var(--on); border-color: var(--on); color: var(--on-ink); font-weight: 600; }
-.cchip .k { opacity: .65; margin-left: 4px; font-family: var(--mono); font-size: 12px; }
+.cchip .k { color: var(--muted); margin-left: 4px; font-family: var(--mono); font-size: 12px; }
+.cchip[aria-pressed="true"] .k { color: var(--on-ink); }
 
 /* 한눈에 */
 .gl-brief { list-style: none; margin: 0; padding: 4px 28px; border-radius: 16px; background: var(--inv); color: var(--inv-ink); }
@@ -353,22 +357,22 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .pmeta { font-size: 11px; color: var(--muted); text-align: center; white-space: nowrap; }
 .pmeta b { color: var(--accent-deep); }
 .score { height: 8px; border-radius: 4px; background: var(--track); position: relative; display: block; }
-.score i { position: absolute; inset: 0 auto 0 0; background: var(--ink); border-radius: 4px; }
+.score i { position: absolute; inset: 0 auto 0 0; background: var(--on); border-radius: 4px; }
 .card.inv { background: var(--inv); color: var(--inv-ink); padding: 24px; box-shadow: none; --spark: var(--inv-bar); }
 .inv .kicker { color: var(--inv-accent); }
 .d-head { display: flex; flex-direction: column; gap: 4px; }
 .inv h3 { font-size: 26px; letter-spacing: -.02em; line-height: 1.25; overflow-wrap: anywhere; }
 .quote { margin: 0; font-size: 14px; color: var(--inv-ink2); line-height: 1.6; }
 .facts { display: flex; flex-wrap: wrap; gap: 6px; }
-.facts span { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--inv-edge); color: #E3E5EA; }
+.facts span { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--inv-edge); color: var(--inv-ink2); }
 .d-sec { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--inv-line); font-size: 13px; }
 .d-sec > b { font-weight: 600; }
 .d-sec > b small { font-weight: 400; font-size: 13px; color: var(--inv-muted); }
 .d-sec ul { margin: 0; padding-left: 18px; color: var(--inv-ink2); display: flex; flex-direction: column; gap: 4px; }
 .inv .dim, .inv .legend { color: var(--inv-muted); }
 .affrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
-.affrow > span:first-child { color: #C9CDD4; }
-.affrow > span:last-child { font-family: var(--mono); text-align: right; color: #E3E5EA; }
+.affrow > span:first-child { color: var(--inv-ink2); }
+.affrow > span:last-child { font-family: var(--mono); text-align: right; color: var(--inv-ink); }
 .affbar { height: 8px; border-radius: 4px; background: var(--inv-line); position: relative; display: block; }
 .affbar i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: #6B7280; }
 .affbar i.hi { background: var(--inv-bar); }
@@ -485,7 +489,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
 <header class="top">
   <div class="top-in">
     <a class="brand" href="#glance" data-view="glance">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#FB923C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h5l3-9 5 14 4-10 2 5h5"></path></svg>
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 18h5l3-9 5 14 4-10 2 5h5"></path></svg>
       <span>Trend Engine</span>
     </a>
     <nav class="tabs" aria-label="화면">
