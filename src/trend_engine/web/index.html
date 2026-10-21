@@ -14,34 +14,35 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F2F3F5; --panel: #FFFFFF; --ink: #101217; --ink2: #3A3F4A; --muted: #5B606B;
-  --line: #E3E5EA; --hair: #EEF0F3; --edge: #D5D8DE; --rule: #DADDE3; --dash: #C4C8D0;
-  --track: #F0F1F4; --soft: #F7F8FA; --seg: #E3E5EA; --seg-on: #FFFFFF; --gray: #9CA3AF;
-  --accent: #EA580C; --accent-ink: #C2410C; --accent-deep: #9A3412; --accent-soft: #FFF4EC; --accent-tag: #FFF1E6;
-  --blue: #1D4ED8; --blue-ink: #1E40AF; --blue-deep: #1E3A8A; --blue-soft: #EEF3FD; --blue-tag: #E8EFFD;
-  --violet-ink: #5B21B6; --violet-tag: #F1ECFE;
+  color-scheme: light dark;
+  --bg: light-dark(#F2F3F5, #0B0D11); --panel: light-dark(#FFFFFF, #16191F);
+  --ink: light-dark(#101217, #F2F3F5); --ink2: light-dark(#3A3F4A, #D5D8DE); --muted: light-dark(#5B606B, #A9AEB8);
+  --line: light-dark(#E3E5EA, #23272F); --hair: light-dark(#EEF0F3, #23272F);
+  --edge: light-dark(#D5D8DE, #3A3F4A); --rule: light-dark(#DADDE3, #2A2E36); --dash: light-dark(#C4C8D0, #3A3F4A);
+  --track: light-dark(#F0F1F4, #2A2E36); --soft: light-dark(#F7F8FA, #1D2027);
+  --seg: light-dark(#E3E5EA, #1D2027); --seg-on: light-dark(#FFFFFF, #3A3F4A); --gray: light-dark(#9CA3AF, #6B7280);
+  --accent: light-dark(#EA580C, #F97316); --accent-ink: light-dark(#C2410C, #FB923C);
+  --accent-deep: light-dark(#9A3412, #FDBA74); --accent-soft: light-dark(#FFF4EC, #2E1D12); --accent-tag: light-dark(#FFF1E6, #3A2414);
+  --blue: light-dark(#1D4ED8, #60A5FA); --blue-ink: light-dark(#1E40AF, #93C5FD);
+  --blue-deep: light-dark(#1E3A8A, #BFDBFE); --blue-soft: light-dark(#EEF3FD, #16223D); --blue-tag: light-dark(#E8EFFD, #1B2A4A);
+  --violet-ink: light-dark(#5B21B6, #C4B5FD); --violet-tag: light-dark(#F1ECFE, #2A2145);
   /* 강조 면: 밝은 화면에 검은 판을 두면 대비가 너무 커서, 옅은 회청색 면 + 진한 글자로 강조한다 */
-  --inv: #E9ECF1; --inv-ink: #101217; --inv-ink2: #3A3F4A; --inv-muted: #5B606B; --inv-line: #D5D9E0; --inv-edge: #C4C9D1;
-  --inv-accent: #9A3412; --inv-bar: #EA580C;
-  --on: #3F4652; --on-ink: #FFFFFF;
-  --heat-hot: color-mix(in oklab, #EA580C 85%, #F7F8FA); --heat-cold: color-mix(in oklab, #1D4ED8 70%, #F7F8FA);
+  --inv: light-dark(#E9ECF1, #232730); --inv-ink: light-dark(#101217, #F2F3F5);
+  --inv-ink2: light-dark(#3A3F4A, #D5D8DE); --inv-muted: light-dark(#5B606B, #A9AEB8);
+  --inv-line: light-dark(#D5D9E0, #343945); --inv-edge: light-dark(#C4C9D1, #4A505C);
+  --inv-accent: light-dark(#9A3412, #FDBA74); --inv-bar: light-dark(#EA580C, #FB923C);
+  --on: light-dark(#3F4652, #F2F3F5); --on-ink: light-dark(#FFFFFF, #101217);
+  --heat-hot: light-dark(color-mix(in oklab, #EA580C 85%, #F7F8FA), #B4470F);
+  --heat-cold: light-dark(color-mix(in oklab, #1D4ED8 70%, #F7F8FA), #2449B8);
   --st1: #FDBA74; --st2: #EA580C; --st3: #9A3412;
   --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0B0D11; --panel: #16191F; --ink: #F2F3F5; --ink2: #D5D8DE; --muted: #A9AEB8;
-    --line: #23272F; --hair: #23272F; --edge: #3A3F4A; --rule: #2A2E36; --dash: #3A3F4A;
-    --track: #2A2E36; --soft: #1D2027; --seg: #1D2027; --seg-on: #3A3F4A; --gray: #6B7280;
-    --accent: #F97316; --accent-ink: #FB923C; --accent-deep: #FDBA74; --accent-soft: #2E1D12; --accent-tag: #3A2414;
-    --blue: #60A5FA; --blue-ink: #93C5FD; --blue-deep: #BFDBFE; --blue-soft: #16223D; --blue-tag: #1B2A4A;
-    --violet-ink: #C4B5FD; --violet-tag: #2A2145;
-    --inv: #232730; --inv-ink: #F2F3F5; --inv-ink2: #D5D8DE; --inv-muted: #A9AEB8; --inv-line: #343945; --inv-edge: #4A505C;
-    --inv-accent: #FDBA74; --inv-bar: #FB923C;
-    --on: #F2F3F5; --on-ink: #101217;
-    --heat-hot: #B4470F; --heat-cold: #2449B8;
-  }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 120ms; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -192,6 +193,7 @@ button.gl-b:hover b { color: var(--inv-accent); }
 .colhead { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); }
 .xrows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .xrows li { display: grid; grid-template-columns: 24px minmax(0, 1.4fr) minmax(90px, 1.3fr) 60px; gap: 14px; align-items: center; min-height: 52px; border-bottom: 1px solid var(--hair); }
+.xrows li:nth-child(n+15) { content-visibility: auto; contain-intrinsic-size: auto 52px; }
 .xrows li.empty { display: block; min-height: 0; border: 0; }
 .xrows .k { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .xrows .k b { font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -314,6 +316,7 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .notify b { font-weight: 700; }
 .notify > span { font-size: 14px; color: var(--muted); flex: 1 1 320px; }
 .dif { display: grid; grid-template-columns: minmax(0, 240px) minmax(0, 1fr); gap: 6px 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--hair); }
+.dif:nth-child(n+9) { content-visibility: auto; contain-intrinsic-size: auto 92px; }
 .dif-k { background: none; border: 0; padding: 0; font-size: 15px; font-weight: 700; cursor: pointer; text-align: left; }
 .dif-k:hover { color: var(--accent-ink); }
 .dif .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
@@ -341,6 +344,7 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .rank-head span:first-child { text-align: right; }
 .rank-head span:nth-child(3) { text-align: center; }
 .rank { list-style: none; margin: 0; padding: 0; }
+.rank li:nth-child(n+21) { content-visibility: auto; contain-intrinsic-size: auto 60px; }
 .rank li.empty { padding: 12px 16px; }
 .row { width: 100%; align-items: center; min-height: 60px; padding: 8px 16px; border: 0; border-radius: 10px; background: transparent; cursor: pointer; text-align: left; }
 .row:hover { background: var(--soft); }
@@ -361,6 +365,12 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .card.inv { background: var(--inv); color: var(--inv-ink); padding: 24px; box-shadow: none; --spark: var(--inv-bar); }
 .inv .kicker { color: var(--inv-accent); }
 .d-head { display: flex; flex-direction: column; gap: 4px; }
+.d-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.share-btn { background: none; border: 1px solid var(--edge); border-radius: 7px; padding: 3px 9px; font: 600 12px var(--sans); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.inv .share-btn { border-color: var(--inv-edge); color: var(--inv-ink2); }
+.share-btn:hover { color: var(--ink); border-color: var(--ink2); }
+.inv .share-btn:hover { color: var(--inv-ink); border-color: var(--inv-ink2); }
+.tip-pop { position: fixed; inset: auto; margin: 0; max-width: min(320px, calc(100vw - 32px)); padding: 10px 14px; border: 1px solid var(--edge); border-radius: 10px; background: var(--panel); color: var(--ink); font-size: 13px; line-height: 1.45; box-shadow: 0 8px 24px rgba(16, 18, 23, .16); z-index: 50; }
 .inv h3 { font-size: 26px; letter-spacing: -.02em; line-height: 1.25; overflow-wrap: anywhere; }
 .quote { margin: 0; font-size: 14px; color: var(--inv-ink2); line-height: 1.6; }
 .facts { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -826,6 +836,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     </div>
   </section>
 </main>
+<div id="tip-pop" popover="auto" class="tip-pop" role="tooltip"></div>
 
 <script>
 const $ = (s) => document.querySelector(s);
@@ -885,11 +896,24 @@ function rangeKo(a, b) {  // "9월 13–19일" / "9월 28일–10월 4일"
   const [am, ad, bm, bd] = [+a.slice(5, 7), +a.slice(8, 10), +b.slice(5, 7), +b.slice(8, 10)];
   return am === bm ? `${am}월 ${ad}–${bd}일` : `${am}월 ${ad}일–${bm}월 ${bd}일`;
 }
-function stampKST(iso) {  // "9.20 15:45 KST 업데이트"
+const RTF = typeof Intl?.RelativeTimeFormat === "function" ? new Intl.RelativeTimeFormat("ko", { numeric: "auto" }) : null;
+function relKo(iso) {
+  if (!RTF) return "";
+  const sec = Math.round((Date.parse(iso) - Date.now()) / 1000);
+  if (!Number.isFinite(sec) || sec > 60) return "";
+  const abs = Math.abs(sec);
+  if (abs < 60) return "방금";
+  if (abs < 3600) return RTF.format(-Math.round(abs / 60), "minute");
+  if (abs < 86400) return RTF.format(-Math.round(abs / 3600), "hour");
+  if (abs < 86400 * 30) return RTF.format(-Math.round(abs / 86400), "day");
+  return "";
+}
+function stampKST(iso) {  // "9.20 15:45 KST 업데이트 · 방금"
   const p = {};
   const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
   for (const x of f.formatToParts(new Date(iso))) p[x.type] = x.value;
-  return `${p.month}.${p.day} ${p.hour}:${p.minute} KST 업데이트`;
+  const rel = relKo(iso);
+  return `${p.month}.${p.day} ${p.hour}:${p.minute} KST 업데이트${rel ? ` · ${rel}` : ""}`;
 }
 /** 머리말 시각: 수집 시각을 알면 그것을, 모르면 화면이 준 기간 문구를 쓴다. */
 function setStamp(fallback) {
@@ -941,16 +965,22 @@ async function api(path, opts) {
 
 // ---- routing: #country/KR, #age/20대 -------------------------------------------------
 function readHash() {
-  const [v, arg, p] = decodeURIComponent(location.hash.slice(1)).split("/");
+  const [v, arg, p, k] = decodeURIComponent(location.hash.slice(1)).split("/");
   if (v === "glance") { view = "glance"; }
-  else if (v === "diffusion") { view = "diffusion"; }
+  else if (v === "diffusion") { view = "diffusion"; if (arg) dsel = { kind: "tracked", keyword: arg }; }
   else if (v === "youth") { view = "youth"; if (YGROUPS.includes(arg)) ygroup = arg; if (p === "now" || PLABEL[p]) yperiod = p; }
   else if (v === "age") { view = "age"; if (BASIC_SEGS.includes(arg)) group = arg; if (PLABEL[p]) aperiod = p; }
-  else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; }
+  else if (v === "country") { view = "country"; if (arg) region = arg; if (p === "live" || PLABEL[p]) cperiod = p; if (k) wantKey = k; }
 }
 function writeHash() {
   const h = view === "glance" ? "#glance" : view === "diffusion" ? "#diffusion" : view === "youth" ? `#youth/${ygroup}/${yperiod}` : view === "age" ? `#age/${group}/${aperiod}` : `#country/${region}/${cperiod}`;
   if (location.hash !== h) history.replaceState(null, "", h);
+}
+function transition(fn) {
+  fn();
+  if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    try { document.startViewTransition(() => {}); } catch (_) {}
+  }
 }
 function setView(v) {
   view = v; writeHash();
@@ -1152,9 +1182,9 @@ function renderSelected() {
   const pd = periodData();
   if (pd) renderPeriodDetail(it, pd, selected + 1); else renderDetail(it, selected + 1);
 }
-const detailHead = (n, cat, label) => `<div class="d-head"><span class="kicker">${n}위${cat && cat !== "기타" ? " · " + esc(cat) : ""}</span><h3 id="sel-h">${esc(label)}</h3></div>`;
+const detailHead = (n, cat, label, key) => `<div class="d-head"><div class="d-top"><span class="kicker">${n}위${cat && cat !== "기타" ? " · " + esc(cat) : ""}</span><button type="button" class="share-btn" data-share="${esc(label)}" data-hash="#country/${esc(region)}/${esc(cperiod)}/${encodeURIComponent(key || label)}">공유</button></div><h3 id="sel-h">${esc(label)}</h3></div>`;
 function renderPeriodDetail(c, pd, n) {
-  $("#detail").innerHTML = `${detailHead(n, c.category, c.label)}
+  $("#detail").innerHTML = `${detailHead(n, c.category, c.label, c.key)}
     <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>순위권 ${c.hours}시간</span><span>첫 등장 ${md(c.since)}</span></div>
     <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
 }
@@ -1181,7 +1211,7 @@ async function renderDetail(t, n) {
   if (c.volume) facts.push(`검색량 ${c.volume.toLocaleString()}+`);
   if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권` : "지난 30일 동안 처음 등장");
   const more = [...(c.related || []).slice(1), ...(c.mentions || [])];
-  $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label)}
+  $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label, wantKey)}
     ${c.related?.[0] ? `<p class="quote">“${esc(c.related[0])}”</p>` : ""}
     ${facts.length ? `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>` : ""}
     ${others.length ? `<p class="quote">함께 묶은 이슈: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
@@ -1698,7 +1728,7 @@ function renderDifDetail() {
   const tags = difTags(it) + catTag(it.category);
   box.innerHTML = `
     <div class="det-h">
-      <div><span>연령별 흐름 · ${isCase ? `과거 사례 ${from.slice(0, 7)} ~ ${to.slice(0, 7)}` : `최근 ${n}주`}</span>
+      <div><div class="d-top"><span>연령별 흐름 · ${isCase ? `과거 사례 ${from.slice(0, 7)} ~ ${to.slice(0, 7)}` : `최근 ${n}주`}</span><button type="button" class="share-btn" data-share="${esc(it.keyword)}" data-hash="#diffusion/${encodeURIComponent(it.keyword)}">공유</button></div>
         <h3 id="det-h">${esc(it.keyword)} <span class="badge ${BADGE[it.stage] || "b-flat"}">${esc(it.stage)}</span></h3>
         ${tags ? `<div class="det-x">${tags}</div>` : ""}</div>
       <p>${esc(note)}</p>
@@ -1861,7 +1891,7 @@ function renderTransfer() {
     for (const tr of $$("#heat tbody tr")) [...tr.querySelectorAll("td")].forEach((td, k) => td.classList.toggle("on", k === i));
     renderIssues(); renderShopping();
   };
-  for (const t of $$("[data-view]")) t.onclick = (e) => { e.preventDefault(); setView(t.dataset.view); };
+  for (const t of $$("[data-view]")) t.onclick = (e) => { e.preventDefault(); transition(() => setView(t.dataset.view)); };
   $("#view-glance").onclick = (e) => { const b = e.target.closest("[data-go]"); if (b) glanceGo(b.dataset); };
   $("#ygroups").onclick = (e) => {
     const b = e.target.closest("[data-g]"); if (!b) return;
@@ -1903,6 +1933,35 @@ function renderTransfer() {
   $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadAge(v); };
   $("#kwinput").onkeydown = (e) => { if (e.key === "Enter") $("#kwgo").click(); };
   $("#kwreset").onclick = () => { SEG = null; loadAge(); };
+  function showTip(anchor, text) {
+    const pop = $("#tip-pop");
+    if (!pop || !text) return;
+    pop.textContent = text;
+    try { pop.showPopover(); } catch (_) { return; }
+    const r = anchor.getBoundingClientRect();
+    const pr = pop.getBoundingClientRect();
+    const top = r.bottom + 8 + pr.height <= innerHeight ? r.bottom + 8 : Math.max(8, r.top - pr.height - 8);
+    const left = Math.max(16, Math.min(r.left, innerWidth - pr.width - 16));
+    pop.style.top = `${Math.round(top)}px`;
+    pop.style.left = `${Math.round(left)}px`;
+  }
+  document.addEventListener("click", (e) => {
+    const sb = e.target.closest("[data-share]");
+    if (sb) {
+      const u = new URL(location.href);
+      if (sb.dataset.hash) u.hash = sb.dataset.hash;
+      const url = u.toString(), title = `${sb.dataset.share} — Trend Engine`;
+      if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+        navigator.share({ title, url }).catch(() => {});
+        return;
+      }
+      navigator.clipboard?.writeText(url)?.catch(() => {});
+      showTip(sb, "링크를 복사했어요");
+      return;
+    }
+    const tipEl = e.target.closest(".badge[title], .why[title], .hrow > i[title], #shape a[title]");
+    if (tipEl) showTip(tipEl, tipEl.getAttribute("title"));
+  });
   window.onhashchange = () => { readHash(); renderRegions(); setView(view); };
   setView(view);
 })();
