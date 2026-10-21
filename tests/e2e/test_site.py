@@ -354,3 +354,23 @@ def test_country_flow_card_reads_from_where_a_topic_started(page, site):
     assert "먼저 뜬 주제는" in text and "주 뒤" in text
     assert "처음 등장한 나라" in page.locator("#flow-note").inner_text()
     assert not page.errors, page.errors
+
+
+def test_modern_web_features_popover_share_and_relative_time(page, site):
+    page.goto(site + "#diffusion")
+    wait_rows(page, "#dif-now .dif")
+    # Intl.RelativeTimeFormat appends relative freshness ("방금" / "분 전") to the KST stamp
+    assert "KST 업데이트 · " in page.locator("#gen").inner_text()
+    # Popover API: tapping a heatmap cell or badge opens the native [popover] tooltip
+    cell = page.locator("#d-detail .hrow:not(.haxis) > i[title]").first
+    expected_tip = cell.get_attribute("title")
+    cell.click()
+    assert page.evaluate("document.querySelector('#tip-pop').matches(':popover-open')")
+    assert page.locator("#tip-pop").inner_text() == expected_tip
+    # Share button copies/triggers popover feedback and encodes a deep link to the keyword
+    share_btn = page.locator("#d-detail .share-btn")
+    assert share_btn.get_attribute("data-hash").startswith("#diffusion/")
+    share_btn.click()
+    assert page.evaluate("document.querySelector('#tip-pop').matches(':popover-open')")
+    assert not page.errors, page.errors
+
