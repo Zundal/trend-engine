@@ -36,6 +36,40 @@ def build_page(key: bytes) -> str:
     return page.replace(STATIC_MARKER, "let STATIC = true;", 1).replace(KEY_MARKER, f'const DATA_KEY = "{key.hex()}";', 1)
 
 
+def _site_base(site_url: str) -> str:
+    return site_url.rstrip("/") + "/"
+
+
+def sitemap_xml(site_url: str, *, lastmod: str | None = None) -> str:
+    """Homepage + public RSS. Hash tabs are one SPA, so Google only indexes the root URL."""
+    base = _site_base(site_url)
+    mod = f"\n    <lastmod>{lastmod}</lastmod>" if lastmod else ""
+    urls = [
+        (base, "hourly", "1.0"),
+        (f"{base}feed.xml", "daily", "0.5"),
+    ]
+    body = "".join(
+        f"  <url>\n    <loc>{loc}</loc>{mod}\n    <changefreq>{freq}</changefreq>\n    <priority>{pri}</priority>\n  </url>\n"
+        for loc, freq, pri in urls
+    )
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{body}</urlset>\n"
+    )
+
+
+def robots_txt(site_url: str) -> str:
+    base = _site_base(site_url)
+    return (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "\n"
+        f"Sitemap: {base}sitemap.xml\n"
+    )
+
+
 async def export_site(svc: TrendService, out: Path, regions: list[str], archive_dir: Path | None = None,
                       health_path: Path | None = None) -> list[str]:
     key = publish.data_key()
@@ -54,6 +88,9 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     for icon in ICONS:
         (out / icon).write_bytes((WEB / icon).read_bytes())
     (out / ".nojekyll").write_text("")
+    lastmod = utcnow().date().isoformat()
+    (out / "sitemap.xml").write_text(sitemap_xml(svc.settings.site_url, lastmod=lastmod), encoding="utf-8")
+    (out / "robots.txt").write_text(robots_txt(svc.settings.site_url), encoding="utf-8")
 
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
     meta["regions"] = [r for r in meta["regions"] if r["code"] in regions]

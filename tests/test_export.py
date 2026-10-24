@@ -72,6 +72,12 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert ico[:4] == b"\x00\x00\x01\x00" and ico[6:8] == bytes([48, 48])
     assert 'href="favicon-48x48.png"' in page and 'href="favicon.ico"' in page and 'rel="icon" href="data:' not in page
     assert (tmp_path / ".nojekyll").exists()
+    site_url = service.settings.site_url.rstrip("/") + "/"
+    sitemap = (tmp_path / "sitemap.xml").read_text()
+    assert 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' in sitemap
+    assert f"<loc>{site_url}</loc>" in sitemap and f"<loc>{site_url}feed.xml</loc>" in sitemap
+    robots = (tmp_path / "robots.txt").read_text()
+    assert "Disallow: /api/" in robots and f"Sitemap: {site_url}sitemap.xml" in robots
     assert any("report KR" in line for line in lines)
 
 

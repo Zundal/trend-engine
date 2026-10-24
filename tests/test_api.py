@@ -12,6 +12,12 @@ def test_end_to_end_offline(service):
     assert client.get("/").status_code == 200
     assert client.get("/favicon-48x48.png").headers["content-type"] == "image/png"
     assert client.get("/favicon.ico").status_code == 200
+    site = service.settings.site_url.rstrip("/") + "/"
+    sm = client.get("/sitemap.xml")
+    assert sm.status_code == 200 and "application/xml" in sm.headers["content-type"]
+    assert f"<loc>{site}</loc>" in sm.text and f"<loc>{site}feed.xml</loc>" in sm.text
+    robots = client.get("/robots.txt")
+    assert robots.status_code == 200 and f"Sitemap: {site}sitemap.xml" in robots.text
 
     meta = client.get("/api/meta").json()
     assert meta["offline"] is True and any(r["code"] == "KR" for r in meta["regions"])
