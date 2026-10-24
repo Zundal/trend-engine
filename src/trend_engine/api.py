@@ -5,10 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse, Response
 
 from . import publish
+from .export import robots_txt, sitemap_xml
 from .service import TrendService
+from .store import utcnow
 
 WEB = Path(__file__).parent / "web"
 
@@ -41,6 +43,17 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     @app.get("/favicon.ico", include_in_schema=False)
     def icon_ico():
         return FileResponse(WEB / "favicon.ico")
+
+    @app.get("/sitemap.xml", include_in_schema=False)
+    def sitemap():
+        return Response(
+            sitemap_xml(svc.settings.site_url, lastmod=utcnow().date().isoformat()),
+            media_type="application/xml",
+        )
+
+    @app.get("/robots.txt", include_in_schema=False)
+    def robots():
+        return PlainTextResponse(robots_txt(svc.settings.site_url))
 
     # Dashboard endpoints return source-neutral public views (publish.py); raw data stays
     # available via the CLI (`trend-engine collect --json`).
