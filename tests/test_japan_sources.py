@@ -16,6 +16,8 @@ def test_yahoo_topics_dedupes_across_feeds():
     assert len(items) >= 20
     assert items[0].kind == "keyword" and items[0].rank == 1
     assert len({it.keyword for it in items}) == len(items)
+    spaced = [it for it in items if " " in it.keyword]
+    assert spaced and all(it.query == it.keyword.split()[0] for it in spaced)  # topic head doubles as the search query
 
 
 def test_hatena_reads_rdf_rss():

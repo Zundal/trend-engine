@@ -18,6 +18,7 @@
 | `yahoo_us` | content | 미국 | 불필요 | `news.yahoo.com/rss/` | 야후 미국 뉴스 |
 | `official_charts` | content | 영국 | 불필요 | `officialcharts.com/charts/singles-chart/` | Official Singles Chart HTML |
 | `bbc_news` | content | 영국 | 불필요 | `feeds.bbci.co.uk/news/rss.xml` | BBC 뉴스 헤드라인 |
+| `yahoo_tw_search` | keyword | 대만 | 불필요 | `tw.yahoo.com/` 헤더 `熱搜` (`data-ylk` 의 `tts-term`) | 포털 인기 검색어 ~11개. `kt:rev`(유료 노출)는 버림. KR signal/nate 역할 |
 | `kkbox_tw` | content | 대만 | 불필요 | `kma.kkbox.com/charts/api/v1/daily?terr=tw&type=song` | KKBOX 일간 차트 JSON (멜론 역할) |
 | `yahoo_tw` | content | 대만 | 불필요 | `tw.news.yahoo.com/rss/` | 야후 대만 뉴스 |
 | `gnn_tw` | content | 대만 | 불필요 | `gnn.gamer.com.tw/rss.xml` | 바하무트 GNN 게임 뉴스 |
@@ -29,6 +30,12 @@
 | `melon` | content | 한국 | 불필요 | `melon.com/chart/index.json` | 멜론 TOP50. 국내 10·20대 음악·팬덤 신호 (애플 차트 보완) |
 | `netflix` | content | 전 국가 | 불필요 | `netflix.com/tudum/top10/data/all-weeks-global.tsv` | 주간 글로벌 Top10(영화·TV 40편). **Chrome UA 금지**(unsupportedbrowser). 나라별 TSV(~30MB)는 수집 주기상 제외 |
 | `google_news` | content | 국가·언어 | 불필요 | `news.google.com/rss` | 개인·비상업 용도 조건 명시됨 |
+
+## 시도했다가 뺀 것: 헤드라인 합의 키워드 (2026-10-25)
+미국·영국·베트남처럼 포털 인기 검색어가 없는 나라에서, 매체 2곳 이상이 함께 쓴 고유명사를 키워드로 넣어 봤다.
+같은 시점 실데이터로 비교하니 상위 20개 중 다른 소스가 확인한 이슈 수가 **늘지 않았다**(미국 5→4).
+헤드라인에 나온 이슈는 이미 '헤드라인 언급'으로 확인되므로 새 확인이 생기지 않고, `Trump`·`Ukraine` 같은 상시 이름이
+확인된 이슈를 밀어냈다. 이 나라들에 필요한 건 파생 키워드가 아니라 **진짜 포털 인기 검색어 피드**다.
 
 ## 과거 데이터 (랭킹 소스 아님)
 | 모듈 | 키 | 내용 |

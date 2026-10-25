@@ -48,9 +48,11 @@ class YahooTopics(Source):
                 if title in seen:
                     continue
                 seen.add(title)
+                # 토픽 제목은 '주제 설명' 꼴('台風 温帯低気圧になっても警戒を') — 앞 덩어리가 검색어 역할 (nate 의 query 처럼)
+                head = title.split()[0] if " " in title or "\u3000" in title else ""
                 items.append(TrendItem(
                     source=self.name, region=region, rank=0, keyword=title, kind="keyword",
-                    meta={"section": feed},
+                    meta={"section": feed, "query": head or None},
                 ))
         return rerank(items)
 

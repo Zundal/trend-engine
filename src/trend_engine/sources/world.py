@@ -5,6 +5,7 @@
   official_charts  (GB) Official Singles Chart HTML
   bbc_news         (GB) BBC 뉴스 RSS
   kkbox_tw         (TW) KKBOX 일간 차트 JSON (멜론 역할)
+  yahoo_tw_search  (TW) 야후 대만 홈 인기 검색어 (keyword, 광고 제외)
   yahoo_tw         (TW) 야후 대만 뉴스 RSS
   gnn_tw           (TW) 바하무트 GNN 게임 뉴스 RSS
   vnexpress        (VN) VnExpress 많이 본 뉴스 RSS
@@ -112,6 +113,33 @@ class KKBoxTW(Source):
                            url=s.get("song_url"), category="음악",
                            meta={"chart": "daily", "artist": (s.get("artist_name") or "").strip()})
                  for s in songs[:50] if (s.get("song_name") or "").strip()]
+        return rerank(items)
+
+
+class YahooTWSearch(Source):
+    """야후 대만 홈 '熱搜' — 대만 포털 인기 검색어 (한국 signal/nate 역할). 유료 노출(kt:rev)은 버린다."""
+
+    name = "yahoo_tw_search"
+    label = "대만 포털 인기 검색어"
+    kind = "keyword"
+    weight = 0.85
+    regions = frozenset({"TW"})
+    fixture_ext = "html"
+    _YLK = re.compile(r'data-ylk="([^"]*subsec:srch-tts;[^"]*)"')
+
+    async def fetch(self, client, region, settings):
+        return await get_text(client, "https://tw.yahoo.com/", headers={"User-Agent": BROWSER_UA})
+
+    def parse(self, raw, region):
+        items: list[TrendItem] = []
+        seen: set[str] = set()
+        for m in self._YLK.finditer(raw):
+            kv = dict(p.split(":", 1) for p in html.unescape(m.group(1)).split(";") if ":" in p)
+            term = (kv.get("tts-term") or "").strip()
+            if not term or kv.get("kt") != "org" or term in seen:
+                continue
+            seen.add(term)
+            items.append(TrendItem(source=self.name, region=region, rank=0, keyword=term, kind="keyword"))
         return rerank(items)
 
 
