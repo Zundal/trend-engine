@@ -328,6 +328,16 @@ def test_attention_card_shows_each_country_against_its_own_normal(page, site):
     assert not page.errors, page.errors
 
 
+def test_japan_country_shows_local_interest_list(page, site):
+    page.goto(site + "#country/JP/live")
+    page.wait_for_selector("#rank li[data-i]")
+    page.wait_for_selector("#card-local:not([hidden]) #local li a")
+    text = page.locator("#card-local").inner_text()
+    assert "로컬 관심" in text
+    assert any(tag in text for tag in ("음악", "창작", "영상", "관심글", "토픽"))
+    assert not page.errors, page.errors
+
+
 def test_shape_card_labels_how_each_riser_got_its_attention(page, site):
     page.goto(site + "#country/KR/live")
     page.wait_for_selector("#card-shape:not([hidden]) #shape li")

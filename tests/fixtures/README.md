@@ -11,3 +11,4 @@
 - `shopping_insight/sample.json` — 쇼핑인사이트 실응답으로 만든 결과 (20대, 60대+, 20대 여성 × 패션의류·디지털/가전·식품). 오프라인 모드 입력.
 - `melon/KR.json` — 멜론 TOP100 JSON 에서 상위 50곡만 남긴 실응답 요약 (`songs`).
 - `netflix/*.json` — 글로벌 Top10 TSV 최신 주만 잘라 둔 요약 (`shows`). 나라별 파일 내용은 동일.
+- `yahoo_topics/JP.json` · `hatena/JP.xml` · `nicovideo/JP.json` · `billboard_japan/JP.html` · `livedoor_trend/JP.xml` — 일본 밀도 맞춤용 실응답 (상위 N개로 자른 것 포함).
