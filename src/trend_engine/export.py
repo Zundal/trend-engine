@@ -266,7 +266,6 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     done = archive.finalize(svc.store, root, regions, today)
     lines.append(f"archive: {len(done)} new files" + (f" ({', '.join(done[:4])}{'…' if len(done) > 4 else ''})" if done else ""))
     from .peers import attach_peers
-
     for code in regions:
         periods = {name: archive.period_trends(svc.store, root, code, n, today) for name, n in archive.PERIODS.items()}
         for p in periods.values():

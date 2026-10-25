@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from .safety import is_adult
 from .store import Store
 
 KST = ZoneInfo("Asia/Seoul")
@@ -163,7 +164,8 @@ def period_trends(store: Store, root: Path, region: str, days: int, today: date 
             # exposure = how long × how strong it trended; the ranking metric for a period
             a["exposure"] += k["hours"] * k["avg_score"]
             a["series"][d["date"]] = k["best_rank"]
-    items = sorted(agg.values(), key=lambda a: (-a["exposure"], a["best_rank"]))[:limit]
+    kept = [a for a in agg.values() if not is_adult(a["label"])]  # past days were archived before the filter
+    items = sorted(kept, key=lambda a: (-a["exposure"], a["best_rank"]))[:limit]
     first_day = daily[0]["date"] if daily else None
     for a in items:
         a["exposure"] = round(a["exposure"])

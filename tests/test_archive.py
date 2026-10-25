@@ -64,6 +64,14 @@ def test_period_trends_merges_archive_and_today(tmp_path):
     assert archive.period_trends(s2, tmp_path, "KR", 30, TODAY)["days_available"] == 5
 
 
+def test_period_trends_drops_adult_titles_from_old_archives(tmp_path):
+    s = Store(":memory:")
+    snap(s, "2026-09-19T10:00", ["Pornhub", "Steady"])
+    snap(s, "2026-09-20T10:00", ["Steady"])
+    labels = [i["label"] for i in archive.period_trends(s, tmp_path, "KR", 7, TODAY)["items"]]
+    assert labels == ["Steady"]
+
+
 def test_period_segments_counts_days_over_indexed(tmp_path):
     s = Store(":memory:")
     for day, aff in ((18, 180.0), (19, 150.0), (20, 90.0)):
