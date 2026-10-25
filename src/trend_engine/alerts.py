@@ -146,6 +146,7 @@ async def notify_slack(webhook: str, alerts: list[Alert], site_url: str, client)
 
 SOURCE_WORDS = re.compile(
     r"google|youtube|naver|네이버|nate|signal|wikipedia|melon|멜론|netflix|넷플릭스|"
-    r"yahoo|hatena|하테나|niconico|nicovideo|니코니코|billboard|livedoor|라이브도어|pixiv",
+    r"yahoo|hatena|하테나|niconico|nicovideo|니코니코|billboard|livedoor|라이브도어|pixiv|"
+    r"official.?charts|bbc|kkbox|gnn|vnexpress",
     re.I,
 )

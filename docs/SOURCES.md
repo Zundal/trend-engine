@@ -14,6 +14,14 @@
 | `nicovideo` | content | 일본 | 불필요 | `nvapi.nicovideo.jp/v1/ranking/genre/all?term=24h` (`X-Frontend-Id: 6`) | 니코니코 24h 랭킹 — 젊은 층 영상 |
 | `billboard_japan` | content | 일본 | 불필요 | `billboard-japan.com/charts/detail?a=hot100` | Hot 100 HTML. KR 멜론에 대응 |
 | `livedoor_trend` | content | 일본 | 불필요 | `news.livedoor.com/topics/rss/trend.xml` | 라이브도어 트렌드 토픽 |
+| `billboard_us` | content | 미국 | 불필요 | `billboard.com/charts/hot-100/` | Hot 100 HTML (`h3#title-of-a-story` + `c-label`) |
+| `yahoo_us` | content | 미국 | 불필요 | `news.yahoo.com/rss/` | 야후 미국 뉴스 |
+| `official_charts` | content | 영국 | 불필요 | `officialcharts.com/charts/singles-chart/` | Official Singles Chart HTML |
+| `bbc_news` | content | 영국 | 불필요 | `feeds.bbci.co.uk/news/rss.xml` | BBC 뉴스 헤드라인 |
+| `kkbox_tw` | content | 대만 | 불필요 | `kma.kkbox.com/charts/api/v1/daily?terr=tw&type=song` | KKBOX 일간 차트 JSON (멜론 역할) |
+| `yahoo_tw` | content | 대만 | 불필요 | `tw.news.yahoo.com/rss/` | 야후 대만 뉴스 |
+| `gnn_tw` | content | 대만 | 불필요 | `gnn.gamer.com.tw/rss.xml` | 바하무트 GNN 게임 뉴스 |
+| `vnexpress` | content | 베트남 | 불필요 | `vnexpress.net/rss/tin-xem-nhieu.rss` | 많이 본 뉴스 |
 | `ettoday` | content | 대만 | 불필요 | `feeds.feedburner.com/ettoday/{star,game}` | 연예(星光雲)·게임 섹션 기사 제목 (각 25건) |
 | `reddit` | content | 미국 | 불필요 | `reddit.com/r/teenagers+GenZ/hot/.rss` | 영어권 10·20대 서브레딧. **익명 한도가 낮아 US 에만** (영국도 같은 내용) |
 | `kenh14` | content | 베트남 | 불필요 | `kenh14.vn/rss/home.rss` | 베트남 젊은 층 매체 |
@@ -65,7 +73,8 @@
 **TikTok 크리에이티브 센터**(로그인) · **Pinterest**(키 필요) · **디시인사이드 hit RSS**(빈 응답) ·
 **PTT**(대만) — 로컬 IP 에서는 되지만 Cloudflare 가 데이터센터 IP(GitHub Actions)를 403 으로 막는다. 코드는 `sources/local.py` 에 남겨뒀고, 자체 서버에서 돌릴 때 레지스트리에 넣으면 된다.
 일본은 야후 토픽(키워드) + 하테나·니코니코·빌보드재팬·라이브도어·pixiv + 애플로 KR 에 가깝게 맞췄다.
-대만은 ETtoday + 애플, 베트남은 Kenh14. 연령·성별 **실측은 여전히 한국뿐**(네이버 DataLab).
+미국은 빌보드 Hot 100, 영국은 Official Charts + BBC, 대만은 KKBOX + 야후 대만 + GNN + ETtoday,
+베트남은 VnExpress + Kenh14 를 더했다. 연령·성별 **실측은 여전히 한국뿐**(네이버 DataLab).
 
 ## 후보 소스 (미구현)
 X/Twitter 트렌드(유료 API), TikTok Creative Center(스크래핑), 카카오 이슈.
