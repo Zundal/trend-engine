@@ -28,7 +28,7 @@ def wikimedia_gate() -> asyncio.Semaphore:
 # Namespaces / evergreen pages that are traffic noise, not interest.
 _SKIP_PREFIX = ("특수:", "위키백과:", "Special:", "Wikipedia:", "Main_Page", "特別:", "Wikipedia‐", "メインページ",
                 "Spezial:", "Hauptseite", "Spécial:", "Portal:", "파일:", "File:", "분류:", "Category:", "틀:", "도움말:")
-_SKIP_EXACT = {"대문", "-", "Main_Page", "Wikipedia"}
+_SKIP_EXACT = {"대문", "-", "Main_Page", "Wikipedia", "Trang_Chính"}
 
 
 class Wikipedia(Source):
