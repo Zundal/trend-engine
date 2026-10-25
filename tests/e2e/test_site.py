@@ -356,6 +356,17 @@ def test_country_flow_card_reads_from_where_a_topic_started(page, site):
     assert not page.errors, page.errors
 
 
+def test_country_detail_shows_similar_level_peers(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#sel-h")
+    page.wait_for_function("document.querySelectorAll('#detail .peer').length >= 1", timeout=15000)
+    assert "비슷한 관심도" in page.locator("#detail").inner_text()
+    peer_label = page.locator("#detail .peer b").first.inner_text().strip()
+    page.locator("#detail .peer").first.click()
+    page.wait_for_function("t => document.querySelector('#sel-h')?.textContent === t", arg=peer_label)
+    assert not page.errors, page.errors
+
+
 def test_modern_web_features_popover_share_and_relative_time(page, site):
     page.goto(site + "#diffusion")
     wait_rows(page, "#dif-now .dif")

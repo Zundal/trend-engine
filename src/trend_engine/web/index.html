@@ -4,10 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trend Engine</title>
-<meta name="description" content="지금 사람들의 관심사 — 10·20대가 유독 찾는 것, 윗세대로 번지는 유행, 나라별 이슈, 연령·성별 관심">
+<meta name="description" content="지금 사람들의 관심사 — 10·20대가 유독 찾는 것, 윗세대로 번지는 유행, 나라별 이슈, 연령·성별 관심, 비슷한 관심도의 이웃 트렌드">
 <link rel="canonical" href="https://trend.todoli.lat/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Trend Engine">
+<meta property="og:description" content="교차 검증 트렌드 — 국가·연령·세대 확산·비슷한 관심도 이웃까지">
+<meta property="og:url" content="https://trend.todoli.lat/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
 <link rel="sitemap" type="application/xml" title="Sitemap" href="sitemap.xml">
 <link rel="alternate" type="application/rss+xml" title="Trend Engine 알림" href="feed.xml">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Trend Engine","url":"https://trend.todoli.lat/","description":"여러 공개 신호로 교차 검증하는 트렌드 대시보드","inLanguage":"ko"}
+</script>
 <!-- 아이콘은 파일로 둔다 (검색 결과 옆 아이콘은 주소로 받아 가고, 한 변이 48의 배수여야 한다) -->
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
 <link rel="icon" sizes="48x48" href="favicon.ico">
@@ -383,6 +392,15 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .d-sec > b small { font-weight: 400; font-size: 13px; color: var(--inv-muted); }
 .d-sec ul { margin: 0; padding-left: 18px; color: var(--inv-ink2); display: flex; flex-direction: column; gap: 4px; }
 .inv .dim, .inv .legend { color: var(--inv-muted); }
+.peers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.peers li { margin: 0; }
+.peers .peer { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; width: 100%; padding: 8px 0; border: 0; border-top: 1px solid var(--inv-line, var(--hair)); background: none; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.peers li:first-child .peer { border-top: 0; }
+.peers .peer:hover b { color: var(--inv-accent, var(--accent-ink)); }
+.peers .peer small { font-size: 12px; color: var(--inv-muted, var(--muted)); }
+.peers-inline { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 8px; }
+.peers-inline button { border: 1px solid var(--edge); background: var(--panel); color: var(--ink2); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.peers-inline button:hover { border-color: var(--accent); color: var(--accent-ink); }
 .affrow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 36px; gap: 10px; align-items: center; }
 .affrow > span:first-child { color: var(--inv-ink2); }
 .affrow > span:last-child { font-family: var(--mono); text-align: right; color: var(--inv-ink); }
@@ -966,7 +984,21 @@ async function api(path, opts) {
   return body;
 }
 
-// ---- routing: #country/KR, #age/20대 -------------------------------------------------
+// ---- routing: #country/KR, #age/20대 · sitemap 딥링크 ?view=&region= ----------------------
+function applyQueryDeepLink() {
+  // sitemap 이 심는 ?view=country&region=KR 형태 → 해시로 옮긴 뒤 쿼리는 지운다 (한 번만)
+  const q = new URLSearchParams(location.search);
+  const v = q.get("view");
+  if (!v) return;
+  if (v === "glance") location.replace("#glance");
+  else if (v === "youth") location.replace("#youth");
+  else if (v === "diffusion") location.replace("#diffusion");
+  else if (v === "age") location.replace("#age");
+  else if (v === "country") {
+    const r = q.get("region") || "KR";
+    location.replace(`#country/${encodeURIComponent(r)}/live`);
+  }
+}
 function readHash() {
   const [v, arg, p, k] = decodeURIComponent(location.hash.slice(1)).split("/");
   if (v === "glance") { view = "glance"; }
@@ -1055,9 +1087,12 @@ function renderGlanceIssues() {
     const c = t.members?.[0] || t;
     const who = whoMore([t.label, c.label, ...(t.members || []).slice(1).map((m) => m.label)]);
     const lead = glLead(t);
+    const peers = (t.peers || []).slice(0, 2);
+    const peerLine = peers.length
+      ? `<span class="gl-sub">비슷한 관심 · ${peers.map((p) => esc(p.label)).join(" · ")}</span>` : "";
     return `<li><button type="button" class="gl-row" data-go="country" data-r="KR" data-k="${esc(t.key)}">
       <span class="n">${i + 1}</span>
-      <span class="gl-main"><span class="gl-k"><b>${esc(t.label)}</b>${t.category !== "기타" ? catTag(t.category) : ""}</span>${lead ? `<span class="gl-sub">${esc(lead)}</span>` : ""}</span>
+      <span class="gl-main"><span class="gl-k"><b>${esc(t.label)}</b>${t.category !== "기타" ? catTag(t.category) : ""}</span>${lead ? `<span class="gl-sub">${esc(lead)}</span>` : ""}${peerLine}</span>
       <span class="gl-x">${who.map((w) => `<span>${esc(w)}</span>`).join("")}</span></button></li>`;
   }).join("") || `<li class="empty">데이터가 없어요</li>`;
 }
@@ -1186,10 +1221,45 @@ function renderSelected() {
   if (pd) renderPeriodDetail(it, pd, selected + 1); else renderDetail(it, selected + 1);
 }
 const detailHead = (n, cat, label, key) => `<div class="d-head"><div class="d-top"><span class="kicker">${n}위${cat && cat !== "기타" ? " · " + esc(cat) : ""}</span><button type="button" class="share-btn" data-share="${esc(label)}" data-hash="#country/${esc(region)}/${esc(cperiod)}/${encodeURIComponent(key || label)}">공유</button></div><h3 id="sel-h">${esc(label)}</h3></div>`;
+/** 비슷한 관심도 이웃 — 서버 peers 우선, 없으면 현재 순위에서 같은 분야·비슷한 점수·근처 순위로 고른다 */
+function peersOf(it) {
+  if (it?.peers?.length) return it.peers;
+  const src = rankSource(), i = src.findIndex((x) => x.key === it?.key);
+  if (i < 0) return [];
+  const pd = periodData(), scoreKey = pd ? "exposure" : "score";
+  const my = +(it[scoreKey] ?? it.score) || 0, myCat = it.category || "기타";
+  return src.map((o, j) => {
+    const sc = +(o[scoreKey] ?? o.score) || 0;
+    const ratio = my > 0 ? Math.abs(sc - my) / my : (sc ? 1 : 0);
+    const gap = Math.abs(j - i), same = myCat !== "기타" && (o.category || "기타") === myCat;
+    return { o, j, ratio, gap, same, ok: same || ratio <= 0.35 || gap <= 8 };
+  }).filter((x) => x.j !== i && x.ok)
+    .sort((a, b) => (b.same - a.same) || a.ratio - b.ratio || a.gap - b.gap)
+    .slice(0, 4)
+    .map(({ o, j, same, ratio }) => ({
+      label: o.label, key: o.key, rank: j + 1, category: o.category || "기타", same_category: same,
+      why: same && ratio <= 0.35 ? "같은 분야 · 비슷한 점수" : same ? "같은 분야" : ratio <= 0.35 ? "비슷한 점수대" : "근처 순위",
+    }));
+}
+function peersHTML(it, inv) {
+  const peers = peersOf(it);
+  if (!peers.length) return "";
+  return `<div class="d-sec"><b>비슷한 관심도</b>
+    <ul class="peers">${peers.map((p) => `<li><button type="button" class="peer" data-peer="${esc(p.key)}"><b>${esc(p.label)}</b>
+      <small>${p.rank}위 · ${esc(p.why)}${p.category && p.category !== "기타" ? ` · ${esc(p.category)}` : ""}</small></button></li>`).join("")}</ul>
+    <span class="dim" style="font-size:12px">같은 분야이거나 점수·순위가 비슷한 이슈예요. 누르면 그 줄로 가요.</span></div>`;
+}
+function openPeer(key) {
+  const src = rankSource(), i = src.findIndex((x) => x.key === key);
+  if (i < 0) return;
+  selected = i; showAll ||= i >= 20; ccat = ""; renderRank();
+  $("#detail")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
 function renderPeriodDetail(c, pd, n) {
   $("#detail").innerHTML = `${detailHead(n, c.category, c.label, c.key)}
     <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>순위권 ${c.hours}시간</span><span>첫 등장 ${md(c.since)}</span></div>
-    <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>`;
+    <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>
+    ${peersHTML(c)}`;
 }
 function sparkDays(dates, series) {
   if (dates.length < 2) return `<div class="dim">기록이 2일 이상이면 그래프가 나와요</div>`;
@@ -1220,6 +1290,7 @@ async function renderDetail(t, n) {
     ${others.length ? `<p class="quote">함께 묶은 이슈: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
     <div id="aff"></div>
     <div class="d-sec"><b>순위 추이</b><div id="spark" class="dim">…</div></div>
+    ${peersHTML(t)}
     ${more.length ? `<div class="d-sec"><b>함께 나온 제목</b><ul>${more.slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`;
   renderAffinity([t.label, c.label, ...others.map((m) => m.label)]);
   try {
@@ -1488,9 +1559,19 @@ function renderYouth() {
 
   const top = disc[0];
   $("#y-top").hidden = !top;
-  if (top) $("#y-top").innerHTML = `<span class="kicker">${pl} 1위</span>
-    <div class="top1-r"><span class="top1-k${top.keyword.length > 9 ? " long" : ""}">${esc(top.keyword)}</span>
-    <span class="top1-x">30대 이상 대비 <b>${xfmt(top)}배</b></span></div>`;
+  if (top) {
+    const yPeers = disc.slice(1).filter((r) => {
+      const a = top.vs_older || 0, b = r.vs_older || 0;
+      const same = top.category && top.category !== "기타" && r.category === top.category;
+      return same || (a > 0 && Math.abs(b - a) / a <= 0.35);
+    }).slice(0, 4);
+    $("#y-top").innerHTML = `<span class="kicker">${pl} 1위</span>
+      <div class="top1-r"><span class="top1-k${top.keyword.length > 9 ? " long" : ""}">${esc(top.keyword)}</span>
+      <span class="top1-x">30대 이상 대비 <b>${xfmt(top)}배</b></span></div>
+      ${yPeers.length ? `<div class="peers-inline" aria-label="비슷한 배수">${yPeers.map((r) =>
+        `<button type="button" data-ypeer="${esc(r.keyword)}">${esc(r.keyword)} <b>${xfmt(r)}배</b></button>`).join("")}</div>
+        <p class="note" style="margin:0">비슷한 배수·같은 분야의 이웃이에요</p>` : ""}`;
+  }
   // 순위는 잰 것만. 분야를 고르면 그 분야의 쇼핑 고유어도 함께 보여 타일↔칩↔목록이 이어지게 한다
   const list = ycat ? byCat([...disc, ...shopRows], ycat) : disc;
   const max = Math.max(6, Math.ceil(Math.max(0, ...list.map((r) => r.vs_older || 0))));
@@ -1876,6 +1957,7 @@ function renderTransfer() {
   else $("#refresh").onclick = () => view === "country" ? loadCountry(true) : null;
   try { region = localStorage.getItem("te.region") || region; group = localStorage.getItem("te.group") || group; } catch (_) {}
   if (!BASIC_SEGS.includes(group)) group = "20대";
+  applyQueryDeepLink();
   readHash();
   if (!countries().some((r) => r.code === region)) region = countries()[0]?.code || "KR";
   renderRegions();
@@ -1914,6 +1996,20 @@ function renderTransfer() {
   $("#rank").onclick = (e) => {
     const li = e.target.closest("[data-i]"); if (!li) return;
     selected = +li.dataset.i; renderRank();
+  };
+  $("#detail").onclick = (e) => {
+    const b = e.target.closest("[data-peer]"); if (!b) return;
+    openPeer(b.dataset.peer);
+  };
+  $("#y-top").onclick = (e) => {
+    const b = e.target.closest("[data-ypeer]"); if (!b) return;
+    const rows = youthRows(ygroup);
+    const i = rows.findIndex((r) => r.keyword === b.dataset.ypeer);
+    if (i < 0) return;
+    ycat = "";
+    renderYouth();
+    const li = $$("#y-disc li[data-cat]")[i];
+    li?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
   $("#cperiod").onclick = (e) => {
     const b = e.target.closest("[data-p]"); if (!b || b.dataset.p === cperiod) return;

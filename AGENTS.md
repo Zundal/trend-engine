@@ -33,6 +33,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/shapes.py` | 유행의 모양: 정점 앞뒤 비율로 예고형/하루형/대칭형/여운형 분류 + 재등장 교차검증 |
 | `src/trend_engine/archive.py` | 일별 요약(KST) · data 브랜치 기록 · 7일/30일 기간 뷰 |
 | `src/trend_engine/categories.py` | 무키 카테고리 분류: 뉴스 섹션·영상 분류·위키 분류·쇼핑 분야·핵심어 사전 투표 → 11개 분야 |
+| `src/trend_engine/peers.py` | 비슷한 관심 레벨 이웃(같은 분야·비슷한 점수·근처 순위) — `publish.public_report` / 기간 뷰에 부착 |
 | `src/trend_engine/diffusion.py` | 세대 확산 감지: 연령별 주간 추이 → 급상승 시점·시차 → 단계 판정, 과거 사례 검증 |
 | `src/trend_engine/pomdp.py` | 부분관측 마르코프 결정과정: 국면 믿음(실행 간 보관)·Baum-Welch 재학습·알림 게이트·측정 배분 (docs/POMDP.md) |
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |

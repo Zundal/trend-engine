@@ -76,8 +76,11 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     sitemap = (tmp_path / "sitemap.xml").read_text()
     assert 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' in sitemap
     assert f"<loc>{site_url}</loc>" in sitemap and f"<loc>{site_url}feed.xml</loc>" in sitemap
+    assert f"<loc>{site_url}?view=country&amp;region=KR</loc>" in sitemap or f"<loc>{site_url}?view=country&region=KR</loc>" in sitemap
+    assert "?view=youth" in sitemap and "?view=diffusion" in sitemap
     robots = (tmp_path / "robots.txt").read_text()
     assert "Disallow: /api/" in robots and f"Sitemap: {site_url}sitemap.xml" in robots
+    assert any(t.get("peers") for t in rep.get("themes") or rep["clusters"]), "비슷한 관심도 peers 가 공개 리포트에 있어야 함"
     assert any("report KR" in line for line in lines)
 
 

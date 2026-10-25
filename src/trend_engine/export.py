@@ -40,14 +40,26 @@ def _site_base(site_url: str) -> str:
     return site_url.rstrip("/") + "/"
 
 
-def sitemap_xml(site_url: str, *, lastmod: str | None = None) -> str:
-    """Homepage + public RSS. Hash tabs are one SPA, so Google only indexes the root URL."""
+def sitemap_xml(site_url: str, *, lastmod: str | None = None,
+                regions: list[str] | tuple[str, ...] | None = None) -> str:
+    """공개 HTML·RSS·파비콘. SPA 해시 탭은 크롤러가 개별 URL로 보지 않아 루트만 본문으로 둔다.
+
+    `regions` 가 있으면 국가별 딥링크를 쿼리 형태로도 실어, 공유·인덱싱 표면을 넓힌다
+    (`?view=country&region=KR` — 페이지가 해시를 복원).
+    """
     base = _site_base(site_url)
     mod = f"\n    <lastmod>{lastmod}</lastmod>" if lastmod else ""
-    urls = [
+    urls: list[tuple[str, str, str]] = [
         (base, "hourly", "1.0"),
-        (f"{base}feed.xml", "daily", "0.5"),
+        (f"{base}feed.xml", "daily", "0.6"),
+        (f"{base}favicon-48x48.png", "monthly", "0.1"),
     ]
+    for code in regions or ():
+        urls.append((f"{base}?view=country&amp;region={code}", "hourly", "0.8"))
+    urls.append((f"{base}?view=youth", "hourly", "0.7"))
+    urls.append((f"{base}?view=diffusion", "hourly", "0.7"))
+    urls.append((f"{base}?view=age", "daily", "0.6"))
+    urls.append((f"{base}?view=glance", "hourly", "0.9"))
     body = "".join(
         f"  <url>\n    <loc>{loc}</loc>{mod}\n    <changefreq>{freq}</changefreq>\n    <priority>{pri}</priority>\n  </url>\n"
         for loc, freq, pri in urls
@@ -64,6 +76,8 @@ def robots_txt(site_url: str) -> str:
     return (
         "User-agent: *\n"
         "Allow: /\n"
+        "Allow: /feed.xml\n"
+        "Allow: /sitemap.xml\n"
         "Disallow: /api/\n"
         "\n"
         f"Sitemap: {base}sitemap.xml\n"
@@ -89,7 +103,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
         (out / icon).write_bytes((WEB / icon).read_bytes())
     (out / ".nojekyll").write_text("")
     lastmod = utcnow().date().isoformat()
-    (out / "sitemap.xml").write_text(sitemap_xml(svc.settings.site_url, lastmod=lastmod), encoding="utf-8")
+    (out / "sitemap.xml").write_text(
+        sitemap_xml(svc.settings.site_url, lastmod=lastmod, regions=regions), encoding="utf-8")
     (out / "robots.txt").write_text(robots_txt(svc.settings.site_url), encoding="utf-8")
 
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
@@ -250,8 +265,12 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     archive.record_daily_extras(svc.store, today, seg_today, shop_today, youth_today)
     done = archive.finalize(svc.store, root, regions, today)
     lines.append(f"archive: {len(done)} new files" + (f" ({', '.join(done[:4])}{'…' if len(done) > 4 else ''})" if done else ""))
+    from .peers import attach_peers
+
     for code in regions:
         periods = {name: archive.period_trends(svc.store, root, code, n, today) for name, n in archive.PERIODS.items()}
+        for p in periods.values():
+            attach_peers(p["items"], score_key="exposure")
         write(f"period-{code}", periods)
     ages = {name: archive.period_segments(svc.store, root, n, today) for name, n in archive.PERIODS.items()}
     write("age-period", ages)

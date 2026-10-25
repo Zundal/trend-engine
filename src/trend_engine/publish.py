@@ -17,6 +17,8 @@ from typing import Any
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+from .peers import attach_peers
+
 VIDEO_SOURCES = ("youtube",)
 NEWS_SOURCES = ("google_news",)
 APP_CHARTS = (("apple_charts", "topfreeapplications"),)  # (source, chart): the same source also carries songs
@@ -33,30 +35,35 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
             "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
         }
 
+    themes = [{"label": t["label"], "key": t["key"], "score": t["score"], "category": t.get("category") or "기타",
+               "status": t.get("status"), "rank_change": t.get("rank_change"),
+               "members": [cluster_view(m) for m in t.get("members", [])]}
+              for t in r.get("themes", [])]
+    clusters = [
+        {
+            "label": c["label"],
+            "key": c["key"],
+            "score": c["score"],
+            "status": c.get("status"),
+            "rank_change": c.get("rank_change"),
+            "volume": c.get("volume"),
+            "category": c.get("category") or "기타",
+            "novelty": c.get("novelty"),
+            "days_seen": c.get("days_seen", 0),
+            "related": c.get("related", []),
+            "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
+        }
+        for c in r["clusters"]
+    ]
+    # 비슷한 관심 강도·같은 분야 이웃 — 화면이 한 줄만 보고도 옆 레벨을 읽을 수 있게
+    attach_peers(themes)
+    attach_peers(clusters)
     return {
-        "themes": [{"label": t["label"], "key": t["key"], "score": t["score"], "category": t.get("category") or "기타",
-                    "status": t.get("status"), "rank_change": t.get("rank_change"),
-                    "members": [cluster_view(m) for m in t.get("members", [])]}
-                   for t in r.get("themes", [])],
+        "themes": themes,
         "region": r["region"],
         "region_name": r["region_name"],
         "generated_at": r["generated_at"],
-        "clusters": [
-            {
-                "label": c["label"],
-                "key": c["key"],
-                "score": c["score"],
-                "status": c.get("status"),
-                "rank_change": c.get("rank_change"),
-                "volume": c.get("volume"),
-                "category": c.get("category") or "기타",
-                "novelty": c.get("novelty"),
-                "days_seen": c.get("days_seen", 0),
-                "related": c.get("related", []),
-                "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
-            }
-            for c in r["clusters"]
-        ],
+        "clusters": clusters,
         "videos": [
             {"title": v["keyword"], "url": v.get("url"), "category": v.get("category"), "views": v.get("volume")}
             for s in VIDEO_SOURCES for v in content.get(s, [])
