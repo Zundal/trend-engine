@@ -12,9 +12,9 @@ from trend_engine.sources import REGISTRY
 
 KEY_HEX = "11" * 32
 # Anything that would reveal where the data came from. Page source: any mention at all.
-PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|pixiv|\bptt\b|ettoday|reddit|kenh14|steam|melon|netflix|source_status|publisher", re.I)
+PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|pixiv|\bptt\b|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|source_status|publisher", re.I)
 # Data files: source identifiers as JSON keys/values (headline text may legitimately say "네이버페이").
-SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|pixiv|ptt|ettoday|reddit|kenh14|steam|melon|netflix|sources|source_status|publisher|channel|mode|anchor|errors)"')
+SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|pixiv|ptt|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|sources|source_status|publisher|channel|mode|anchor|errors)"')
 
 
 @pytest.fixture(autouse=True)
@@ -52,6 +52,7 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
     assert rep["apps"] and all(set(a) == {"title", "url"} for a in rep["apps"])  # app chart only: names, no songs
     assert len(rep["apps"]) <= 20
+    assert "local" in rep and all(set(x) <= {"title", "url", "category"} for x in rep["local"])
     hist = publish.decrypt(files["history-KR"], key)
     assert set(hist) == {c["key"] for c in rep["clusters"]}
     assert publish.decrypt(files["shopping"], key)["by_segment"]

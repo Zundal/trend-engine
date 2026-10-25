@@ -773,7 +773,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec" aria-labelledby="pop-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>이 나라에서 많이 받는 앱, 많이 보는 영상, 주요 뉴스</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>이 나라에서 많이 받는 앱, 많이 보는 영상, 주요 뉴스, 로컬 관심</p></div></header>
     <div class="grid3">
       <section class="card sm" id="card-apps" hidden>
         <h3>인기 무료 앱</h3>
@@ -788,6 +788,10 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
         <ul class="list" id="news"></ul>
       </section>
     </div>
+    <section class="card" id="card-local" hidden style="margin-top:14px">
+      <div class="card-h"><h3>이 나라 로컬 관심</h3><span>음악·창작·영상·관심글 등 그 나라 플랫폼에서 보이는 것</span></div>
+      <ul class="list" id="local"></ul>
+    </section>
   </section>
 
   <section class="sec opt" aria-labelledby="ana-h">
@@ -1342,6 +1346,11 @@ function renderContent() {
     <small>${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</small></li>`).join("") || `<li class="empty">데이터가 없어요</li>`;
   $("#news").innerHTML = (REPORT.news || []).slice(0, 8).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
     || `<li class="empty">데이터가 없어요</li>`;
+  const local = REPORT.local || [];
+  $("#card-local").hidden = !local.length;
+  $("#local").innerHTML = local.slice(0, 16).map((it, i) => `<li><span class="n">${i + 1}</span>
+    <a href="#" data-l="${i}">${esc(it.title)}</a>
+    ${it.category ? `<small>${esc(it.category)}</small>` : ""}</li>`).join("");
 }
 function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 1e4 ? Math.round(v / 1e4) + "만회" : Math.round(v).toLocaleString() + "회"; }
 async function loadCountry(refresh = false) {
@@ -2029,6 +2038,7 @@ function renderTransfer() {
   $("#apps").onclick = openItem("apps", "data-a");
   $("#yt").onclick = openItem("videos", "data-v");
   $("#news").onclick = openItem("news", "data-n");
+  $("#local").onclick = openItem("local", "data-l");
   $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadAge(v); };
   $("#kwinput").onkeydown = (e) => { if (e.key === "Enter") $("#kwgo").click(); };
   $("#kwreset").onclick = () => { SEG = null; loadAge(); };

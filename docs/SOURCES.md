@@ -9,6 +9,11 @@
 | `youtube` | content | 국가 | `YOUTUBE_API_KEY` | YouTube Data API v3 `videos.list chart=mostPopular` | 일 할당량 10,000 unit, 호출당 1 unit |
 | `apple_charts` | content | 모든 나라 | 불필요 | `itunes.apple.com/{국가}/rss/topsongs · topfreeapplications` | 나라별 인기 음악·무료 앱 20개씩. 해외 10·20대 신호가 약한 곳을 보완하고 카테고리(음악/테크) 근거로 쓰임 |
 | `pixiv` | content | 일본 | 불필요 | `pixiv.net/ranking.php?mode=daily&format=json` (Referer 필요) | 일간 일러스트 랭킹 — 일본 10·20대 애니·게임 팬덤 신호 |
+| `yahoo_topics` | keyword | 일본 | 불필요 | `news.yahoo.co.jp/rss/topics/{top-picks,domestic,entertainment,sports,it}.xml` | 짧은 헤드라인 ≈ 포털 이슈. KR 의 signal/nate 역할 |
+| `hatena` | content | 일본 | 불필요 | `b.hatena.ne.jp/hotentry.rss` | 하테나 북마크 인기글 (RSS 1.0 RDF) |
+| `nicovideo` | content | 일본 | 불필요 | `nvapi.nicovideo.jp/v1/ranking/genre/all?term=24h` (`X-Frontend-Id: 6`) | 니코니코 24h 랭킹 — 젊은 층 영상 |
+| `billboard_japan` | content | 일본 | 불필요 | `billboard-japan.com/charts/detail?a=hot100` | Hot 100 HTML. KR 멜론에 대응 |
+| `livedoor_trend` | content | 일본 | 불필요 | `news.livedoor.com/topics/rss/trend.xml` | 라이브도어 트렌드 토픽 |
 | `ettoday` | content | 대만 | 불필요 | `feeds.feedburner.com/ettoday/{star,game}` | 연예(星光雲)·게임 섹션 기사 제목 (각 25건) |
 | `reddit` | content | 미국 | 불필요 | `reddit.com/r/teenagers+GenZ/hot/.rss` | 영어권 10·20대 서브레딧. **익명 한도가 낮아 US 에만** (영국도 같은 내용) |
 | `kenh14` | content | 베트남 | 불필요 | `kenh14.vn/rss/home.rss` | 베트남 젊은 층 매체 |
@@ -59,7 +64,8 @@
 되는 것: 위 표 + 애플 차트(전 국가). 막힌 것: **Dcard**(대만, 403) · **니코니코 RSS**(빈 응답) · **야후 재팬 실시간**(자바스크립트) ·
 **TikTok 크리에이티브 센터**(로그인) · **Pinterest**(키 필요) · **디시인사이드 hit RSS**(빈 응답) ·
 **PTT**(대만) — 로컬 IP 에서는 되지만 Cloudflare 가 데이터센터 IP(GitHub Actions)를 403 으로 막는다. 코드는 `sources/local.py` 에 남겨뒀고, 자체 서버에서 돌릴 때 레지스트리에 넣으면 된다.
-일본은 pixiv + 애플로, 대만은 ETtoday + 애플로 보완했고, 베트남은 Kenh14 로 채웠다. 연령·성별 **실측은 여전히 한국뿐**.
+일본은 야후 토픽(키워드) + 하테나·니코니코·빌보드재팬·라이브도어·pixiv + 애플로 KR 에 가깝게 맞췄다.
+대만은 ETtoday + 애플, 베트남은 Kenh14. 연령·성별 **실측은 여전히 한국뿐**(네이버 DataLab).
 
 ## 후보 소스 (미구현)
 X/Twitter 트렌드(유료 API), TikTok Creative Center(스크래핑), 카카오 이슈.

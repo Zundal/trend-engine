@@ -22,6 +22,15 @@ from .peers import attach_peers
 VIDEO_SOURCES = ("youtube",)
 NEWS_SOURCES = ("google_news",)
 APP_CHARTS = (("apple_charts", "topfreeapplications"),)  # (source, chart): the same source also carries songs
+# 나라별 로컬 차트 — 공개 뷰에는 제공자 이름 없이 분류 라벨만 (KR 멜론 · JP 음악/창작/영상 등)
+LOCAL_CHARTS: tuple[tuple[str, str], ...] = (
+    ("melon", "음악"),
+    ("billboard_japan", "음악"),
+    ("pixiv", "창작"),
+    ("nicovideo", "영상"),
+    ("hatena", "관심글"),
+    ("livedoor_trend", "토픽"),
+)
 
 
 def public_report(r: dict[str, Any]) -> dict[str, Any]:
@@ -71,6 +80,10 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
         "news": [{"title": n["keyword"], "url": n.get("url")} for s in NEWS_SOURCES for n in content.get(s, [])],
         "apps": [{"title": a["keyword"], "url": a.get("url")} for s, chart in APP_CHARTS for a in content.get(s, [])
                  if (a.get("meta") or {}).get("chart") == chart],
+        "local": [
+            {"title": it["keyword"], "url": it.get("url"), "category": label}
+            for src, label in LOCAL_CHARTS for it in content.get(src, [])[:5]
+        ][:20],
     }
 
 
