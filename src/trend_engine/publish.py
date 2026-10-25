@@ -18,6 +18,7 @@ from typing import Any
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from .peers import attach_peers
+from .safety import is_adult
 
 VIDEO_SOURCES = ("youtube",)
 NEWS_SOURCES = ("google_news",)
@@ -56,8 +57,8 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
 
     themes = [{"label": t["label"], "key": t["key"], "score": t["score"], "category": t.get("category") or "기타",
                "status": t.get("status"), "rank_change": t.get("rank_change"),
-               "members": [cluster_view(m) for m in t.get("members", [])]}
-              for t in r.get("themes", [])]
+               "members": [cluster_view(m) for m in t.get("members", []) if not is_adult(m["label"])]}
+              for t in r.get("themes", []) if not is_adult(t["label"])]
     clusters = [
         {
             "label": c["label"],
@@ -72,7 +73,7 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
             "related": c.get("related", []),
             "mentions": [t for titles in c.get("mentions", {}).values() for t in titles],
         }
-        for c in r["clusters"]
+        for c in r["clusters"] if not is_adult(c["label"])
     ]
     # 비슷한 관심 강도·같은 분야 이웃 — 화면이 한 줄만 보고도 옆 레벨을 읽을 수 있게
     attach_peers(themes)
@@ -92,7 +93,7 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
                  if (a.get("meta") or {}).get("chart") == chart],
         "local": [
             {"title": it["keyword"], "url": it.get("url"), "category": label}
-            for src, label in LOCAL_CHARTS for it in content.get(src, [])[:5]
+            for src, label in LOCAL_CHARTS for it in content.get(src, [])[:5] if not is_adult(it["keyword"])
         ][:20],
     }
 

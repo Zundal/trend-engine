@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from ..config import get_region
 from ..models import TrendItem
+from ..safety import is_adult
 from .base import Source, SourceError, TransientError, get_text_retry, rerank
 
 # Courtesy User-Agent required by Wikimedia; also used by pageviews.History.
@@ -67,7 +68,7 @@ class Wikipedia(Source):
         items = []
         for a in articles:
             title = a["article"]
-            if title in _SKIP_EXACT or title.startswith(_SKIP_PREFIX) or ":" in title:
+            if title in _SKIP_EXACT or title.startswith(_SKIP_PREFIX) or ":" in title or is_adult(title):
                 continue
             items.append(
                 TrendItem(

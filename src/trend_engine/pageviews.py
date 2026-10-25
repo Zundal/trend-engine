@@ -31,6 +31,7 @@ import httpx
 
 from .config import Settings
 from .sources.base import SourceError, get_text
+from .safety import is_adult
 from .sources.wikipedia import UA, _SKIP_EXACT, _SKIP_PREFIX, wikimedia_gate
 from .store import Store
 
@@ -42,7 +43,8 @@ RETRY_WAIT = 5.0  # seconds; Wikimedia throttles a burst of requests with 429
 
 
 def _keep(article: str) -> bool:
-    return article not in _SKIP_EXACT and not article.startswith(_SKIP_PREFIX) and ":" not in article
+    return (article not in _SKIP_EXACT and not article.startswith(_SKIP_PREFIX) and ":" not in article
+            and not is_adult(article))
 
 
 def parse_top(raw: str, limit: int = 200) -> list[tuple[str, int]]:
