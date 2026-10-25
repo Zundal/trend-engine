@@ -26,10 +26,20 @@ APP_CHARTS = (("apple_charts", "topfreeapplications"),)  # (source, chart): the 
 LOCAL_CHARTS: tuple[tuple[str, str], ...] = (
     ("melon", "음악"),
     ("billboard_japan", "음악"),
+    ("billboard_us", "음악"),
+    ("official_charts", "음악"),
+    ("kkbox_tw", "음악"),
     ("pixiv", "창작"),
     ("nicovideo", "영상"),
+    ("gnn_tw", "게임"),
+    ("ettoday", "연예·게임"),
     ("hatena", "관심글"),
     ("livedoor_trend", "토픽"),
+    ("bbc_news", "뉴스"),
+    ("yahoo_us", "뉴스"),
+    ("yahoo_tw", "뉴스"),
+    ("vnexpress", "많이 본 뉴스"),
+    ("kenh14", "젊은 층 매체"),
 )
 
 
