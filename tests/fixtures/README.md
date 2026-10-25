@@ -13,4 +13,5 @@
 - `netflix/*.json` — 글로벌 Top10 TSV 최신 주만 잘라 둔 요약 (`shows`). 나라별 파일 내용은 동일.
 - `yahoo_topics/JP.json` · `hatena/JP.xml` · `nicovideo/JP.json` · `billboard_japan/JP.html` · `livedoor_trend/JP.xml` — 일본 밀도 맞춤용 실응답 (상위 N개로 자른 것 포함).
 - `billboard_us/US.html` — 빌보드 Hot 100 실응답에서 차트 행(`h3`+`c-label`) 50개만 남긴 것. `official_charts/GB.html` 은 script·svg·head 를 걷어낸 실응답.
+- `yahoo_tw_search/TW.html` — tw.yahoo.com 홈에서 헤더 인기 검색어 `<ul>` 만 남긴 것 (유료 노출 `kt:rev` 항목 포함, parse 가 버리는지 검사용).
 - `yahoo_us/US.xml` · `bbc_news/GB.xml` · `kkbox_tw/TW.json` · `yahoo_tw/TW.xml` · `gnn_tw/TW.xml` · `vnexpress/VN.xml` — 실응답 그대로.
