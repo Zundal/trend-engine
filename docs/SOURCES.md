@@ -23,6 +23,8 @@
 | `yahoo_tw` | content | 대만 | 불필요 | `tw.news.yahoo.com/rss/` | 야후 대만 뉴스 |
 | `gnn_tw` | content | 대만 | 불필요 | `gnn.gamer.com.tw/rss.xml` | 바하무트 GNN 게임 뉴스 |
 | `vnexpress` | content | 베트남 | 불필요 | `vnexpress.net/rss/tin-xem-nhieu.rss` | 많이 본 뉴스 |
+| `zum_issue` | keyword | 한국 | 불필요 | `zum.com/` 홈의 `issueWords` 데이터 (robots 는 홈만 허용) | AI 이슈트렌드 ~16개. 기사 묶음 기반이라 family 따로 |
+| `tuoitre` · `dantri` · `thanhnien` | content | 베트남 | 불필요 | 각 사 최신 RSS | 구글 검색어의 헤드라인 확인용 (각 30개) |
 | `trends24` | keyword | 미국·일본·영국 | 불필요 | `trends24.in/<나라>/` 최신 시간대 `trend-card__list` | X 트렌드 30개. robots 허용(`use=reference`). family `x_trends` |
 | `yahoo_realtime` | keyword | 일본 | 불필요 | `search.yahoo.co.jp/realtime` 트렌드(`_cl_link:atk`) | X 게시물 기반 화제어 20개. family `x_trends` (trends24 와 중복 집계 안 함) |
 | `ettoday` | content | 대만 | 불필요 | `feeds.feedburner.com/ettoday/{star,game}` | 연예(星光雲)·게임 섹션 기사 제목 (각 25건) |
@@ -43,7 +45,8 @@
 같은 시점 실데이터, 상위 20개 중 다른 소스가 확인한 이슈 수 (추가 전 → 후):
 일본 4→8, 영국 2→8, 미국 5→6. 한국 7→5, 베트남 7→5 로 **오히려 줄어** 뺐다 —
 한국은 팬덤 생일·투표 해시태그, 베트남은 태국 드라마 해시태그가 목록 대부분이라 확인된 이슈를 밀어낸다.
-대만은 trends24 페이지가 없다(404). 한국은 signal·nate, 대만은 야후 熱搜가 같은 역할을 한다.
+대만은 trends24 페이지가 없다(404). 대신 한국은 ZUM 이슈트렌드(7→14), 베트남은 종합지 RSS 3곳(9→13)을 더했다.
+베트남 X 목록은 코인·태국 드라마 태그가 대부분이고, 베트남 언론 홈에는 키 없는 인기 검색어 블록이 없다(2026-10-25 확인).
 
 ## 과거 데이터 (랭킹 소스 아님)
 | 모듈 | 키 | 내용 |
@@ -84,7 +87,7 @@
 - 각 서비스 이용약관(특히 Google News RSS 의 비상업 조건)을 상업적 사용 전 확인할 것.
 
 ## 나라별 키 없는 플랫폼 조사 결과 (2026-09-20)
-되는 것: 위 표 + 애플 차트(전 국가). 막힌 것: **Dcard**(대만, 403) · **니코니코 RSS**(빈 응답) · **야후 재팬 실시간**(자바스크립트) ·
+되는 것: 위 표 + 애플 차트(전 국가). 막힌 것: **Dcard**(대만, 403) · **니코니코 RSS**(빈 응답) ·
 **TikTok 크리에이티브 센터**(로그인) · **Pinterest**(키 필요) · **디시인사이드 hit RSS**(빈 응답) ·
 **PTT**(대만) — 로컬 IP 에서는 되지만 Cloudflare 가 데이터센터 IP(GitHub Actions)를 403 으로 막는다. 코드는 `sources/local.py` 에 남겨뒀고, 자체 서버에서 돌릴 때 레지스트리에 넣으면 된다.
 일본은 야후 토픽(키워드) + 하테나·니코니코·빌보드재팬·라이브도어·pixiv + 애플로 KR 에 가깝게 맞췄다.

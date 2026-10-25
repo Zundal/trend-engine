@@ -38,3 +38,12 @@ def test_x_sources_share_family_and_skip_fan_hashtag_regions():
     t24, yr = REGISTRY["trends24"], REGISTRY["yahoo_realtime"]
     assert t24.family == yr.family == X_FAMILY
     assert t24.regions == {"US", "JP", "GB"} and yr.regions == {"JP"}
+
+
+def test_zum_issue_reads_embedded_issue_words():
+    src = REGISTRY["zum_issue"]
+    items = src.parse((FIX / "zum_issue" / "KR.html").read_text(encoding="utf-8"), "KR")
+    assert len(items) >= 10
+    assert all("\\u" not in i.keyword and '"' not in i.keyword for i in items)
+    assert all(i.meta["state"].isupper() for i in items)
+    assert src.family != REGISTRY["nate"].family

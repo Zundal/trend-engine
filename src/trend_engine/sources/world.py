@@ -9,6 +9,7 @@
   yahoo_tw         (TW) 야후 대만 뉴스 RSS
   gnn_tw           (TW) 바하무트 GNN 게임 뉴스 RSS
   vnexpress        (VN) VnExpress 많이 본 뉴스 RSS
+  tuoitre · dantri · thanhnien (VN) 종합지 최신 RSS — 구글 검색어가 헤드라인에 나오는지 확인하는 용도
 """
 
 from __future__ import annotations
@@ -148,3 +149,6 @@ BBCNews = _rss_source("bbc_news", "영국 뉴스", "GB", "https://feeds.bbci.co.
 YahooTW = _rss_source("yahoo_tw", "대만 포털 뉴스", "TW", "https://tw.news.yahoo.com/rss/", "뉴스", limit=30)
 GnnTW = _rss_source("gnn_tw", "대만 게임 뉴스", "TW", "https://gnn.gamer.com.tw/rss.xml", "게임")
 VnExpress = _rss_source("vnexpress", "베트남 많이 본 뉴스", "VN", "https://vnexpress.net/rss/tin-xem-nhieu.rss", "뉴스", limit=30)
+TuoiTre = _rss_source("tuoitre", "베트남 종합 뉴스", "VN", "https://tuoitre.vn/rss/tin-moi-nhat.rss", "뉴스", limit=30)
+DanTri = _rss_source("dantri", "베트남 종합 뉴스", "VN", "https://dantri.com.vn/rss/home.rss", "뉴스", limit=30)
+ThanhNien = _rss_source("thanhnien", "베트남 종합 뉴스", "VN", "https://thanhnien.vn/rss/home.rss", "뉴스", limit=30)

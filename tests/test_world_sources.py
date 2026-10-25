@@ -11,7 +11,7 @@ FIX = Path(__file__).parent / "fixtures"
 
 @pytest.mark.parametrize(("name", "code", "at_least"), [
     ("billboard_us", "US", 40), ("yahoo_us", "US", 8), ("official_charts", "GB", 40), ("bbc_news", "GB", 10),
-    ("kkbox_tw", "TW", 40), ("yahoo_tw_search", "TW", 8), ("yahoo_tw", "TW", 10), ("gnn_tw", "TW", 10), ("vnexpress", "VN", 10),
+    ("kkbox_tw", "TW", 40), ("yahoo_tw_search", "TW", 8), ("yahoo_tw", "TW", 10), ("gnn_tw", "TW", 10), ("vnexpress", "VN", 10), ("tuoitre", "VN", 20), ("dantri", "VN", 20), ("thanhnien", "VN", 20),
 ])
 def test_country_source_parses_its_fixture(name, code, at_least):
     src = REGISTRY[name]
