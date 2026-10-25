@@ -17,13 +17,15 @@ from .netflix import Netflix
 from .signal_bz import SignalBz
 from .wikipedia import Wikipedia
 from .world import BBCNews, BillboardUS, GnnTW, KKBoxTW, OfficialCharts, VnExpress, YahooTW, YahooTWSearch, YahooUS
+from .xtrends import Trends24, YahooRealtimeJP
 from .youtube import YouTube
 
 REGISTRY: dict[str, Source] = {
     s.name: s for s in [GoogleTrends(), SignalBz(), Nate(), Wikipedia(), YouTube(), GoogleNews(), AppleCharts(),
                        Pixiv(), ETtoday(), Reddit(), Kenh14(), Steam(), Melon(), Netflix(),
                        YahooTopics(), Hatena(), NicoVideo(), BillboardJapan(), LivedoorTrend(),
-                       BillboardUS(), YahooUS(), OfficialCharts(), BBCNews(), KKBoxTW(), YahooTWSearch(), YahooTW(), GnnTW(), VnExpress()]
+                       BillboardUS(), YahooUS(), OfficialCharts(), BBCNews(), KKBoxTW(), YahooTWSearch(), YahooTW(), GnnTW(), VnExpress(),
+                       Trends24(), YahooRealtimeJP()]
 }
 
 __all__ = ["REGISTRY", "Source", "SourceError"]

@@ -23,6 +23,8 @@
 | `yahoo_tw` | content | 대만 | 불필요 | `tw.news.yahoo.com/rss/` | 야후 대만 뉴스 |
 | `gnn_tw` | content | 대만 | 불필요 | `gnn.gamer.com.tw/rss.xml` | 바하무트 GNN 게임 뉴스 |
 | `vnexpress` | content | 베트남 | 불필요 | `vnexpress.net/rss/tin-xem-nhieu.rss` | 많이 본 뉴스 |
+| `trends24` | keyword | 미국·일본·영국 | 불필요 | `trends24.in/<나라>/` 최신 시간대 `trend-card__list` | X 트렌드 30개. robots 허용(`use=reference`). family `x_trends` |
+| `yahoo_realtime` | keyword | 일본 | 불필요 | `search.yahoo.co.jp/realtime` 트렌드(`_cl_link:atk`) | X 게시물 기반 화제어 20개. family `x_trends` (trends24 와 중복 집계 안 함) |
 | `ettoday` | content | 대만 | 불필요 | `feeds.feedburner.com/ettoday/{star,game}` | 연예(星光雲)·게임 섹션 기사 제목 (각 25건) |
 | `reddit` | content | 미국 | 불필요 | `reddit.com/r/teenagers+GenZ/hot/.rss` | 영어권 10·20대 서브레딧. **익명 한도가 낮아 US 에만** (영국도 같은 내용) |
 | `kenh14` | content | 베트남 | 불필요 | `kenh14.vn/rss/home.rss` | 베트남 젊은 층 매체 |
@@ -36,6 +38,12 @@
 같은 시점 실데이터로 비교하니 상위 20개 중 다른 소스가 확인한 이슈 수가 **늘지 않았다**(미국 5→4).
 헤드라인에 나온 이슈는 이미 '헤드라인 언급'으로 확인되므로 새 확인이 생기지 않고, `Trump`·`Ukraine` 같은 상시 이름이
 확인된 이슈를 밀어냈다. 이 나라들에 필요한 건 파생 키워드가 아니라 **진짜 포털 인기 검색어 피드**다.
+
+## X 트렌드 나라 선택 (2026-10-25)
+같은 시점 실데이터, 상위 20개 중 다른 소스가 확인한 이슈 수 (추가 전 → 후):
+일본 4→8, 영국 2→8, 미국 5→6. 한국 7→5, 베트남 7→5 로 **오히려 줄어** 뺐다 —
+한국은 팬덤 생일·투표 해시태그, 베트남은 태국 드라마 해시태그가 목록 대부분이라 확인된 이슈를 밀어낸다.
+대만은 trends24 페이지가 없다(404). 한국은 signal·nate, 대만은 야후 熱搜가 같은 역할을 한다.
 
 ## 과거 데이터 (랭킹 소스 아님)
 | 모듈 | 키 | 내용 |
