@@ -126,7 +126,8 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             write(f"insight-{code}", publish.public_insight(ins))
             n_first = sum(1 for i in ins["items"].values() if (i.get("origin") or {}).get("first"))
             lines.append(f"insight {code}: {len(ins['items'])} items, first-known {n_first}, "
-                         f"{len(ins['groups'])} groups, {sum(1 for i in ins['items'].values() if i.get('season'))} seasons")
+                         f"{len(ins['groups'])} groups, {sum(1 for i in ins['items'].values() if i.get('season'))} seasons"
+                         + (f" (pageviews: {'; '.join(ins['errors'])})" if ins.get("errors") else ""))
         except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy
             write(f"insight-{code}", {"items": {}, "leads": [], "groups": [], "origin_hours": 0})
             lines.append(f"insight {code}: FAIL {e}")
