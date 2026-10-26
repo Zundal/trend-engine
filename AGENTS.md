@@ -44,7 +44,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
 | `src/trend_engine/safety.py` | 성인물 문서·검색어 필터: 위키 소스·과거 조회수·공개 뷰(`publish.py`) 세 곳에서 거른다. 정상 단어(성교육·자위대 등) 오탐 방지 경계 포함 |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
-| `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (빌드 없는 단일 HTML. 외부 자원은 웹폰트뿐이고 없어도 동작. 사이트 아이콘은 `web/favicon-48x48.png`·`favicon.ico` 파일이고 `export.py` 가 함께 복사) |
+| `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (빌드 없는 단일 HTML. 외부 자원은 웹폰트와 GoatCounter 방문 집계(`gc.zgo.at`)뿐이고 없어도 동작. 하단 `#more-tools` 는 todoli 다른 도구 소개. 사이트 아이콘은 `web/favicon-48x48.png`·`favicon.ico` 파일이고 `export.py` 가 함께 복사) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
 | `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지). 나라별 교차 확인 수(`depth`)를 기록하고 `CONFIRMED_FLOOR` 아래면 경고 |
 | `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환. 매시 실행은 `next-run.yml`(환경 `hourly` 대기 50분) 사슬이 주 경로, cron 은 보조 |

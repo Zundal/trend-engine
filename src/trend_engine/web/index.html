@@ -514,7 +514,21 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   .card.inv { padding: 20px 16px; }
   .inv h3 { font-size: 22px; }
 }
+.more { max-width: 1240px; margin: 0 auto; padding: 8px 24px 56px; display: flex; flex-direction: column; gap: 16px; }
+.more-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.more-h h2 { font-size: 18px; margin: 0; }
+.more-h a { font-size: 13px; color: var(--muted); }
+.more-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.more-grid a { display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 18px; border-radius: 14px; background: var(--panel);
+  box-shadow: 0 1px 0 var(--line); color: var(--ink); text-decoration: none; }
+.more-grid a:hover, .more-grid a:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+.more-grid b { font-size: 15px; }
+.more-grid span { font-size: 13px; color: var(--muted); line-height: 1.45; }
+@media (max-width: 900px) { .more-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .more-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>
+<script data-goatcounter="https://trend.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <header class="top">
@@ -861,6 +875,15 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     </div>
   </section>
 </main>
+<aside class="more" id="more-tools" aria-labelledby="more-h">
+  <div class="more-h"><h2 id="more-h">같이 만든 무료 도구</h2><a href="https://todoli.lat/" target="_blank" rel="noopener">todoli에서 모두 보기 ↗</a></div>
+  <ul class="more-grid">
+    <li><a href="https://sa-zoo.todoli.lat/ko/" target="_blank" rel="noopener"><b>Sa·Zoo</b><span>생년월일로 열두 동물 중 내 동물을 찾아 사주를 풀어 줘요. 궁합과 유명인 사주도 볼 수 있어요.</span></a></li>
+    <li><a href="https://just-do-eat.todoli.lat/" target="_blank" rel="noopener"><b>사장님 홍보물 메이커</b><span>메뉴판·가격표·전단지를 템플릿으로 만들어 인쇄용 PDF로 받아요. 디자이너 없이 돼요.</span></a></li>
+    <li><a href="https://lunar.todoli.lat/" target="_blank" rel="noopener"><b>음력 달력</b><span>부모님 음력 생신과 제사를 양력으로 바꿔 캘린더에 20년 치 한 번에 넣어요.</span></a></li>
+    <li><a href="https://pori.todoli.lat/" target="_blank" rel="noopener"><b>포리의 그림책</b><span>3~7세 아이와 읽는 수채화 잠자리 동화. 광고·결제 없이 iPhone·iPad에서 읽어요.</span></a></li>
+  </ul>
+</aside>
 <div id="tip-pop" popover="auto" class="tip-pop" role="tooltip"></div>
 
 <script>
