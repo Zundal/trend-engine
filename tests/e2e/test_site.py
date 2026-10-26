@@ -340,6 +340,18 @@ def test_japan_country_shows_local_interest_list(page, site):
     assert not page.errors, page.errors
 
 
+def test_issue_detail_explains_why_origin_and_life(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#rank li[data-i]")
+    page.locator("#rank li[data-i] button").first.click()
+    page.wait_for_selector("#ins .d-sec", timeout=15000)
+    text = page.locator("#ins").inner_text()
+    assert "어디서 먼저" in text and "이슈의 일생" in text
+    page.wait_for_selector("#card-ins:not([hidden])", timeout=15000)
+    assert "엮인 이슈" in page.locator("#card-ins").inner_text()
+    assert not page.errors, page.errors
+
+
 def test_other_tools_footer_is_on_every_view(page, site):
     for view in ("#glance", "#country/KR/live", "#age"):
         page.goto(site + view)

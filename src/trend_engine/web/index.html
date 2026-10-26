@@ -398,6 +398,16 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .peers li:first-child .peer { border-top: 0; }
 .peers .peer:hover b { color: var(--inv-accent, var(--accent-ink)); }
 .peers .peer small { font-size: 12px; color: var(--inv-muted, var(--muted)); }
+.path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.d-sec ul.path { flex-direction: row; padding: 0; }
+.path li { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--inv-edge); color: var(--inv-ink2); }
+.path li.first { border-color: var(--inv-accent); color: var(--inv-accent); font-weight: 600; }
+.path li + li::before { content: "→ "; color: var(--inv-muted, var(--muted)); }
+.phase { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--accent-tag); color: var(--accent-deep); }
+.ins-groups { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.ins-groups li { display: flex; flex-direction: column; gap: 6px; }
+.ins-groups small, .ins-leads small { color: var(--muted); font-size: 12px; }
+.ins-leads { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .peers-inline { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 8px; }
 .peers-inline button { border: 1px solid var(--edge); background: var(--panel); color: var(--ink2); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
 .peers-inline button:hover { border-color: var(--accent); color: var(--accent-ink); }
@@ -826,6 +836,13 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
         <p class="note" id="shape-note"></p>
       </section>
     </div>
+    <section class="card" id="card-ins" hidden style="margin-top:14px">
+      <div class="card-h"><h3>이슈 연결 · 누가 먼저</h3><span>같은 기사에 함께 나온 이슈 묶음과, 어떤 신호가 먼저 잡았는지</span></div>
+      <div class="grid2">
+        <div><b>엮인 이슈</b><ul class="ins-groups" id="ins-groups"></ul></div>
+        <div><b id="ins-leads-h">먼저 잡은 신호</b><ul class="ins-leads" id="ins-leads"></ul></div>
+      </div>
+    </section>
   </section>
 </main>
 
@@ -1277,7 +1294,7 @@ function peersHTML(it, inv) {
     <span class="dim" style="font-size:12px">같은 분야이거나 점수·순위가 비슷한 이슈예요. 누르면 그 줄로 가요.</span></div>`;
 }
 function openPeer(key) {
-  const src = rankSource(), i = src.findIndex((x) => x.key === key);
+  const src = rankSource(), i = src.findIndex((x) => x.key === key || x.members?.some((m) => m.key === key));
   if (i < 0) return;
   selected = i; showAll ||= i >= 20; ccat = ""; renderRank();
   $("#detail")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -1312,7 +1329,8 @@ async function renderDetail(t, n) {
   if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권` : "지난 30일 동안 처음 등장");
   const more = [...(c.related || []).slice(1), ...(c.mentions || [])];
   $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label, wantKey)}
-    ${c.related?.[0] ? `<p class="quote">“${esc(c.related[0])}”</p>` : ""}
+    ${c.related?.[0] ? `<p class="quote" id="d-quote">“${esc(c.related[0])}”</p>` : `<p class="quote" id="d-quote" hidden></p>`}
+    <div id="ins"></div>
     ${facts.length ? `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>` : ""}
     ${others.length ? `<p class="quote">함께 묶은 이슈: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
     <div id="aff"></div>
@@ -1320,6 +1338,7 @@ async function renderDetail(t, n) {
     ${peersHTML(t)}
     ${more.length ? `<div class="d-sec"><b>함께 나온 제목</b><ul>${more.slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`;
   renderAffinity([t.label, c.label, ...others.map((m) => m.label)]);
+  renderInsight([c, ...others], wantRegion, wantSig);
   try {
     const h = await api(`api/history?region=${wantRegion}&key=${encodeURIComponent(wantKey)}`);
     // 나라·기간·선택이 바뀌면 이 응답은 버린다 (비동기 경쟁으로 #spark 가 이미 다른 항목의 것)
@@ -1328,6 +1347,66 @@ async function renderDetail(t, n) {
   } catch (e) {
     if (detailSig === wantSig && $("#spark")) $("#spark").textContent = e.message;
   }
+}
+// 이슈 깊이 읽기 (insight.py): 왜 뜨나 · 어디서 먼저 · 일생 · 연결 · 작년 이맘때
+const INSIGHT = {};
+async function insightFor(r) {
+  if (!(r in INSIGHT)) { try { INSIGHT[r] = await api(`api/insight?region=${r}`); } catch (_) { INSIGHT[r] = null; } }
+  return INSIGHT[r];
+}
+const kst = (iso) => new Date(iso).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
+const hrs = (h) => h >= 24 ? `${(h / 24).toFixed(1)}일` : h >= 1 ? `${Math.round(h)}시간` : `${Math.max(1, Math.round(h * 60))}분`;
+function originText(o, hours) {
+  if (o.first && o.lead_hours != null) return `<b>${esc(o.first)}</b>에서 ${hrs(o.lead_hours)} 먼저 잡혔어요`;
+  if (o.first) return `<b>${esc(o.first)}</b>에서만 잡혔어요`;
+  if (o.path[0].at === o.window_start) return `기록(최근 ${hours}시간)이 시작되기 전부터 있던 이슈라 처음 잡은 곳은 알 수 없어요`;
+  return `${o.path.filter((p) => p.at === o.path[0].at).map((p) => esc(p.signal)).join("·")}에서 같은 수집 때 함께 잡혔어요`;
+}
+async function renderInsight(members, wantRegion, sig) {
+  const ins = await insightFor(wantRegion);
+  const box = $("#ins");
+  if (!ins || detailSig !== sig || !box) return;
+  const it = members.map((m) => ins.items?.[m.key]).find(Boolean);
+  if (!it) return;
+  const secs = [];
+  if (it.why) {
+    const q = $("#d-quote");
+    if (q) { q.hidden = false; q.textContent = `“${it.why.line}”`; }
+    secs.push(`<div class="d-sec"><b>왜 뜨나</b><span>붙은 제목 ${it.why.titles}개 중 ${it.why.support}개가 같은 이야기${it.why.outlets > 1 ? ` · ${it.why.outlets}가지 경로에서 보도` : ""}</span></div>`);
+  }
+  if (it.origin) {
+    const o = it.origin;
+    secs.push(`<div class="d-sec"><b>어디서 먼저 <small>(최근 ${ins.origin_hours}시간 기록)</small></b>
+      <ul class="path">${o.path.map((p, i) => `<li class="${i === 0 && o.first ? "first" : ""}">${esc(p.signal)} ${kst(p.at)}</li>`).join("")}</ul>
+      <span>${originText(o, ins.origin_hours)}</span></div>`);
+  }
+  if (it.life) {
+    const l = it.life, f = [`처음 순위권 ${kst(l.first_seen)}`, `최고 ${l.peak_rank}위 (${kst(l.peak_at)})`, `수집 ${l.snapshots}회 · ${l.days}일`];
+    if (l.returns) f.push(`재등장 ${l.returns}번`);
+    secs.push(`<div class="d-sec"><b>이슈의 일생 <small>(최근 30일)</small> <span class="phase">${esc(l.phase)}</span></b>
+      <div class="facts">${f.map((x) => `<span>${esc(x)}</span>`).join("")}</div></div>`);
+  }
+  if (it.links?.length) {
+    secs.push(`<div class="d-sec"><b>연결된 이슈</b><ul class="peers">${it.links.map((x) => `<li><button type="button" class="peer" data-peer="${esc(x.key)}">
+      <b>${esc(x.label)}</b><small>같은 기사 ${x.shared}건 · “${esc(x.title)}”</small></button></li>`).join("")}</ul></div>`);
+  }
+  if (it.season) {
+    const s = it.season;
+    secs.push(`<div class="d-sec"><b>작년 이맘때 <small>(백과 문서 조회수)</small></b><span>${esc(s.label)}</span>
+      <span class="dim" style="font-size:12px">최근 2주 하루 최고 ${s.recent_peak.toLocaleString()}회 · 1년 전 같은 때 ${s.last_year_peak.toLocaleString()}회${s.times_usual ? ` · 평소의 ${s.times_usual}배` : ""}</span></div>`);
+  }
+  box.innerHTML = secs.join("");
+}
+async function renderInsightCard() {
+  const want = region, ins = await insightFor(want);
+  if (want !== region) return;
+  const groups = ins?.groups || [], leads = ins?.leads || [];
+  $("#card-ins").hidden = !groups.length && !leads.length;
+  $("#ins-groups").innerHTML = groups.map((g) => `<li><div class="peers-inline">${g.labels.map((l, i) => `<button type="button" data-peer="${esc(g.keys[i])}">${esc(l)}</button>`).join("")}</div>
+    <small>“${esc(g.title)}”</small></li>`).join("") || `<li class="empty">오늘은 같은 기사로 엮인 이슈 묶음이 없어요</li>`;
+  $("#ins-leads-h").textContent = `먼저 잡은 신호 (최근 ${ins?.origin_hours ?? 0}시간)`;
+  $("#ins-leads").innerHTML = leads.slice(0, 5).map((r) => `<li><b>${esc(r.signal)}</b>이(가) <b>${esc(r.before)}</b>보다 먼저 잡은 비율 ${Math.round(r.share * 100)}%
+    <small>이슈 ${r.n}개 · 중앙값 ${hrs(Math.abs(r.median_hours))} 차이</small></li>`).join("") || `<li class="empty">기록이 더 쌓이면 나와요 (이슈 3개 이상 겹칠 때)</li>`;
 }
 // 누가 더 찾나: 연령·성별 관심은 한국 검색 기준이라 한국에서만, 그리고 상위 이슈만 잰다 (전체 연령 탭과 같은 응답을 쓴다).
 let SEG_TRIED = false;
@@ -1384,7 +1463,8 @@ async function loadCountry(refresh = false) {
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
-    renderAttention(); renderShapes(); renderFlows();
+    if (refresh) delete INSIGHT[region];
+    renderAttention(); renderShapes(); renderFlows(); renderInsightCard();
     setStamp();
     renderRank(); renderContent();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
@@ -2031,6 +2111,11 @@ function renderTransfer() {
   };
   $("#detail").onclick = (e) => {
     const b = e.target.closest("[data-peer]"); if (!b) return;
+    openPeer(b.dataset.peer);
+  };
+  $("#card-ins").onclick = (e) => {
+    const b = e.target.closest("[data-peer]"); if (!b) return;
+    if (cperiod !== "live") return;
     openPeer(b.dataset.peer);
   };
   $("#y-top").onclick = (e) => {
