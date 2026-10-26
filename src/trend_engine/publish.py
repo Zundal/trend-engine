@@ -98,6 +98,18 @@ def public_report(r: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def public_insight(d: dict[str, Any]) -> dict[str, Any]:
+    """insight.py already speaks in signal kinds (SNS·포털·…), never source names; drop adult links."""
+    items = {}
+    for k, it in d.get("items", {}).items():
+        it = dict(it)
+        if it.get("links"):
+            it["links"] = [x for x in it["links"] if not is_adult(x["label"])]
+        items[k] = it
+    groups = [g for g in d.get("groups", []) if not any(is_adult(x) for x in g["labels"])]
+    return {"items": items, "leads": d.get("leads", []), "groups": groups, "origin_hours": d.get("origin_hours", 0)}
+
+
 def public_segments(s: dict[str, Any]) -> dict[str, Any]:
     keep = ("keywords", "segments", "affinity", "relative", "top_by_segment", "labels", "period", "synthetic")
     return {k: s[k] for k in keep if k in s}

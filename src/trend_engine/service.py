@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
 from . import archive, diffusion, entities, flux, kernel, pageviews, pomdp, youth
+from . import insight as insight_mod
 from . import shapes as shapes_mod
 from .config import REGIONS, Settings, export_langs, get_region
 from .engine import TrendEngine
@@ -19,6 +20,7 @@ ENTITY_BUDGET = 400  # uncached pageview requests one 국가 간 전파 pass may
 SAMPLE_DAYS_BACK = (200, 120, 60, 30, 2)  # most-read lists sampled per language, oldest first
 DAY_BUDGET = 150  # uncached day-lists one 교체율 pass may fetch (~30s); the rest fills in next run
 RECENT_DAYS = 90  # 유행의 모양: only peaks recent enough to still be "요즘"
+SEASON_LIMIT = 12  # 작년 이맘때: encyclopedia issues read per country (2 requests each when uncached)
 SLOW_RISE = 120  # ... and a rise longer than this is an evergreen drift, not a burst
 WATCH_LIMIT = 50  # tracked keywords per diffusion run (≈ 75 paced search-data requests)
 WATCH_SPARE = 20  # extra candidates for pomdp.plan to pick from when settled keywords rest
@@ -333,6 +335,46 @@ class TrendService:
 
     def age_period(self) -> dict[str, Any]:
         return {name: archive.period_segments(self.store, self.archive_root, n) for name, n in archive.PERIODS.items()}
+
+    async def insight(self, region: str = "KR", report: dict[str, Any] | None = None) -> dict[str, Any]:
+        """이슈 깊이 읽기 (insight.py): 왜 뜨나 · 누가 먼저 · 일생 · 연결 · 작년 이맘때."""
+        code = get_region(region).code
+        report = report or await self.report(code)
+        now = datetime.fromisoformat(report["generated_at"])
+        snaps = self.store.recent_reports(code, now - insight_mod.ORIGIN_WINDOW)
+        if not snaps or snaps[-1]["generated_at"] != report["generated_at"]:
+            snaps.append(report)
+        top = report["clusters"][:40]
+        rows = self.store.key_rows(code, [c["key"] for c in top], now - insight_mod.LIFE_WINDOW)
+        seasons = await self._seasons(code, top)
+        return insight_mod.build(report, snaps, rows, seasons)
+
+    async def _seasons(self, region: str, clusters: list[dict[str, Any]], limit: int = SEASON_LIMIT,
+                       max_age: timedelta = timedelta(hours=12)) -> dict[str, dict[str, Any]]:
+        """작년 이맘때: only issues that are encyclopedia articles today, read from cached pageviews."""
+        wiki = [c for c in clusters if "wikipedia" in c.get("sources", {})][:limit]
+        if not wiki:
+            return {}
+        lang = get_region(region).lang
+        key = f"seasons:v1:{lang}:" + ",".join(sorted(c["key"] for c in wiki))
+        if (hit := self.store.cache_get(key, max_age)) is not None:
+            return hit
+        async with pageviews.History(self.settings, self.store, budget=2 * limit + 4) as hist:
+            end = hist.latest_day(lang)
+            names = {a for d in (end, end - timedelta(days=1)) for a, _ in await hist.top(lang, d, limit=500)}
+            article = {}
+            for c in wiki:
+                for v in [c["label"], *c.get("variants", [])]:
+                    if v.replace(" ", "_") in names:
+                        article[c["key"]] = v.replace(" ", "_")
+                        break
+            series = await hist.articles(lang, list(article.values()), end - timedelta(days=400), end)
+        out = {}
+        for k, name in article.items():
+            if name in series and (s := insight_mod.season(series[name], end)):
+                out[k] = s
+        self.store.cache_set(key, out)
+        return out
 
     def history(self, region: str, key: str) -> list[dict[str, Any]]:
         return self.store.history(key, get_region(region).code)

@@ -107,6 +107,30 @@ class Store:
         ).fetchall()
         return [dict(r) for r in rows]
 
+    def recent_reports(self, region: str, since: datetime) -> list[dict[str, Any]]:
+        """Full reports (with per-source ranks) newer than `since`, oldest first. Payloads older than
+        Store.prune's payload_days are gone, so this reaches back about 3 days."""
+        rows = self.db.execute(
+            "SELECT payload FROM reports WHERE region=? AND generated_at>=? AND payload!='null' ORDER BY generated_at",
+            (region, since.astimezone(timezone.utc).isoformat(timespec="seconds")),
+        ).fetchall()
+        return [json.loads(r["payload"]) for r in rows]
+
+    def key_rows(self, region: str, keys: list[str], since: datetime) -> dict[str, list[dict[str, Any]]]:
+        """{key: [{generated_at, rank}]} oldest first — ranks survive 45 days, payloads don't."""
+        if not keys:
+            return {}
+        marks = ",".join("?" * len(keys))
+        rows = self.db.execute(
+            f"""SELECT c.key, r.generated_at, c.rank FROM clusters c JOIN reports r ON r.id=c.report_id
+                WHERE r.region=? AND r.generated_at>=? AND c.key IN ({marks}) ORDER BY r.generated_at""",
+            (region, since.astimezone(timezone.utc).isoformat(timespec="seconds"), *keys),
+        ).fetchall()
+        out: dict[str, list[dict[str, Any]]] = {}
+        for r in rows:
+            out.setdefault(r["key"], []).append({"generated_at": r["generated_at"], "rank": r["rank"]})
+        return out
+
     def snapshot_times(self, region: str) -> list[str]:
         return [r[0] for r in self.db.execute(
             "SELECT generated_at FROM reports WHERE region=? ORDER BY generated_at", (region,)).fetchall()]

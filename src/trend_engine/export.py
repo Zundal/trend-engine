@@ -121,6 +121,17 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
                    for c in report["clusters"]}
         write(f"history-{code}", history)
 
+        try:  # 이슈 깊이 읽기: why · who first · life · links · a year ago
+            ins = await svc.insight(code, report)
+            write(f"insight-{code}", publish.public_insight(ins))
+            n_first = sum(1 for i in ins["items"].values() if (i.get("origin") or {}).get("first"))
+            lines.append(f"insight {code}: {len(ins['items'])} items, first-known {n_first}, "
+                         f"{len(ins['groups'])} groups, {sum(1 for i in ins['items'].values() if i.get('season'))} seasons")
+        except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy
+            write(f"insight-{code}", {"items": {}, "leads": [], "groups": [], "origin_hours": 0})
+            lines.append(f"insight {code}: FAIL {e}")
+            health.warn(f"[{code}] 이슈 깊이 읽기 실패 — {str(e)[:160]}")
+
         # 교체율·쏠림: years of past daily rank lists, so this works for every country from day one
         try:
             att = await svc.attention(code)
