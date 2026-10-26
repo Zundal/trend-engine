@@ -35,9 +35,9 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/categories.py` | 무키 카테고리 분류: 뉴스 섹션·영상 분류·위키 분류·쇼핑 분야·핵심어 사전 투표 → 11개 분야 |
 | `src/trend_engine/peers.py` | 비슷한 관심 레벨 이웃(같은 분야·비슷한 점수·근처 순위) — `publish.public_report` / 기간 뷰에 부착 |
 | `src/trend_engine/sources/japan.py` | 일본 밀도: 야후 토픽(keyword) + 하테나·니코니코·빌보드재팬·라이브도어 (pixiv 는 local.py) |
-| `src/trend_engine/sources/world.py` | 미국·영국·대만·베트남 밀도: 음악 차트(빌보드·Official Charts·KKBOX) + 로컬 뉴스·게임 RSS + 대만 포털 인기 검색어 |
+| `src/trend_engine/sources/world.py` | 미국·영국·대만·베트남 밀도: 음악 차트(빌보드·Official Charts·KKBOX) + 로컬 뉴스·게임 RSS + 대만·미국·영국 포털 인기 검색어(야후) |
 | `src/trend_engine/sources/zum.py` | 한국 ZUM AI 이슈트렌드 (홈 페이지 데이터, 키 불필요) |
-| `src/trend_engine/sources/xtrends.py` | X 나라별 트렌드(trends24: 미국·일본·영국, 야후 재팬 실시간): 포털 인기 검색어 없는 나라의 '지금 말하는 것' 키워드 축. 같은 family 라 중복 집계 안 함 |
+| `src/trend_engine/sources/xtrends.py` | X 나라별 트렌드(trends24: 일본, getdaytrends: 미국·영국, 야후 재팬 실시간): 포털 인기 검색어 없는 나라의 '지금 말하는 것' 키워드 축. 같은 family 라 중복 집계 안 함 |
 | `src/trend_engine/diffusion.py` | 세대 확산 감지: 연령별 주간 추이 → 급상승 시점·시차 → 단계 판정, 과거 사례 검증 |
 | `src/trend_engine/pomdp.py` | 부분관측 마르코프 결정과정: 국면 믿음(실행 간 보관)·Baum-Welch 재학습·알림 게이트·측정 배분 (docs/POMDP.md) |
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |
@@ -46,7 +46,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |
 | `src/trend_engine/api.py`, `cli.py`, `web/index.html` | 인터페이스 (빌드 없는 단일 HTML. 외부 자원은 웹폰트뿐이고 없어도 동작. 사이트 아이콘은 `web/favicon-48x48.png`·`favicon.ico` 파일이고 `export.py` 가 함께 복사) |
 | `src/trend_engine/harness.py` | `doctor`, `record` |
-| `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지) |
+| `src/trend_engine/health.py` | 배포 점검 → health.json → 경고 이슈 (조용한 실패 방지). 나라별 교차 확인 수(`depth`)를 기록하고 `CONFIRMED_FLOOR` 아래면 경고 |
 | `src/trend_engine/export.py` + `.github/workflows/pages.yml` | 정적 export → GitHub Pages (매시간). UI 는 `meta.json {"static": true}` 로 정적 모드 전환. 매시 실행은 `next-run.yml`(환경 `hourly` 대기 50분) 사슬이 주 경로, cron 은 보조 |
 
 ## 반드시 지킬 불변식

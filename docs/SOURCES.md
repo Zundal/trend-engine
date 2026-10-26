@@ -25,7 +25,9 @@
 | `vnexpress` | content | 베트남 | 불필요 | `vnexpress.net/rss/tin-xem-nhieu.rss` | 많이 본 뉴스 |
 | `zum_issue` | keyword | 한국 | 불필요 | `zum.com/` 홈의 `issueWords` 데이터 (robots 는 홈만 허용) | AI 이슈트렌드 ~16개. 기사 묶음 기반이라 family 따로 |
 | `tuoitre` · `dantri` · `thanhnien` | content | 베트남 | 불필요 | 각 사 최신 RSS | 구글 검색어의 헤드라인 확인용 (각 30개) |
-| `trends24` | keyword | 미국·일본·영국 | 불필요 | `trends24.in/<나라>/` 최신 시간대 `trend-card__list` | X 트렌드 30개. robots 허용(`use=reference`). family `x_trends` |
+| `trends24` | keyword | 일본 | 불필요 | `trends24.in/japan/` 최신 시간대 `trend-card__list` | X 트렌드 30개. robots 허용(`use=reference`). family `x_trends`. 미국·영국 페이지는 배포 서버 IP 를 Cloudflare 403 으로 막음 |
+| `getdaytrends` | keyword | 미국·영국 | 불필요 | `getdaytrends.com/<나라>/` '지금' 표 2개 (`ranking trends`) | X 트렌드 30개. 배포 서버에서 열림(2026-10-26 Actions 시험). family `x_trends` |
+| `yahoo_trending` | keyword | 미국·영국 | 불필요 | `uk.yahoo.com/`·`www.yahoo.com/` 홈 `subsec:trending_search` | 포털 인기 검색어. 영국은 검색어 10개, 미국은 기사 제목 5개 |
 | `yahoo_realtime` | keyword | 일본 | 불필요 | `search.yahoo.co.jp/realtime` 트렌드(`_cl_link:atk`) | X 게시물 기반 화제어 20개. family `x_trends` (trends24 와 중복 집계 안 함) |
 | `ettoday` | content | 대만 | 불필요 | `feeds.feedburner.com/ettoday/{star,game}` | 연예(星光雲)·게임 섹션 기사 제목 (각 25건) |
 | `reddit` | content | 미국 | 불필요 | `reddit.com/r/teenagers+GenZ/hot/.rss` | 영어권 10·20대 서브레딧. **익명 한도가 낮아 US 에만** (영국도 같은 내용) |
@@ -40,6 +42,11 @@
 같은 시점 실데이터로 비교하니 상위 20개 중 다른 소스가 확인한 이슈 수가 **늘지 않았다**(미국 5→4).
 헤드라인에 나온 이슈는 이미 '헤드라인 언급'으로 확인되므로 새 확인이 생기지 않고, `Trump`·`Ukraine` 같은 상시 이름이
 확인된 이슈를 밀어냈다. 이 나라들에 필요한 건 파생 키워드가 아니라 **진짜 포털 인기 검색어 피드**다.
+
+## 배포 서버에서 막힌 소스 확인법 (2026-10-26)
+로컬에서 되는 소스도 GitHub Actions IP 에선 막힐 수 있다(trends24 미국·영국 403). 새 비공식 페이지를 붙이기 전에
+임시 브랜치에 push 트리거 워크플로를 올려 `curl` 로 HTTP 코드와 목록 표식 개수만 찍어 보고, 브랜치는 지운다.
+같은 시점 측정(상위 20개 중 확인된 이슈): 미국 4→10, 영국 2→8 (getdaytrends + 야후 Trending).
 
 ## X 트렌드 나라 선택 (2026-10-25)
 같은 시점 실데이터, 상위 20개 중 다른 소스가 확인한 이슈 수 (추가 전 → 후):

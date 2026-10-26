@@ -16,11 +16,24 @@ from typing import Any
 # Missing optional keys are configuration, not breakage.
 IGNORED = ("missing config",)
 
+# 상위 20개 중 '다른 소스가 함께 확인한' 이슈 수의 하한 — 2026-10-26 실측의 절반쯤.
+# 소스가 조용히 막히면(배포 서버 IP 차단 등) 이 숫자가 먼저 떨어진다.
+CONFIRMED_FLOOR = {"KR": 7, "JP": 4, "US": 5, "GB": 4, "TW": 5, "VN": 6}
+TOP = 20
+
+
+def confirmation(clusters: list[dict[str, Any]], top: int = TOP) -> dict[str, int]:
+    """confirmed: 소스 2곳 이상이거나 헤드라인 언급이 있는 이슈 수 / multi: 소스 2곳 이상인 이슈 수."""
+    head = clusters[:top]
+    return {"confirmed": sum(1 for c in head if len(c.get("sources", {})) >= 2 or c.get("mentions")),
+            "multi": sum(1 for c in head if len(c.get("sources", {})) >= 2)}
+
 
 @dataclass
 class Health:
     problems: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    depth: dict[str, dict[str, int]] = field(default_factory=dict)
 
     def problem(self, msg: str) -> None:
         self.problems.append(msg)
@@ -45,6 +58,10 @@ class Health:
             self.problem(f"[{region}] 정상 소스가 {ok}개뿐")
         if len(report.get("clusters", [])) < 10:
             self.problem(f"[{region}] 랭킹 키워드가 {len(report.get('clusters', []))}개뿐")
+        self.depth[region] = d = confirmation(report.get("clusters", []))
+        floor = CONFIRMED_FLOOR.get(region)
+        if floor is not None and d["confirmed"] < floor:
+            self.warn(f"[{region}] 교차 확인 이슈가 상위 {TOP}개 중 {d['confirmed']}개 (기준 {floor}) — 소스가 막혔는지 확인")
 
     @property
     def ok(self) -> bool:
