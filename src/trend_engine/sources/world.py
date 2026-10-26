@@ -144,6 +144,35 @@ class YahooTWSearch(Source):
         return rerank(items)
 
 
+class YahooTrending(Source):
+    """야후 영국·미국 홈 'Trending' — 포털 인기 검색어 (한국 signal/nate 역할).
+
+    영국은 검색어(Michael Carrick) 10개, 미국은 같은 자리에 검색어 대신 기사 제목 5개가 온다.
+    """
+
+    name = "yahoo_trending"
+    label = "포털 인기 검색어"
+    kind = "keyword"
+    weight = 0.85
+    regions = frozenset({"US", "GB"})
+    fixture_ext = "html"
+    HOMES = {"US": "https://www.yahoo.com/", "GB": "https://uk.yahoo.com/"}
+    _YLK = re.compile(r'data-ylk="([^"]*elm:hdln;[^"]*subsec:trending_search;[^"]*)"')
+
+    async def fetch(self, client, region, settings):
+        return await get_text(client, self.HOMES[region.country], headers={"User-Agent": BROWSER_UA})
+
+    def parse(self, raw, region):
+        rows: dict[int, str] = {}
+        for m in self._YLK.finditer(raw):
+            kv = dict(p.split(":", 1) for p in html.unescape(m.group(1)).split(";") if ":" in p)
+            term = (kv.get("slk") or "").strip()
+            if term and kv.get("cpos", "").isdigit():
+                rows.setdefault(int(kv["cpos"]), term)
+        return rerank([TrendItem(source=self.name, region=region, rank=0, keyword=t, kind="keyword")
+                       for _, t in sorted(rows.items())])
+
+
 YahooUS = _rss_source("yahoo_us", "미국 포털 뉴스", "US", "https://news.yahoo.com/rss/", "뉴스")
 BBCNews = _rss_source("bbc_news", "영국 뉴스", "GB", "https://feeds.bbci.co.uk/news/rss.xml", "뉴스")
 YahooTW = _rss_source("yahoo_tw", "대만 포털 뉴스", "TW", "https://tw.news.yahoo.com/rss/", "뉴스", limit=30)

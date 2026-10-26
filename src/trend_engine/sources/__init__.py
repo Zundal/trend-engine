@@ -17,8 +17,8 @@ from .netflix import Netflix
 from .signal_bz import SignalBz
 from .wikipedia import Wikipedia
 from .world import (BBCNews, BillboardUS, DanTri, GnnTW, KKBoxTW, OfficialCharts, ThanhNien, TuoiTre, VnExpress,
-                    YahooTW, YahooTWSearch, YahooUS)
-from .xtrends import Trends24, YahooRealtimeJP
+                    YahooTrending, YahooTW, YahooTWSearch, YahooUS)
+from .xtrends import GetDayTrends, Trends24, YahooRealtimeJP
 from .youtube import YouTube
 from .zum import ZumIssue
 
@@ -27,7 +27,8 @@ REGISTRY: dict[str, Source] = {
                        Pixiv(), ETtoday(), Reddit(), Kenh14(), Steam(), Melon(), Netflix(),
                        YahooTopics(), Hatena(), NicoVideo(), BillboardJapan(), LivedoorTrend(),
                        BillboardUS(), YahooUS(), OfficialCharts(), BBCNews(), KKBoxTW(), YahooTWSearch(), YahooTW(), GnnTW(), VnExpress(),
-                       TuoiTre(), DanTri(), ThanhNien(), Trends24(), YahooRealtimeJP(), ZumIssue()]
+                       TuoiTre(), DanTri(), ThanhNien(), YahooTrending(), Trends24(), GetDayTrends(),
+                       YahooRealtimeJP(), ZumIssue()]
 }
 
 __all__ = ["REGISTRY", "Source", "SourceError"]

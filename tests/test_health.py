@@ -53,3 +53,16 @@ def test_optional_source_failure_is_a_warning_not_a_problem():
                                  "ettoday": {"ok": False, "error": "HTTP 403 from https://..."}}))
     assert h.ok and not h.problems
     assert any("ettoday" in w for w in h.warnings)
+
+
+def test_confirmation_drop_is_recorded_and_warned_not_failed():
+    ok = {"a": {"ok": True, "error": None}, "b": {"ok": True, "error": None}}
+    confirmed = [{"sources": {"a": 1, "b": 2}}] * 5 + [{"sources": {"a": 1}, "mentions": {"news": ["t"]}}] * 3
+    lonely = [{"sources": {"a": 1}}] * 12
+    h = Health()
+    h.check_report("GB", {"source_status": ok, "clusters": confirmed + lonely})
+    assert h.depth["GB"] == {"confirmed": 8, "multi": 5} and not h.warnings
+    h.check_report("US", {"source_status": ok, "clusters": confirmed[:2] + lonely})
+    assert h.depth["US"] == {"confirmed": 2, "multi": 2}
+    assert h.ok and any("[US] 교차 확인 이슈" in w for w in h.warnings)
+    assert "depth" in h.to_dict()

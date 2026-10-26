@@ -14,7 +14,9 @@
 - `yahoo_topics/JP.json` · `hatena/JP.xml` · `nicovideo/JP.json` · `billboard_japan/JP.html` · `livedoor_trend/JP.xml` — 일본 밀도 맞춤용 실응답 (상위 N개로 자른 것 포함).
 - `billboard_us/US.html` — 빌보드 Hot 100 실응답에서 차트 행(`h3`+`c-label`) 50개만 남긴 것. `official_charts/GB.html` 은 script·svg·head 를 걷어낸 실응답.
 - `yahoo_tw_search/TW.html` — tw.yahoo.com 홈에서 헤더 인기 검색어 `<ul>` 만 남긴 것 (유료 노출 `kt:rev` 항목 포함, parse 가 버리는지 검사용).
-- `trends24/{US,JP,GB}.html` — 맨 앞(최신) `trend-card__list` 하나만 남긴 것.
+- `trends24/JP.html` — 맨 앞(최신) `trend-card__list` 하나만 남긴 것.
+- `getdaytrends/{US,GB}.html` — '지금' 표 2개만, 스파크라인 svg 제거.
+- `yahoo_trending/{US,GB}.html` — 홈의 `subsec:trending_search` 링크만 남긴 것.
 - `zum_issue/KR.html` — zum.com 홈에서 `issueWords` 가 든 `<script>` 하나만 남긴 것.
 - `dantri/VN.xml` · `thanhnien/VN.xml` — 앞 30개 `<item>` 만 남긴 것. `tuoitre/VN.xml` 은 실응답 그대로.
 - `yahoo_realtime/JP.html` — 트렌드 `<ol>` 목록만 남긴 것.

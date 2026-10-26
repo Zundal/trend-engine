@@ -12,9 +12,9 @@ from trend_engine.sources import REGISTRY
 
 KEY_HEX = "11" * 32
 # Anything that would reveal where the data came from. Page source: any mention at all.
-PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|pixiv|\bptt\b|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|yahoo_realtime|zum|tuoitre|dantri|thanhnien|source_status|publisher", re.I)
+PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|pixiv|\bptt\b|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|getdaytrends|yahoo_trending|yahoo_realtime|zum|tuoitre|dantri|thanhnien|source_status|publisher", re.I)
 # Data files: source identifiers as JSON keys/values (headline text may legitimately say "네이버페이").
-SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|pixiv|ptt|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|yahoo_realtime|zum_issue|tuoitre|dantri|thanhnien|sources|source_status|publisher|channel|mode|anchor|errors)"')
+SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|pixiv|ptt|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|getdaytrends|yahoo_trending|yahoo_realtime|zum_issue|tuoitre|dantri|thanhnien|sources|source_status|publisher|channel|mode|anchor|errors)"')
 
 
 @pytest.fixture(autouse=True)
@@ -26,7 +26,8 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     lines = await export_site(service, tmp_path / "site", ["KR", "US"], archive_dir=tmp_path / "archive",
                               health_path=tmp_path / "health.json")
     health = json.loads((tmp_path / "health.json").read_text())
-    assert set(health) == {"problems", "warnings", "ok"}
+    assert set(health) == {"problems", "warnings", "ok", "depth"}
+    assert health["depth"] and all(set(d) == {"confirmed", "multi"} for d in health["depth"].values())
     assert any("youtube" in p for p in health["problems"])  # offline US has no video fixture -> reported, not silent
     tmp_path = tmp_path / "site"
     api = tmp_path / "api"

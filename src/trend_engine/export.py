@@ -288,6 +288,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     lines.append(f"wrote {out} (encrypted)")
     if health_path:
         health.write(health_path)
+    lines.append("confirmed in top 20: " + " ".join(f"{c}={d['confirmed']}({d['multi']})" for c, d in health.depth.items()))
     lines.append(f"health: {'OK' if health.ok else f'{len(health.problems)} problems'}"
                  + (f", {len(health.warnings)} warnings" if health.warnings else ""))
     return lines
