@@ -40,8 +40,18 @@ def test_origin_is_unknown_on_a_tie():
 def test_leads_counts_who_was_first_across_issues():
     origins = [{"window_start": T0, "path": [{"signal": "SNS", "at": T1}, {"signal": "포털", "at": T2}]}] * 3
     origins += [{"window_start": T0, "path": [{"signal": "포털", "at": T1}, {"signal": "SNS", "at": T3}]}]
+    origins += [{"window_start": T0, "path": [{"signal": "포털", "at": T1}, {"signal": "SNS", "at": T1}]}] * 5
     (row,) = insight.leads(origins)
     assert row["signal"] == "SNS" and row["before"] == "포털" and row["n"] == 4 and row["share"] == 0.75
+    assert row["wins"] == 3 and row["ties"] == 5 and row["median_hours"] > 0
+
+
+def test_leads_drops_ties_and_coin_flips():
+    tie = {"window_start": T0, "path": [{"signal": "포털", "at": T1}, {"signal": "SNS", "at": T1}]}
+    assert insight.leads([tie] * 6) == []
+    flip = [{"window_start": T0, "path": [{"signal": "SNS", "at": T1}, {"signal": "포털", "at": T2}]}] * 2
+    flip += [{"window_start": T0, "path": [{"signal": "포털", "at": T1}, {"signal": "SNS", "at": T2}]}] * 2
+    assert insight.leads(flip) == []
 
 
 def test_why_picks_the_headline_others_agree_with_not_the_shared_name():
@@ -50,6 +60,7 @@ def test_why_picks_the_headline_others_agree_with_not_the_shared_name():
     w = insight.why(c)
     assert "runoff" in w["line"] and w["support"] == 3 and w["titles"] == 4 and w["outlets"] == 3
     assert insight.why(cl("none")) is None
+    assert insight.why(cl("solo", label="Solo", related=["Solo wins a prize"])) is None
 
 
 def test_life_phases():
@@ -110,3 +121,34 @@ def test_build_and_public_view_carry_no_source_names():
     text = repr(out)
     assert "lula" in out["items"] and out["items"]["lula"]["origin"]["first"] == "SNS"
     assert not any(s in text for s in ("getdaytrends", "yahoo_trending", "bbc_news"))
+
+
+def test_seasons_do_not_cache_a_pass_cut_short(monkeypatch):
+    import asyncio
+
+    from trend_engine import pageviews
+    from trend_engine.config import Settings
+    from trend_engine.service import TrendService
+    from trend_engine.store import Store
+
+    calls = []
+
+    async def top(self, lang, day, limit=200):
+        return [("Lula", 9)]
+
+    async def articles(self, lang, names, start, end):
+        calls.append(names)
+        if len(calls) == 1:
+            self.errors.append("HTTP 429")
+            return {}
+        return {"Lula": [(end - timedelta(days=k), 5 if k > 20 else 500) for k in range(400)]}
+
+    monkeypatch.setattr(pageviews.History, "top", top)
+    monkeypatch.setattr(pageviews.History, "articles", articles)
+    svc = TrendService(Settings(offline=True, db_path=":memory:"), Store(":memory:"))
+    wiki = [cl("lula", {"wikipedia": 1}, label="Lula")]
+    first, errors = asyncio.run(svc._seasons("US", wiki))
+    assert first == {} and errors == ["HTTP 429"]
+    second, errors = asyncio.run(svc._seasons("US", wiki))
+    assert "lula" in second and errors == [] and len(calls) == 2
+    assert asyncio.run(svc._seasons("US", wiki))[0] == second and len(calls) == 2  # now cached

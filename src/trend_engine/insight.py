@@ -36,6 +36,7 @@ MOVE = 3  # ranks
 LINK_TOP = 30
 LINKS_PER_ITEM = 4
 HUB_SHARE, HUB_MIN = 0.15, 8
+LEAD_SHARE = 0.6
 USUAL_LIFT = 1.5  # below this the article is at its everyday level: not a seasonal event
 SEASON_SLACK = 21  # days either side of "a year ago"
 SEASON_RECENT = 14
@@ -77,8 +78,11 @@ def why(c: dict[str, Any]) -> dict[str, Any] | None:
         return support, int(mentions(label, titles[i])), -len(titles[i])
 
     best = max(range(len(titles)), key=score)
+    support = score(best)[0] + 1
+    if support < 2:
+        return None  # no second headline tells the same story: nothing agreed on to show
     outlets = len(c.get("mentions") or {}) + (1 if c.get("related") else 0)
-    return {"line": titles[best], "support": score(best)[0] + 1, "titles": len(titles), "outlets": outlets}
+    return {"line": titles[best], "support": support, "titles": len(titles), "outlets": outlets}
 
 
 # --- 누가 먼저 -----------------------------------------------------------------------------
@@ -115,7 +119,9 @@ def origin(target: dict[str, Any], snapshots: list[dict[str, Any]]) -> dict[str,
 
 
 def leads(origins: list[dict[str, Any]], min_n: int = 3) -> list[dict[str, Any]]:
-    """Across today's issues: how often signal A showed up before signal B, and by how long."""
+    """Across today's issues: how often signal A showed up before signal B, and by how long.
+    Caught in the same collection = a tie: counted apart, never as A losing. Only pairs where
+    one side leads most of the decided issues are kept (a coin flip says nothing)."""
     pairs: dict[tuple[str, str], list[float]] = {}
     for o in origins:
         if not o:
@@ -127,15 +133,19 @@ def leads(origins: list[dict[str, Any]], min_n: int = 3) -> list[dict[str, Any]]
                     pairs.setdefault((a, b), []).append((tb - ta).total_seconds() / 3600)
     out = []
     for (a, b), gaps in pairs.items():
-        if len(gaps) < min_n:
+        decided = [g for g in gaps if g != 0]
+        if len(decided) < min_n:
             continue
-        ahead = sum(1 for g in gaps if g > 0) - sum(1 for g in gaps if g < 0)
-        lead, lag = (a, b) if ahead >= 0 else (b, a)
-        signed = [g if lead == a else -g for g in gaps]
-        out.append({"signal": lead, "before": lag, "n": len(gaps),
-                    "share": round(sum(1 for g in signed if g > 0) / len(gaps), 2),
-                    "median_hours": round(statistics.median(signed), 1)})
-    return sorted(out, key=lambda r: (-r["n"], -r["share"]))
+        ahead = sum(1 for g in decided if g > 0)
+        lead, lag = (a, b) if 2 * ahead >= len(decided) else (b, a)
+        wins = [abs(g) for g in decided if (g > 0) == (lead == a)]
+        share = len(wins) / len(decided)
+        if share < LEAD_SHARE:
+            continue
+        out.append({"signal": lead, "before": lag, "n": len(decided), "wins": len(wins),
+                    "ties": len(gaps) - len(decided), "share": round(share, 2),
+                    "median_hours": round(statistics.median(wins), 1)})
+    return sorted(out, key=lambda r: (-r["wins"], -r["share"]))
 
 
 # --- 일생 ----------------------------------------------------------------------------------

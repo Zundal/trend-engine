@@ -297,6 +297,7 @@ class TrendService:
             rows = await hist.top(lang, end, limit=top)
             series = await hist.articles(lang, [a for a, _ in rows], end - timedelta(days=540), end)
             errors = list(hist.errors)
+            complete = not hist.skipped and not errors
         items = []
         for name, s in series.items():
             shaped = [x for x in ((b, shapes_mod.shape_of(s, b)) for b in shapes_mod.bursts(s)) if x[1]]
@@ -314,7 +315,8 @@ class TrendService:
             mix[i["shape"]] = mix.get(i["shape"], 0) + 1
         result = {"region": region, "day": end.isoformat(), "items": items[:12], "mix": mix,
                   "classes": shapes_mod.CLASSES, "errors": errors[:3]}
-        self.store.cache_set(key, result)
+        if complete:  # article series are cached one by one, so the next pass just fills the gaps
+            self.store.cache_set(key, result)
         return result
 
     def youth_trend(self, days: int = 30) -> dict[str, Any]:
@@ -346,19 +348,20 @@ class TrendService:
             snaps.append(report)
         top = report["clusters"][:40]
         rows = self.store.key_rows(code, [c["key"] for c in top], now - insight_mod.LIFE_WINDOW)
-        seasons = await self._seasons(code, top)
-        return insight_mod.build(report, snaps, rows, seasons)
+        seasons, errors = await self._seasons(code, top)
+        return insight_mod.build(report, snaps, rows, seasons) | {"errors": errors}
 
     async def _seasons(self, region: str, clusters: list[dict[str, Any]], limit: int = SEASON_LIMIT,
-                       max_age: timedelta = timedelta(hours=12)) -> dict[str, dict[str, Any]]:
-        """작년 이맘때: only issues that are encyclopedia articles today, read from cached pageviews."""
+                       max_age: timedelta = timedelta(hours=12)) -> tuple[dict[str, dict[str, Any]], list[str]]:
+        """작년 이맘때: only issues that are encyclopedia articles today, read from cached pageviews.
+        -> (seasons by cluster key, what went wrong — for the deploy log, never published)."""
         wiki = [c for c in clusters if "wikipedia" in c.get("sources", {})][:limit]
         if not wiki:
-            return {}
+            return {}, []
         lang = get_region(region).lang
         key = f"seasons:v1:{lang}:" + ",".join(sorted(c["key"] for c in wiki))
         if (hit := self.store.cache_get(key, max_age)) is not None:
-            return hit
+            return hit, []
         async with pageviews.History(self.settings, self.store, budget=2 * limit + 4) as hist:
             end = hist.latest_day(lang)
             names = {a for d in (end, end - timedelta(days=1)) for a, _ in await hist.top(lang, d, limit=500)}
@@ -369,12 +372,14 @@ class TrendService:
                         article[c["key"]] = v.replace(" ", "_")
                         break
             series = await hist.articles(lang, list(article.values()), end - timedelta(days=400), end)
+            errors = list(hist.errors)[:3] + ([f"budget: {hist.skipped} skipped"] if hist.skipped else [])
         out = {}
         for k, name in article.items():
             if name in series and (s := insight_mod.season(series[name], end)):
                 out[k] = s
-        self.store.cache_set(key, out)
-        return out
+        if not errors:  # a pass cut short by budget/429 would otherwise pin a hole for 12h
+            self.store.cache_set(key, out)
+        return out, errors
 
     def history(self, region: str, key: str) -> list[dict[str, Any]]:
         return self.store.history(key, get_region(region).code)
