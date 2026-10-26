@@ -49,6 +49,8 @@ def page(site):
         # The page asks for a web font; answer locally so the browser test never needs the network.
         pg.route(re.compile(r"^https://fonts\.(googleapis|gstatic)\.com/"),
                  lambda route: route.fulfill(status=200, content_type="text/css", body=""))
+        pg.route(re.compile(r"^https?://(gc\.zgo\.at|[a-z0-9-]+\.goatcounter\.com)/"),
+                 lambda route: route.fulfill(status=200, content_type="text/javascript", body=""))
         errors: list[str] = []
         pg.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         pg.on("pageerror", lambda e: errors.append(str(e)))
@@ -335,6 +337,18 @@ def test_japan_country_shows_local_interest_list(page, site):
     text = page.locator("#card-local").inner_text()
     assert "로컬 관심" in text
     assert any(tag in text for tag in ("음악", "창작", "영상", "관심글", "토픽"))
+    assert not page.errors, page.errors
+
+
+def test_other_tools_footer_is_on_every_view(page, site):
+    for view in ("#glance", "#country/KR/live", "#age"):
+        page.goto(site + view)
+        links = page.locator("#more-tools .more-grid a")
+        assert links.count() == 4
+        hrefs = [links.nth(i).get_attribute("href") for i in range(4)]
+        assert all(h.startswith("https://") and ".todoli.lat/" in h for h in hrefs)
+        assert page.locator("#more-tools").is_visible()
+    assert page.locator('script[data-goatcounter="https://trend.goatcounter.com/count"]').count() == 1
     assert not page.errors, page.errors
 
 
