@@ -289,7 +289,7 @@ class TrendService:
         """유행의 모양 (나라별): how each of today's risers got its attention. A shape can only be
         read a week after the peak — fresher items are left unlabelled rather than guessed."""
         lang = get_region(region).lang
-        key = f"shapes:v2:{lang}:{top}"
+        key = f"shapes:v3:{lang}:{top}"
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit
         async with pageviews.History(self.settings, self.store, budget=top + 10) as hist:
@@ -359,7 +359,7 @@ class TrendService:
         if not wiki:
             return {}, []
         lang = get_region(region).lang
-        key = f"seasons:v1:{lang}:" + ",".join(sorted(c["key"] for c in wiki))
+        key = f"seasons:v2:{lang}:" + ",".join(sorted(c["key"] for c in wiki))
         if (hit := self.store.cache_get(key, max_age)) is not None:
             return hit, []
         async with pageviews.History(self.settings, self.store, budget=2 * limit + 4) as hist:
