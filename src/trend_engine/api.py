@@ -46,11 +46,8 @@ def create_app(service: TrendService | None = None) -> FastAPI:
 
     @app.get("/sitemap.xml", include_in_schema=False)
     def sitemap():
-        codes = [r["code"] for r in svc.meta().get("regions", [])]
-        return Response(
-            sitemap_xml(svc.settings.site_url, lastmod=utcnow().date().isoformat(), regions=codes),
-            media_type="application/xml",
-        )
+        return Response(sitemap_xml(svc.settings.site_url, lastmod=utcnow().date().isoformat()),
+                        media_type="application/xml")
 
     @app.get("/robots.txt", include_in_schema=False)
     def robots():

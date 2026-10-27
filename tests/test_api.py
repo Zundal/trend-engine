@@ -15,7 +15,7 @@ def test_end_to_end_offline(service):
     site = service.settings.site_url.rstrip("/") + "/"
     sm = client.get("/sitemap.xml")
     assert sm.status_code == 200 and "application/xml" in sm.headers["content-type"]
-    assert f"<loc>{site}</loc>" in sm.text and f"<loc>{site}feed.xml</loc>" in sm.text
+    assert f"<loc>{site}</loc>" in sm.text and "feed.xml" not in sm.text and "?view=" not in sm.text
     robots = client.get("/robots.txt")
     assert robots.status_code == 200 and f"Sitemap: {site}sitemap.xml" in robots.text
 
