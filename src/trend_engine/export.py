@@ -55,14 +55,20 @@ def sitemap_xml(site_url: str, *, lastmod: str | None = None) -> str:
     )
 
 
-def robots_txt(site_url: str) -> str:
+def robots_txt(site_url: str, *, static: bool = False) -> str:
+    """정적 사이트의 api/*.dat 는 홈이 화면을 그리는 데이터라 열어 둔다.
+
+    구글은 렌더링할 때도 robots 를 지켜서, 막으면 데이터 없는 빈 화면만 색인된다.
+    `serve` 의 /api/ 는 호출마다 수집·쿼터를 쓰는 동적 API 라 계속 막는다.
+    """
     base = _site_base(site_url)
+    api = "" if static else "Disallow: /api/\n"  # Allow: / 보다 먼저 — 첫 규칙이 이기는 파서(urllib.robotparser)도 막게
     return (
         "User-agent: *\n"
+        f"{api}"
         "Allow: /\n"
         "Allow: /feed.xml\n"
         "Allow: /sitemap.xml\n"
-        "Disallow: /api/\n"
         "\n"
         f"Sitemap: {base}sitemap.xml\n"
     )
@@ -89,7 +95,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     lastmod = utcnow().date().isoformat()
     (out / "sitemap.xml").write_text(
         sitemap_xml(svc.settings.site_url, lastmod=lastmod), encoding="utf-8")
-    (out / "robots.txt").write_text(robots_txt(svc.settings.site_url), encoding="utf-8")
+    (out / "robots.txt").write_text(robots_txt(svc.settings.site_url, static=True), encoding="utf-8")
 
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
     meta["regions"] = [r for r in meta["regions"] if r["code"] in regions]

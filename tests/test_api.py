@@ -1,6 +1,7 @@
 """End-to-end through HTTP in offline mode: sources -> engine -> store -> API."""
 
 import json
+from urllib.robotparser import RobotFileParser
 
 from fastapi.testclient import TestClient
 
@@ -18,6 +19,9 @@ def test_end_to_end_offline(service):
     assert f"<loc>{site}</loc>" in sm.text and "feed.xml" not in sm.text and "?view=" not in sm.text
     robots = client.get("/robots.txt")
     assert robots.status_code == 200 and f"Sitemap: {site}sitemap.xml" in robots.text
+    rp = RobotFileParser()  # serve 의 /api/ 는 호출마다 수집하는 동적 API 라 막는다 (첫 규칙이 이기는 파서에서도)
+    rp.parse(robots.text.splitlines())
+    assert rp.can_fetch("Googlebot", site) and not rp.can_fetch("Googlebot", f"{site}api/report?refresh=true")
 
     meta = client.get("/api/meta").json()
     assert meta["offline"] is True and any(r["code"] == "KR" for r in meta["regions"])

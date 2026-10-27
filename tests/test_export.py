@@ -3,6 +3,7 @@
 import json
 import re
 import struct
+from urllib.robotparser import RobotFileParser
 
 import pytest
 
@@ -15,6 +16,21 @@ KEY_HEX = "11" * 32
 PROVIDERS = re.compile(r"google_trends|google_news|signal_bz|\bnate\b|wikipedia|youtube\b|datalab|naver|네이버|시그널|네이트|위키|apple_charts|itunes|pixiv|\bptt\b|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|getdaytrends|yahoo_trending|yahoo_realtime|zum|tuoitre|dantri|thanhnien|source_status|publisher", re.I)
 # Data files: source identifiers as JSON keys/values (headline text may legitimately say "네이버페이").
 SOURCE_TOKENS = re.compile(r'"(google_trends|google_news|signal_bz|nate|wikipedia|youtube|apple_charts|pixiv|ptt|ettoday|reddit|kenh14|steam|melon|netflix|yahoo_topics|hatena|nicovideo|billboard_japan|livedoor_trend|billboard_us|yahoo_us|official_charts|bbc_news|kkbox_tw|yahoo_tw|yahoo_tw_search|gnn_tw|vnexpress|trends24|getdaytrends|yahoo_trending|yahoo_realtime|zum_issue|tuoitre|dantri|thanhnien|sources|source_status|publisher|channel|mode|anchor|errors)"')
+
+
+def google_allows(robots: str, path: str) -> bool:
+    """구글 방식: 가장 긴 규칙이 이긴다(길이가 같으면 Allow). urllib.robotparser 는 첫 규칙이 이겨서
+    `Allow: /` 뒤의 `Disallow: /api/` 를 못 본다 — 그래서 robotparser 만으로는 구글이 막히는 걸 놓친다.
+
+    shortcut: user-agent 그룹·와일드카드(*, $)는 안 본다 — 지금 robots.txt 엔 없다. 생기면 함께 구현.
+    """
+    rules = [(0, True)]
+    for line in robots.splitlines():
+        field, _, value = line.partition(":")
+        field, value = field.strip().lower(), value.strip()
+        if field in ("allow", "disallow") and value and path.startswith(value):
+            rules.append((len(value), field == "allow"))
+    return max(rules)[1]
 
 
 @pytest.fixture(autouse=True)
@@ -80,7 +96,12 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     # canonical 이 자기 자신인 HTML 만: ?view 딥링크(canonical=루트)·피드·아이콘은 빠진다
     assert re.findall(r"<loc>(.*?)</loc>", sitemap) == [site_url]
     robots = (tmp_path / "robots.txt").read_text()
-    assert "Disallow: /api/" in robots and f"Sitemap: {site_url}sitemap.xml" in robots
+    assert f"Sitemap: {site_url}sitemap.xml" in robots
+    # 구글은 렌더링 때도 robots 를 지킨다: 홈이 그리는 데이터(api/*.dat)를 막으면 빈 화면만 색인된다
+    rp = RobotFileParser()
+    rp.parse(robots.splitlines())
+    for path in ["/"] + [f"/api/{p.name}" for p in api.iterdir()]:
+        assert rp.can_fetch("Googlebot", site_url + path[1:]) and google_allows(robots, path), f"robots.txt blocks {path}"
     assert any(t.get("peers") for t in rep.get("themes") or rep["clusters"]), "비슷한 관심도 peers 가 공개 리포트에 있어야 함"
     assert any("report KR" in line for line in lines)
 
