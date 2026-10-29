@@ -10,13 +10,14 @@ from trend_engine.api import create_app
 
 def test_end_to_end_offline(service):
     client = TestClient(create_app(service))
-    assert client.get("/").status_code == 200
+    home = client.get("/")
+    assert home.status_code == 200 and '<meta name="robots" content="noindex, follow">' in home.text
     assert client.get("/favicon-48x48.png").headers["content-type"] == "image/png"
     assert client.get("/favicon.ico").status_code == 200
     site = service.settings.site_url.rstrip("/") + "/"
     sm = client.get("/sitemap.xml")
     assert sm.status_code == 200 and "application/xml" in sm.headers["content-type"]
-    assert f"<loc>{site}</loc>" in sm.text and "feed.xml" not in sm.text and "?view=" not in sm.text
+    assert "<urlset" in sm.text and "<url>" not in sm.text  # 사이트 전체 noindex: 주소는 두고 비운다
     robots = client.get("/robots.txt")
     assert robots.status_code == 200 and f"Sitemap: {site}sitemap.xml" in robots.text
     rp = RobotFileParser()  # serve 의 /api/ 는 호출마다 수집하는 동적 API 라 막는다 (첫 규칙이 이기는 파서에서도)

@@ -10,7 +10,6 @@ from fastapi.responses import FileResponse, PlainTextResponse, Response
 from . import publish
 from .export import robots_txt, sitemap_xml
 from .service import TrendService
-from .store import utcnow
 
 WEB = Path(__file__).parent / "web"
 
@@ -46,8 +45,7 @@ def create_app(service: TrendService | None = None) -> FastAPI:
 
     @app.get("/sitemap.xml", include_in_schema=False)
     def sitemap():
-        return Response(sitemap_xml(svc.settings.site_url, lastmod=utcnow().date().isoformat()),
-                        media_type="application/xml")
+        return Response(sitemap_xml(), media_type="application/xml")
 
     @app.get("/robots.txt", include_in_schema=False)
     def robots():

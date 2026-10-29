@@ -93,8 +93,9 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     site_url = service.settings.site_url.rstrip("/") + "/"
     sitemap = (tmp_path / "sitemap.xml").read_text()
     assert 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' in sitemap
-    # canonical 이 자기 자신인 HTML 만: ?view 딥링크(canonical=루트)·피드·아이콘은 빠진다
-    assert re.findall(r"<loc>(.*?)</loc>", sitemap) == [site_url]
+    # 사이트 전체 noindex: 사이트맵은 주소만 두고 URL 은 싣지 않는다
+    assert re.findall(r"<loc>(.*?)</loc>", sitemap) == []
+    assert page.count('name="robots"') == 1 and '<meta name="robots" content="noindex, follow">' in page
     robots = (tmp_path / "robots.txt").read_text()
     assert f"Sitemap: {site_url}sitemap.xml" in robots
     # 구글은 렌더링 때도 robots 를 지킨다: 홈이 그리는 데이터(api/*.dat)를 막으면 빈 화면만 색인된다

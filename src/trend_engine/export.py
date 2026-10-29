@@ -40,17 +40,14 @@ def _site_base(site_url: str) -> str:
     return site_url.rstrip("/") + "/"
 
 
-def sitemap_xml(site_url: str, *, lastmod: str | None = None) -> str:
-    """canonical 이 자기 자신인 HTML 만 싣는다 — 지금은 루트 하나.
+def sitemap_xml() -> str:
+    """빈 사이트맵: 사이트 전체를 일부러 noindex 로 둔다 (index.html 의 robots meta).
 
-    `?view=` 딥링크는 같은 index.html 에 canonical 이 루트라 넣지 않는다 (공유 링크로는 계속 동작).
-    피드·아이콘은 HTML 이 아니라 뺀다 (피드는 index.html 의 rel=alternate 로 찾는다).
+    주소는 그대로 두고 URL 만 싣지 않는다 — 없애면 Search Console 이 깨진 사이트맵으로 보고한다.
     """
-    mod = f"\n    <lastmod>{lastmod}</lastmod>" if lastmod else ""
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"  <url>\n    <loc>{_site_base(site_url)}</loc>{mod}\n    <changefreq>hourly</changefreq>\n  </url>\n"
         "</urlset>\n"
     )
 
@@ -92,9 +89,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     for icon in ICONS:
         (out / icon).write_bytes((WEB / icon).read_bytes())
     (out / ".nojekyll").write_text("")
-    lastmod = utcnow().date().isoformat()
-    (out / "sitemap.xml").write_text(
-        sitemap_xml(svc.settings.site_url, lastmod=lastmod), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap_xml(), encoding="utf-8")
     (out / "robots.txt").write_text(robots_txt(svc.settings.site_url, static=True), encoding="utf-8")
 
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
