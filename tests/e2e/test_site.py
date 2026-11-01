@@ -340,6 +340,23 @@ def test_japan_country_shows_local_interest_list(page, site):
     assert not page.errors, page.errors
 
 
+def test_paid_app_rank_by_country_and_category(page, site):
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#card-paid:not([hidden]) #paid li a")
+    overall = page.locator("#paid li a").first.inner_text()
+    page.locator('#paid-cats [data-c="생산성"]').click()
+    page.wait_for_selector('#paid-cats [data-c="생산성"][aria-pressed="true"]')
+    kr_tools = page.locator("#paid li a").first.inner_text()
+    assert kr_tools != overall
+    assert "1" == page.locator("#paid li .n").first.inner_text()
+    page.locator('#regions [data-code="JP"]').click()  # another country: same category stays selected
+    page.wait_for_function("document.querySelector('#paid li a')?.textContent === 'FLKB'")
+    assert page.locator('#paid-cats [data-c="생산성"]').get_attribute("aria-pressed") == "true"
+    page.locator('#regions [data-code="US"]').click()
+    page.wait_for_function("document.querySelector('#paid')?.textContent.includes('US$')")  # not a bare "$": Taiwan's is NT$
+    assert not page.errors, page.errors
+
+
 def test_issue_detail_explains_why_origin_and_life(page, site):
     page.goto(site + "#country/KR/live")
     page.wait_for_selector("#rank li[data-i]")

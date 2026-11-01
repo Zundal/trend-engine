@@ -73,6 +73,8 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     hist = publish.decrypt(files["history-KR"], key)
     assert set(hist) == {c["key"] for c in rep["clusters"]}
     assert publish.decrypt(files["shopping"], key)["by_segment"]
+    charts = publish.decrypt(files["app-charts-US"], key)
+    assert charts["categories"]["게임"] and set(charts["categories"]["게임"][0]) == {"rank", "name", "artist", "price", "currency", "url"}
     period = publish.decrypt(files["period-KR"], key)
     assert set(period) == {"week", "month"} and period["week"]["days_available"] >= 1 and period["week"]["items"]
     ages = publish.decrypt(files["age-period"], key)

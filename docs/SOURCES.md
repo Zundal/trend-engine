@@ -65,6 +65,7 @@
 |---|---|---|
 | `segments.py` 네이버 검색어 트렌드 | 선택 (`NAVER_CLIENT_ID/SECRET`, `NAVER_API`) | 연령(11구간)·성별 상대 검색량. 요청당 5그룹. 키 없으면 **web 모드** |
 | `shopping.py` 네이버 쇼핑인사이트 | 불필요 | 11개 쇼핑 분야 × 연령(10대~60대)·성별 인기 검색어 top N. **비공식 웹 엔드포인트** |
+| `appcharts.py` 유료 앱 판매 순위 | 불필요 | `itunes.apple.com/{국가}/rss/toppaidapplications/limit=20/genre={분야}/json`. 나라 × 25개 분야 상위 20개, 6시간 캐시. 인앱 결제 매출은 반영하지 않는다. 구글 플레이는 분야별 인기 페이지(`/store/apps/top/category/GAME`) 응답에 유료 순위가 없어 뺐다 (2026-11-01 확인) |
 
 ## 네이버 경로 자동 전환
 `Settings.naver_modes`: 키가 있으면 [공식 API(hub) → 웹], 없으면 [웹]. 한 경로가 실패하면 다음 경로로 자동 재시도하고,

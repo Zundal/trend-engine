@@ -119,6 +119,12 @@ def public_shopping(d: dict[str, Any]) -> dict[str, Any]:
     return {k: d[k] for k in ("period", "categories", "segments", "by_segment", "offline") if k in d}
 
 
+def public_app_charts(d: dict[str, Any]) -> dict[str, Any]:
+    """Adult names drop out but ranks stay: closing the gap would show a rank the app doesn't have."""
+    return {"generated_at": d["generated_at"],
+            "categories": {c: [a for a in apps if not is_adult(a["name"])] for c, apps in d["categories"].items()}}
+
+
 def public_attention(a: dict[str, Any]) -> dict[str, Any]:
     """Numbers only — the article titles behind them would name the source."""
     s = {k: v for k, v in a["summary"].items() if k != "top"}

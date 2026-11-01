@@ -1,0 +1,773 @@
+{
+ "generated_at": "2026-11-01T00:24:00+00:00",
+ "countries": {
+  "KR": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "베리필름 Berryfilm - 60만 팬이 사랑한 필터",
+     "artist": "Seungyun Kim",
+     "price": 3300.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/%EB%B2%A0%EB%A6%AC%ED%95%84%EB%A6%84-berryfilm-60%EB%A7%8C-%ED%8C%AC%EC%9D%B4-%EC%82%AC%EB%9E%91%ED%95%9C-%ED%95%84%ED%84%B0/id6741474933?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Minecraft 온라인으로 친구들과 함께 플레이하세요",
+     "artist": "Mojang",
+     "price": 9900.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/minecraft-%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%9C%BC%EB%A1%9C-%EC%B9%9C%EA%B5%AC%EB%93%A4%EA%B3%BC-%ED%95%A8%EA%BB%98-%ED%94%8C%EB%A0%88%EC%9D%B4%ED%95%98%EC%84%B8%EC%9A%94/id479516143?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "탑과 용병단",
+     "artist": "KEUNSIK JANG",
+     "price": 2600.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/%ED%83%91%EA%B3%BC-%EC%9A%A9%EB%B3%91%EB%8B%A8/id6801980968?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "올디 Oldi - Phone Camera",
+     "artist": "Sean Cho",
+     "price": 1100.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/%EC%98%AC%EB%94%94-oldi-phone-camera/id6760838876?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Analog Wedding",
+     "artist": "ordinaryfactory Inc.",
+     "price": 1100.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/analog-wedding/id992047786?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "Minecraft 온라인으로 친구들과 함께 플레이하세요",
+     "artist": "Mojang",
+     "price": 9900.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/minecraft-%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%9C%BC%EB%A1%9C-%EC%B9%9C%EA%B5%AC%EB%93%A4%EA%B3%BC-%ED%95%A8%EA%BB%98-%ED%94%8C%EB%A0%88%EC%9D%B4%ED%95%98%EC%84%B8%EC%9A%94/id479516143?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "탑과 용병단",
+     "artist": "KEUNSIK JANG",
+     "price": 2600.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/%ED%83%91%EA%B3%BC-%EC%9A%A9%EB%B3%91%EB%8B%A8/id6801980968?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "6·25 한국전쟁",
+     "artist": "JUNYONG YOU",
+     "price": 4400.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/6-25-%ED%95%9C%EA%B5%AD%EC%A0%84%EC%9F%81/id6818571409?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "원피스 그랜드 레스토랑",
+     "artist": "Bandai Namco Entertainment Inc.",
+     "price": 20000.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/%EC%9B%90%ED%94%BC%EC%8A%A4-%EA%B7%B8%EB%9E%9C%EB%93%9C-%EB%A0%88%EC%8A%A4%ED%86%A0%EB%9E%91/id6771652722?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "A Dance of Fire and Ice",
+     "artist": "7th Beat Games S.A.C.",
+     "price": 3300.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/a-dance-of-fire-and-ice/id1456547302?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "UnTrap for YouTube",
+     "artist": "Yevhen Tretiakov",
+     "price": 7700.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/untrap-for-youtube/id1637438059?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "TypeDraw",
+     "artist": "Trautmann & Dorre GbR Shaped Agency",
+     "price": 7700.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/typedraw/id6822194774?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "iFacialMocap",
+     "artist": "DevelopW LLC",
+     "price": 12000.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/ifacialmocap/id1489470545?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "SocialFocus: Hide Distractions",
+     "artist": "Yevhen Tretiakov",
+     "price": 7700.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/socialfocus-hide-distractions/id1661093205?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Dumbify",
+     "artist": "AB Apps Inc.",
+     "price": 7700.0,
+     "currency": "KRW",
+     "url": "https://apps.apple.com/kr/app/dumbify/id6480082872?uo=2"
+    }
+   ]
+  },
+  "US": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "Chromagraph Camera",
+     "artist": "Chromatic Applications LLC",
+     "price": 12.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/chromagraph-camera/id6803329435?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Minecraft: Play with Friends!",
+     "artist": "Mojang",
+     "price": 6.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/minecraft-play-with-friends/id479516143?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Shadowrocket",
+     "artist": "Shadow Launch Technology Limited",
+     "price": 2.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/shadowrocket/id932747118?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Heads Up!",
+     "artist": "Warner Bros.",
+     "price": 1.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/heads-up/id623592465?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Geometry Dash",
+     "artist": "RobTop Games AB",
+     "price": 3.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/geometry-dash/id625334537?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "Minecraft: Play with Friends!",
+     "artist": "Mojang",
+     "price": 6.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/minecraft-play-with-friends/id479516143?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Heads Up!",
+     "artist": "Warner Bros.",
+     "price": 1.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/heads-up/id623592465?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Geometry Dash",
+     "artist": "RobTop Games AB",
+     "price": 3.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/geometry-dash/id625334537?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Plague Inc.",
+     "artist": "Ndemic Creations",
+     "price": 0.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/plague-inc/id525818839?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Batomon Showdown",
+     "artist": "EKA Games",
+     "price": 5.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/batomon-showdown/id6783953753?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "TypeDraw",
+     "artist": "Trautmann & Dorre GbR Shaped Agency",
+     "price": 4.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/typedraw/id6822194774?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "QuickBend: Conduit Bending",
+     "artist": "Bret Hardman",
+     "price": 6.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/quickbend-conduit-bending/id1010311475?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Goblin Tools",
+     "artist": "Skyhook",
+     "price": 0.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/goblin-tools/id6449003064?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Things 3",
+     "artist": "Cultured Code GmbH & Co. KG",
+     "price": 9.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/things-3/id904237743?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Whisper Notes - Speech to Text",
+     "artist": "SmashMelon LLC",
+     "price": 7.99,
+     "currency": "USD",
+     "url": "https://apps.apple.com/us/app/whisper-notes-speech-to-text/id6447090616?uo=2"
+    }
+   ]
+  },
+  "JP": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "パチスロ L 東京喰種",
+     "artist": "CommSeed Corporation",
+     "price": 1980.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/%E3%83%91%E3%83%81%E3%82%B9%E3%83%AD-l-%E6%9D%B1%E4%BA%AC%E5%96%B0%E7%A8%AE/id6785720250?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Chromagraph Camera",
+     "artist": "Chromatic Applications LLC",
+     "price": 2000.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/chromagraph-camera/id6803329435?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "ONE PIECE 海のごちそうレストラン",
+     "artist": "Bandai Namco Entertainment Inc.",
+     "price": 2000.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/one-piece-%E6%B5%B7%E3%81%AE%E3%81%94%E3%81%A1%E3%81%9D%E3%81%86%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3/id6771652722?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Minecraft: クラフト、建築、サバイバル",
+     "artist": "Mojang",
+     "price": 1300.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/minecraft-%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88-%E5%BB%BA%E7%AF%89-%E3%82%B5%E3%83%90%E3%82%A4%E3%83%90%E3%83%AB/id479516143?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "スイカゲーム-Aladdin X",
+     "artist": "XGIMI LIMITED",
+     "price": 240.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/%E3%82%B9%E3%82%A4%E3%82%AB%E3%82%B2%E3%83%BC%E3%83%A0-aladdin-x/id6469114836?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "パチスロ L 東京喰種",
+     "artist": "CommSeed Corporation",
+     "price": 1980.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/%E3%83%91%E3%83%81%E3%82%B9%E3%83%AD-l-%E6%9D%B1%E4%BA%AC%E5%96%B0%E7%A8%AE/id6785720250?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "ONE PIECE 海のごちそうレストラン",
+     "artist": "Bandai Namco Entertainment Inc.",
+     "price": 2000.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/one-piece-%E6%B5%B7%E3%81%AE%E3%81%94%E3%81%A1%E3%81%9D%E3%81%86%E3%83%AC%E3%82%B9%E3%83%88%E3%83%A9%E3%83%B3/id6771652722?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Minecraft: クラフト、建築、サバイバル",
+     "artist": "Mojang",
+     "price": 1300.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/minecraft-%E3%82%AF%E3%83%A9%E3%83%95%E3%83%88-%E5%BB%BA%E7%AF%89-%E3%82%B5%E3%83%90%E3%82%A4%E3%83%90%E3%83%AB/id479516143?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "スイカゲーム-Aladdin X",
+     "artist": "XGIMI LIMITED",
+     "price": 240.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/%E3%82%B9%E3%82%A4%E3%82%AB%E3%82%B2%E3%83%BC%E3%83%A0-aladdin-x/id6469114836?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "妖怪ウォッチ1 スマホ",
+     "artist": "Level-5 Inc.",
+     "price": 2000.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/%E5%A6%96%E6%80%AA%E3%82%A6%E3%82%A9%E3%83%83%E3%83%811-%E3%82%B9%E3%83%9E%E3%83%9B/id1542957396?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "FLKB",
+     "artist": "Shota Hori",
+     "price": 300.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/flkb/id6809374544?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "TypeDraw",
+     "artist": "Trautmann & Dorre GbR Shaped Agency",
+     "price": 800.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/typedraw/id6822194774?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Tampermonkey",
+     "artist": "Jan Biniok",
+     "price": 500.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/tampermonkey/id6738342400?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Groundwire: VoIP SIP Softphone",
+     "artist": "Acrobits",
+     "price": 1500.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/groundwire-voip-sip-softphone/id378503081?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "iFacialMocap",
+     "artist": "DevelopW LLC",
+     "price": 900.0,
+     "currency": "JPY",
+     "url": "https://apps.apple.com/jp/app/ifacialmocap/id1489470545?uo=2"
+    }
+   ]
+  },
+  "GB": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "Driving Theory Test 4 in 1 Kit",
+     "artist": "Driving Test Success Limited",
+     "price": 5.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/driving-theory-test-4-in-1-kit/id829581836?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Chromagraph Camera",
+     "artist": "Chromatic Applications LLC",
+     "price": 12.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/chromagraph-camera/id6803329435?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Official DVSA Theory Test Kit",
+     "artist": "TSO (The Stationery Office)",
+     "price": 5.49,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/official-dvsa-theory-test-kit/id463295925?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Minecraft: Dream it, Build it!",
+     "artist": "Mojang",
+     "price": 6.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/minecraft-dream-it-build-it/id479516143?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Official Life in the UK Test",
+     "artist": "TSO (The Stationery Office)",
+     "price": 5.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/official-life-in-the-uk-test/id632064672?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "Minecraft: Dream it, Build it!",
+     "artist": "Mojang",
+     "price": 6.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/minecraft-dream-it-build-it/id479516143?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Heads Up!",
+     "artist": "Warner Bros.",
+     "price": 1.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/heads-up/id623592465?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Plague Inc.",
+     "artist": "Ndemic Creations",
+     "price": 0.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/plague-inc/id525818839?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Geometry Dash",
+     "artist": "RobTop Games AB",
+     "price": 3.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/geometry-dash/id625334537?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "MONOPOLY",
+     "artist": "Marmalade Game Studio",
+     "price": 4.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/monopoly/id1477966166?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "TypeDraw",
+     "artist": "Trautmann & Dorre GbR Shaped Agency",
+     "price": 4.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/typedraw/id6822194774?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Site Audit Pro",
+     "artist": "Veam Studios Ltd",
+     "price": 12.9,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/site-audit-pro/id430234732?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Goblin Tools",
+     "artist": "Skyhook",
+     "price": 0.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/goblin-tools/id6449003064?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Things 3",
+     "artist": "Cultured Code GmbH & Co. KG",
+     "price": 9.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/things-3/id904237743?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Unora",
+     "artist": "Beyond Logic AB",
+     "price": 2.99,
+     "currency": "GBP",
+     "url": "https://apps.apple.com/gb/app/unora/id6739263703?uo=2"
+    }
+   ]
+  },
+  "TW": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "YoungPhoto - 質感構圖相機",
+     "artist": "Seungyun Kim",
+     "price": 65.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/youngphoto-%E8%B3%AA%E6%84%9F%E6%A7%8B%E5%9C%96%E7%9B%B8%E6%A9%9F/id6763737180?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Chromagraph Camera",
+     "artist": "Chromatic Applications LLC",
+     "price": 290.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/chromagraph-camera/id6803329435?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Shadowrocket",
+     "artist": "Shadow Launch Technology Limited",
+     "price": 90.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/shadowrocket/id932747118?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Minecraft",
+     "artist": "Mojang",
+     "price": 235.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/minecraft/id479516143?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "ONE PIECE 海洋盛宴",
+     "artist": "Bandai Namco Entertainment Inc.",
+     "price": 430.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/one-piece-%E6%B5%B7%E6%B4%8B%E7%9B%9B%E5%AE%B4/id6771652722?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "Minecraft",
+     "artist": "Mojang",
+     "price": 235.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/minecraft/id479516143?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "ONE PIECE 海洋盛宴",
+     "artist": "Bandai Namco Entertainment Inc.",
+     "price": 430.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/one-piece-%E6%B5%B7%E6%B4%8B%E7%9B%9B%E5%AE%B4/id6771652722?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "塔與傭兵團",
+     "artist": "KEUNSIK JANG",
+     "price": 49.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/%E5%A1%94%E8%88%87%E5%82%AD%E5%85%B5%E5%9C%98/id6801980968?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Plague Inc. (瘟疫公司)",
+     "artist": "Ndemic Creations",
+     "price": 30.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/plague-inc-%E7%98%9F%E7%96%AB%E5%85%AC%E5%8F%B8/id525818839?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Cafe Days：咖啡店經營",
+     "artist": "Mun Wai Lee",
+     "price": 60.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/cafe-days-%E5%92%96%E5%95%A1%E5%BA%97%E7%B6%93%E7%87%9F/id6817821959?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "上次是什麼時候 - 家事·保養紀錄",
+     "artist": "HyunWoo Lee",
+     "price": 90.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/%E4%B8%8A%E6%AC%A1%E6%98%AF%E4%BB%80%E9%BA%BC%E6%99%82%E5%80%99-%E5%AE%B6%E4%BA%8B-%E4%BF%9D%E9%A4%8A%E7%B4%80%E9%8C%84/id6801866888?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "計算機鍵盤 - 快人一步",
+     "artist": "万庄 黄",
+     "price": 90.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/%E8%A8%88%E7%AE%97%E6%A9%9F%E9%8D%B5%E7%9B%A4-%E5%BF%AB%E4%BA%BA%E4%B8%80%E6%AD%A5/id1513814705?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Cat Calendar：日曆 & 行事曆 & 時間管理",
+     "artist": "Nicole Cat",
+     "price": 20.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/cat-calendar-%E6%97%A5%E6%9B%86-%E8%A1%8C%E4%BA%8B%E6%9B%86-%E6%99%82%E9%96%93%E7%AE%A1%E7%90%86/id6471479898?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "TypeDraw",
+     "artist": "Trautmann & Dorre GbR Shaped Agency",
+     "price": 150.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/typedraw/id6822194774?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Tampermonkey",
+     "artist": "Jan Biniok",
+     "price": 90.0,
+     "currency": "TWD",
+     "url": "https://apps.apple.com/tw/app/tampermonkey/id6738342400?uo=2"
+    }
+   ]
+  },
+  "VN": {
+   "전체": [
+    {
+     "rank": 1,
+     "name": "Shadowrocket",
+     "artist": "Shadow Launch Technology Limited",
+     "price": 99000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/shadowrocket/id932747118?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Kingdom Rush 5: Alliance TD",
+     "artist": "Ironhide S.A.",
+     "price": 29000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/kingdom-rush-5-alliance-td/id1622869542?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Stardew Valley",
+     "artist": "ConcernedApe",
+     "price": 149000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/stardew-valley/id1406710800?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Overwinter Survival",
+     "artist": "Fatih Beceren",
+     "price": 5000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/overwinter-survival/id6469419567?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Chromagraph Camera",
+     "artist": "Chromatic Applications LLC",
+     "price": 102000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/chromagraph-camera/id6803329435?uo=2"
+    }
+   ],
+   "게임": [
+    {
+     "rank": 1,
+     "name": "Kingdom Rush 5: Alliance TD",
+     "artist": "Ironhide S.A.",
+     "price": 29000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/kingdom-rush-5-alliance-td/id1622869542?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "Stardew Valley",
+     "artist": "ConcernedApe",
+     "price": 149000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/stardew-valley/id1406710800?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Overwinter Survival",
+     "artist": "Fatih Beceren",
+     "price": 5000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/overwinter-survival/id6469419567?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Kingdom Rush Vengeance TD",
+     "artist": "Ironhide S.A.",
+     "price": 29000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/kingdom-rush-vengeance-td/id1248033433?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Kingdom Rush Origins TD",
+     "artist": "Ironhide S.A.",
+     "price": 29000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/kingdom-rush-origins-td/id904737816?uo=2"
+    }
+   ],
+   "생산성": [
+    {
+     "rank": 1,
+     "name": "CamScanner + | PDF Scanner",
+     "artist": "Linguan Data",
+     "price": 29000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/camscanner-pdf-scanner/id388624839?uo=2"
+    },
+    {
+     "rank": 2,
+     "name": "A Nice Morphing Clock for Me",
+     "artist": "其蓬 戴",
+     "price": 9000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/a-nice-morphing-clock-for-me/id1128196970?uo=2"
+    },
+    {
+     "rank": 3,
+     "name": "Curb: Feed Blocker For Safari",
+     "artist": "Janardan Ayachi",
+     "price": 99000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/curb-feed-blocker-for-safari/id6777446739?uo=2"
+    },
+    {
+     "rank": 4,
+     "name": "Things 3",
+     "artist": "Cultured Code GmbH & Co. KG",
+     "price": 299000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/things-3/id904237743?uo=2"
+    },
+    {
+     "rank": 5,
+     "name": "Tampermonkey",
+     "artist": "Jan Biniok",
+     "price": 99000.0,
+     "currency": "VND",
+     "url": "https://apps.apple.com/vn/app/tampermonkey/id6738342400?uo=2"
+    }
+   ]
+  }
+ }
+}

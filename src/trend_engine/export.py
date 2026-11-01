@@ -146,6 +146,16 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             lines.append(f"shapes {code}: FAIL {e}")
             health.warn(f"[{code}] 유행의 모양 계산 실패 — {str(e)[:160]}")
 
+        try:  # 유료 앱 판매 순위: every category of this country (cached 6h)
+            charts = await svc.app_charts(code)
+            write(f"app-charts-{code}", publish.public_app_charts(charts))
+            lines.append(f"app-charts {code}: {len(charts['categories'])} categories, {len(charts['errors'])} errors")
+            if charts["errors"]:
+                health.warn(f"[{code}] 유료 앱 순위: 일부 실패 {len(charts['errors'])}건 — {charts['errors'][0][:120]}")
+        except Exception as e:  # noqa: BLE001 — an extra card must not fail the deploy
+            lines.append(f"app-charts {code}: FAIL {e}")
+            health.warn(f"[{code}] 유료 앱 순위 실패 — {str(e)[:160]}")
+
         # Korean search data only describes Korean users — skip foreign regions (saves quota).
         if code.startswith("KR"):
             try:

@@ -76,6 +76,10 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def shopping(segments: str | None = None, categories: str | None = None, days: int = Query(7, ge=1, le=31)):
         return publish.public_shopping(await svc.shopping(_split(segments), _split(categories), days))
 
+    @app.get("/api/app-charts")
+    async def app_charts(region: str = "KR"):
+        return publish.public_app_charts(await guard(svc.app_charts(region)))
+
     @app.get("/api/attention")
     async def attention(region: str = "KR"):
         a = await svc.attention(region)

@@ -42,6 +42,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/pomdp.py` | 부분관측 마르코프 결정과정: 국면 믿음(실행 간 보관)·Baum-Welch 재학습·알림 게이트·측정 배분 (docs/POMDP.md) |
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
+| `src/trend_engine/appcharts.py` | 나라 × 25개 분야 유료 앱 판매 순위(아이폰, 키 불필요). 점수에 넣지 않는 별도 표라 `Source` 가 아니다 |
 | `src/trend_engine/insight.py` | 이슈 깊이 읽기(순수 함수): 왜 뜨나(헤드라인 합의) · 누가 먼저(신호 종류별 첫 등장, 최근 3일 리포트) · 일생(30일 순위) · 연결(같은 기사) · 작년 이맘때(위키 조회수). 공개 뷰는 소스 이름 대신 신호 종류(SNS·포털·검색 급상승·백과 조회·뉴스)만 |
 | `src/trend_engine/safety.py` | 성인물 문서·검색어 필터: 위키 소스·과거 조회수·공개 뷰(`publish.py`) 세 곳에서 거른다. 정상 단어(성교육·자위대 등) 오탐 방지 경계 포함 |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |

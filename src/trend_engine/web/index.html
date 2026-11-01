@@ -431,6 +431,9 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .list small { font-size: 12px; color: var(--muted); }
 .list li > small { white-space: nowrap; }
 .list li.col > small { white-space: normal; }
+.paid-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+#card-paid { display: flex; flex-direction: column; gap: 12px; }
+#paid .n { min-width: 20px; }
 .attrow { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--hair); }
 .attrow b { font: 600 22px var(--mono); min-width: 68px; }
 .attrow span { flex: 1; font-size: 13px; line-height: 1.5; }
@@ -481,6 +484,8 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   .eyebrow { font-size: 12px; }
   .chips { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 16px; scrollbar-width: none; }
   .chip { flex: none; padding: 0 16px; }
+  #paid-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }  /* 25개 분야가 순위표를 화면 밖으로 밀지 않게 */
+  #paid-cats .cchip { flex: none; }
   .card, .card.sm { padding: 18px 16px; gap: 12px; }
   .card h3 { font-size: 16px; }
   .gl-brief { padding: 2px 16px; }
@@ -800,7 +805,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 
   <section class="sec" aria-labelledby="pop-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>이 나라에서 많이 받는 앱, 많이 보는 영상, 주요 뉴스, 로컬 관심</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>이 나라에서 많이 받는 앱, 많이 팔린 유료 앱, 많이 보는 영상, 주요 뉴스, 로컬 관심</p></div></header>
     <div class="grid3">
       <section class="card sm" id="card-apps" hidden>
         <h3>인기 무료 앱</h3>
@@ -818,6 +823,12 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     <section class="card" id="card-local" hidden style="margin-top:14px">
       <div class="card-h"><h3>이 나라 로컬 관심</h3><span>음악·창작·영상·관심글 등 그 나라 플랫폼에서 보이는 것</span></div>
       <ul class="list" id="local"></ul>
+    </section>
+    <section class="card" id="card-paid" hidden style="margin-top:14px">
+      <div class="card-h"><h3>유료 앱 판매 순위</h3><span>아이폰에서 많이 팔린 유료 앱 상위 20개예요. 무료로 받고 앱 안에서 결제하는 앱은 빠져요.</span></div>
+      <div class="cchips" id="paid-cats" role="group" aria-label="앱 분야"></div>
+      <ol class="list" id="paid"></ol>
+      <p class="note" id="paid-at"></p>
     </section>
   </section>
 
@@ -1463,6 +1474,7 @@ async function loadCountry(refresh = false) {
   $("#detail").hidden = true; $("#detail").innerHTML = "";
   $("#rank").innerHTML = `<li class="empty">불러오는 중…</li>`;
   for (const b of $$("#cperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === cperiod));
+  renderPaid();  // 리포트와 무관한 표: 리포트를 기다리면 그동안 이전 나라의 순위가 남는다
   try {
     if (cperiod !== "live" && !PERIOD[region]) PERIOD[region] = await api(`api/period?region=${region}`);
     REPORT = await api(`api/report?region=${region}${refresh ? "&refresh=true" : ""}`);
@@ -1557,6 +1569,27 @@ async function renderShapes() {
   // 이름표만으로는 뜻을 알 수 없으니, 지금 목록에 있는 모양마다 뜻을 한 줄씩 붙인다
   $("#shape-note").innerHTML = Object.entries(d.mix).sort((a, b) => b[1] - a[1])
     .map(([k, v]) => `<b>${esc(k)}</b> ${v}개 — ${esc(d.classes[k] || "")}`).join("<br>");
+}
+
+// 유료 앱 판매 순위: 나라를 바꿔도 보던 분야를 그대로 둔다 — 같은 분야를 나라끼리 견주려고 보는 표라서.
+const PAID = {};
+let paidCat = "전체";
+const fmtPrice = (a) => { try { return new Intl.NumberFormat("ko-KR", { style: "currency", currency: a.currency }).format(a.price); } catch { return ""; } };
+async function renderPaid() {
+  const card = $("#card-paid"), code = region;
+  try {
+    PAID[code] ??= await api(`api/app-charts?region=${code}`);
+  } catch { card.hidden = true; return; }
+  if (code !== region) return;
+  const d = PAID[code], names = Object.keys(d.categories || {});
+  card.hidden = !names.length;
+  if (!names.length) return;
+  if (!names.includes(paidCat)) paidCat = names[0];
+  $("#paid-cats").innerHTML = names.map((c) => `<button type="button" class="cchip" aria-pressed="${c === paidCat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  $("#paid").innerHTML = d.categories[paidCat].map((a, i) => `<li><span class="n">${a.rank}</span>
+    <span class="paid-name"><a href="#" data-paid="${i}">${esc(a.name)}</a><small>${esc(a.artist)}</small></span>
+    <small>${esc(fmtPrice(a))}</small></li>`).join("") || `<li class="empty">데이터가 없어요</li>`;
+  $("#paid-at").textContent = stampKST(d.generated_at);
 }
 
 // ---- 전체 연령 ------------------------------------------------------------------------
@@ -2150,6 +2183,13 @@ function renderTransfer() {
   $("#yt").onclick = openItem("videos", "data-v");
   $("#news").onclick = openItem("news", "data-n");
   $("#local").onclick = openItem("local", "data-l");
+  $("#paid").onclick = (e) => {
+    const a = e.target.closest("[data-paid]"); if (!a) return;
+    e.preventDefault();
+    const url = PAID[region]?.categories[paidCat]?.[+a.dataset.paid]?.url;
+    if (url) window.open(url, "_blank", "noopener");
+  };
+  $("#paid-cats").onclick = (e) => { const b = e.target.closest("[data-c]"); if (b) { paidCat = b.dataset.c; renderPaid(); } };
   $("#kwgo").onclick = () => { const v = $("#kwinput").value.trim(); if (v) loadAge(v); };
   $("#kwinput").onkeydown = (e) => { if (e.key === "Enter") $("#kwgo").click(); };
   $("#kwreset").onclick = () => { SEG = null; loadAge(); };
