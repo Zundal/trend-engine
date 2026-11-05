@@ -432,8 +432,16 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .list li > small { white-space: nowrap; }
 .list li.col > small { white-space: normal; }
 .paid-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.paid-name a { word-break: keep-all; }
 #card-paid { display: flex; flex-direction: column; gap: 12px; }
-#paid .n { min-width: 20px; }
+#paid li { padding: 10px 0; }
+#paid .n { min-width: 24px; font: 600 15px var(--mono); color: var(--ink2); text-align: right; }
+#paid .podium .n { color: var(--accent-ink); }
+#paid li > small { font: 500 13px var(--mono); color: var(--ink2); }
+/* 넓은 화면에서 한 줄로 20개를 늘어놓으면 이름과 가격이 멀고 카드가 길어져, 위아래 반씩 두 단으로 나눈다 */
+@media (min-width: 760px) {
+  #paid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--rows), auto); grid-auto-columns: minmax(0, 1fr); column-gap: 40px; }
+}
 .attrow { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--hair); }
 .attrow b { font: 600 22px var(--mono); min-width: 68px; }
 .attrow span { flex: 1; font-size: 13px; line-height: 1.5; }
@@ -1586,7 +1594,8 @@ async function renderPaid() {
   if (!names.length) return;
   if (!names.includes(paidCat)) paidCat = names[0];
   $("#paid-cats").innerHTML = names.map((c) => `<button type="button" class="cchip" aria-pressed="${c === paidCat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
-  $("#paid").innerHTML = d.categories[paidCat].map((a, i) => `<li><span class="n">${a.rank}</span>
+  $("#paid").style.setProperty("--rows", Math.ceil(d.categories[paidCat].length / 2) || 1);
+  $("#paid").innerHTML = d.categories[paidCat].map((a, i) => `<li${a.rank <= 3 ? ' class="podium"' : ""}><span class="n">${a.rank}</span>
     <span class="paid-name"><a href="#" data-paid="${i}">${esc(a.name)}</a><small>${esc(a.artist)}</small></span>
     <small>${esc(fmtPrice(a))}</small></li>`).join("") || `<li class="empty">데이터가 없어요</li>`;
   $("#paid-at").textContent = stampKST(d.generated_at);
