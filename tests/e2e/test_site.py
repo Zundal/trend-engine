@@ -361,11 +361,30 @@ def test_issue_detail_explains_why_origin_and_life(page, site):
     page.goto(site + "#country/KR/live")
     page.wait_for_selector("#rank li[data-i]")
     page.locator("#rank li[data-i] button").first.click()
-    page.wait_for_selector("#ins .d-sec", timeout=15000)
+    page.wait_for_selector("#ins .story-pane", timeout=15000)
     text = page.locator("#ins").inner_text()
     assert "어디서 먼저" in text and "이슈의 일생" in text
     page.wait_for_selector("#card-ins:not([hidden])", timeout=15000)
     assert "엮인 이슈" in page.locator("#card-ins").inner_text()
+    assert not page.errors, page.errors
+
+
+def test_country_rails_and_pulse_indices(page, site):
+    """나라별: 관심 지수·인기·분석이 가로 스크롤 레일이고, 상세는 옆에 붙지 않는다."""
+    page.goto(site + "#country/KR/live")
+    wait_rows(page, "#rank li[data-i]", 5)
+    page.wait_for_selector("#pulse-rail .pulse-card")
+    assert page.locator("#pulse-rail .pulse-card").count() >= 2
+    assert page.locator("#pop-rail .rail-card:not([hidden])").count() >= 2
+    page.wait_for_selector("#card-att:not([hidden]) .gauge")
+    # 상세는 순위 아래 전체 폭 — sticky 옆칸(.side) 없음
+    assert page.locator("#view-country .side").count() == 0
+    assert page.locator("#detail.story").count() == 1
+    page.wait_for_selector("#c-cats .ctile")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto(site + "#country/KR/live")
+    page.wait_for_selector("#pulse-rail .pulse-card")
+    assert page.evaluate("document.documentElement.scrollWidth") <= 391
     assert not page.errors, page.errors
 
 

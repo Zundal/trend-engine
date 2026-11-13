@@ -344,16 +344,67 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .xt thead th { color: var(--muted); font-weight: 500; text-align: center; }
 .xt tbody th { text-align: left; font-weight: 600; }
 
-/* 나라별 */
-.split { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+/* 나라별: 종스크롤 섹션 + 횡스크롤 카드 레일 */
+.rail {
+  display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scroll-padding-inline: 24px;
+  margin: 0 -24px; padding: 4px 24px 14px; scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.rail::-webkit-scrollbar { height: 8px; }
+.rail::-webkit-scrollbar-thumb { background: var(--edge); border-radius: 4px; }
+.rail-card {
+  flex: 0 0 min(340px, 82vw); max-width: 92vw; scroll-snap-align: start;
+  min-height: 280px; display: flex; flex-direction: column; gap: 14px;
+}
+.rail-card.wide { flex-basis: min(520px, 88vw); }
+.rail-card.xl { flex-basis: min(640px, 92vw); }
+.rail-card > .list, .rail-card > #att, .rail-card > #shape, .rail-card > #flow { flex: 1; }
+.rail-hint { margin: -8px 0 0; font-size: 12px; color: var(--muted); }
+.pulse-card { min-height: 0; gap: 12px; padding: 22px 20px; }
+.pulse-card .pulse-v { font: 700 34px/1.1 var(--mono); letter-spacing: -.02em; color: var(--accent-ink); }
+.pulse-card .pulse-v small { font: 600 15px var(--sans); color: var(--muted); margin-left: 4px; }
+.pulse-card .pulse-cmp { font-size: 13px; color: var(--ink2); }
+.pulse-card .pulse-cmp b { color: var(--ink); }
+.gauge { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; }
+.gauge svg { width: 72px; height: 72px; display: block; }
+.gauge .g-lab { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 13px; color: var(--ink2); }
+.gauge .g-lab b { font: 600 18px var(--mono); color: var(--ink); }
+.mixbars { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.mixbars li { display: grid; grid-template-columns: 52px minmax(0, 1fr) 28px; gap: 8px; align-items: center; font-size: 13px; }
+.mixbars .mb { height: 10px; border-radius: 5px; background: var(--track); position: relative; }
+.mixbars .mb i { position: absolute; inset: 0 auto 0 0; border-radius: 5px; background: var(--accent); }
+.mixbars .n { font: 600 13px var(--mono); color: var(--ink2); }
+.cat-rail .ctile { flex: 0 0 min(200px, 70vw); min-height: 160px; scroll-snap-align: start; }
+.split { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .rankcard { padding: 12px 8px 8px; gap: 0; }
 .rankcard .cchips { padding: 8px 16px 4px; }
-.side { min-width: 0; }
-@media (min-width: 980px) {
-  .split { grid-template-columns: minmax(0, 1.9fr) minmax(340px, 1fr); }
-  /* 긴 순위를 내려가도 고른 이슈가 옆에서 따라온다 */
-  .side { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 16px; scrollbar-width: thin; }
+#detail.story { min-height: 0; }
+.story-rail {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  margin: 0 -8px; padding: 4px 8px 8px; scrollbar-width: thin;
 }
+.story-pane {
+  flex: 0 0 min(280px, 78vw); scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 16px; border-radius: 12px; background: color-mix(in srgb, var(--inv-ink) 4%, transparent);
+  border: 1px solid var(--inv-line); min-width: 0;
+}
+.story-pane > b { font-size: 13px; font-weight: 700; color: var(--inv-ink); }
+.story-pane > b small { font-weight: 400; color: var(--inv-muted); }
+.inv .story-pane .dim, .inv .story-pane .legend { color: var(--inv-muted); }
+.inv .story-pane .facts span { border-color: var(--inv-edge); color: var(--inv-ink2); }
+.inv .story-pane .path li { border-color: var(--inv-edge); color: var(--inv-ink2); }
+.inv .story-pane .path li.first { border-color: var(--inv-accent); color: var(--inv-accent); }
+.inv .story-pane .peers .peer { border-color: var(--inv-line); }
+.inv .story-pane .affbar { background: var(--inv-line); }
+.stat-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stat { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 10px; background: var(--soft); min-width: 0; }
+.stat b { font: 700 22px/1.15 var(--mono); color: var(--accent-ink); }
+.stat span { font-size: 12px; color: var(--muted); }
+.inv .stat { background: color-mix(in srgb, var(--inv-ink) 5%, transparent); }
+.inv .stat b { color: var(--inv-accent); }
+.inv .stat span { color: var(--inv-muted); }
 .rank-head, .row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 64px 120px; gap: 12px; }
 .rank-head { padding: 8px 16px; font-size: 12px; color: var(--muted); }
 .rank-head span:first-child { text-align: right; }
@@ -492,6 +543,12 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   .eyebrow { font-size: 12px; }
   .chips { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 16px; scrollbar-width: none; }
   .chip { flex: none; padding: 0 16px; }
+  .rail { margin: 0 -16px; padding: 4px 16px 12px; scroll-padding-inline: 16px; gap: 12px; }
+  .rail-card { flex-basis: min(300px, 84vw); min-height: 240px; padding: 18px 16px; }
+  .rail-card.wide { flex-basis: min(420px, 88vw); }
+  .rail-card.xl { flex-basis: min(520px, 92vw); }
+  .pulse-card .pulse-v { font-size: 28px; }
+  .story-pane { flex-basis: min(260px, 82vw); }
   #paid-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }  /* 25개 분야가 순위표를 화면 밖으로 밀지 않게 */
   #paid-cats .cchip { flex: none; }
   .card, .card.sm { padding: 18px 16px; gap: 12px; }
@@ -781,7 +838,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   </section>
 </main>
 
-<!-- 나라별 -->
+<!-- 나라별: 섹션은 세로, 카드는 가로 스크롤 — 한쪽에 몰지 않고 레일로 깊이를 맞춤 -->
 <main id="view-country" class="view" hidden>
   <div class="intro">
     <section class="hero">
@@ -797,8 +854,14 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
     <p class="note" id="rank-note" hidden></p>
   </div>
 
+  <section class="sec" aria-labelledby="pulse-h">
+    <header class="sec-h"><div class="sec-t"><h2 id="pulse-h">관심 지수</h2><p>이 나라의 지금 온도 — 옆으로 밀면 교체·쏠림·유행 모양·분야 비중이 나와요</p></div></header>
+    <p class="rail-hint">← 카드 가로로 넘기기</p>
+    <div class="rail" id="pulse-rail" aria-label="관심 지수 카드"></div>
+  </section>
+
   <section class="sec" aria-labelledby="rank-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="rank-h">이슈 순위</h2><p id="rank-sub">줄을 누르면 자세한 내용이 나와요. 막대는 여러 목록에 함께, 높은 순위로 나올수록 길어요.</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="rank-h">이슈 순위</h2><p id="rank-sub">줄을 누르면 아래에 깊이 읽기가 열려요. 막대는 여러 목록에 함께, 높은 순위로 나올수록 길어요.</p></div></header>
     <div class="split">
       <section class="card rankcard" aria-label="순위">
         <div class="cchips" id="c-cchips"></div>
@@ -806,65 +869,72 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
         <ol class="rank" id="rank"></ol>
         <button type="button" class="ghost more" id="more" hidden></button>
       </section>
-      <aside class="side">
-        <section class="card inv" id="detail" aria-live="polite" hidden></section>
-      </aside>
+      <section class="card inv story" id="detail" aria-live="polite" hidden></section>
     </div>
+  </section>
+
+  <section class="sec" aria-labelledby="ccat-h" id="sec-ccats">
+    <header class="sec-h"><div class="sec-t"><h2 id="ccat-h">분야별 상위</h2><p>지금 순위를 분야로 나눠 본 카드예요. 누르면 위 순위가 그 분야만 보여요</p></div></header>
+    <p class="rail-hint">← 분야 카드 넘기기</p>
+    <div class="rail cat-rail" id="c-cats" role="group" aria-label="분야별 상위"></div>
   </section>
 
   <section class="sec" aria-labelledby="pop-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>이 나라에서 많이 받는 앱, 많이 팔린 유료 앱, 많이 보는 영상, 주요 뉴스, 로컬 관심</p></div></header>
-    <div class="grid3">
-      <section class="card sm" id="card-apps" hidden>
-        <h3>인기 무료 앱</h3>
+    <header class="sec-h"><div class="sec-t"><h2 id="pop-h">지금 인기 있는 것</h2><p>앱 · 유료 앱 · 영상 · 뉴스 · 로컬 관심 — 카드마다 목록을 가득 담았어요</p></div></header>
+    <p class="rail-hint">← 인기 목록 넘기기</p>
+    <div class="rail" id="pop-rail" aria-label="인기 목록">
+      <section class="card sm rail-card" id="card-apps" hidden>
+        <div class="card-h"><h3>인기 무료 앱</h3><span>지금 많이 받는 앱</span></div>
         <ol class="list" id="apps"></ol>
       </section>
-      <section class="card sm">
-        <h3>인기 동영상</h3>
+      <section class="card sm rail-card wide" id="card-paid" hidden>
+        <div class="card-h"><h3>유료 앱 판매 순위</h3><span>아이폰에서 많이 팔린 유료 앱. 앱 안 결제만 있는 무료 앱은 빠져요</span></div>
+        <div class="cchips" id="paid-cats" role="group" aria-label="앱 분야"></div>
+        <ol class="list" id="paid"></ol>
+        <p class="note" id="paid-at"></p>
+      </section>
+      <section class="card sm rail-card">
+        <div class="card-h"><h3>인기 동영상</h3><span>조회가 많은 영상</span></div>
         <ul class="list" id="yt"></ul>
       </section>
-      <section class="card sm">
-        <h3>뉴스 헤드라인</h3>
+      <section class="card sm rail-card">
+        <div class="card-h"><h3>뉴스 헤드라인</h3><span>주요 기사 제목</span></div>
         <ul class="list" id="news"></ul>
       </section>
+      <section class="card sm rail-card" id="card-local" hidden>
+        <div class="card-h"><h3>이 나라 로컬 관심</h3><span>음악·창작·영상·관심글 등 그 나라 플랫폼</span></div>
+        <ul class="list" id="local"></ul>
+      </section>
     </div>
-    <section class="card" id="card-local" hidden style="margin-top:14px">
-      <div class="card-h"><h3>이 나라 로컬 관심</h3><span>음악·창작·영상·관심글 등 그 나라 플랫폼에서 보이는 것</span></div>
-      <ul class="list" id="local"></ul>
-    </section>
-    <section class="card" id="card-paid" hidden style="margin-top:14px">
-      <div class="card-h"><h3>유료 앱 판매 순위</h3><span>아이폰에서 많이 팔린 유료 앱 상위 20개예요. 무료로 받고 앱 안에서 결제하는 앱은 빠져요.</span></div>
-      <div class="cchips" id="paid-cats" role="group" aria-label="앱 분야"></div>
-      <ol class="list" id="paid"></ol>
-      <p class="note" id="paid-at"></p>
-    </section>
   </section>
 
   <section class="sec opt" aria-labelledby="ana-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="ana-h">변화 분석</h2><p>순위가 얼마나 빨리 바뀌는지, 다른 나라로 언제 번지는지, 관심이 어떻게 오르내렸는지</p></div></header>
-    <div class="grid3">
-      <section class="card sm" id="card-att" hidden>
+    <header class="sec-h"><div class="sec-t"><h2 id="ana-h">변화 분석</h2><p>순위 속도 · 국가 간 전파 · 유행 모양 · 이슈 연결 — 지수와 표로 한눈에</p></div></header>
+    <p class="rail-hint">← 분석 카드 넘기기</p>
+    <div class="rail" id="ana-rail" aria-label="변화 분석">
+      <section class="card sm rail-card" id="card-att" hidden>
         <div class="card-h"><h3>순위 교체 · 관심 쏠림</h3><span>이 나라의 평소 값과 비교</span></div>
         <div id="att"></div>
       </section>
-      <section class="card sm" id="card-flow" hidden>
-        <div class="card-h"><h3>국가 간 전파</h3><span>한 나라에서 뜬 주제가 다른 나라에서 뜨기까지 걸린 주 수</span></div>
-        <ul class="list" id="flow"></ul>
-        <p class="note" id="flow-note"></p>
-      </section>
-      <section class="card sm" id="card-shape" hidden>
-        <div class="card-h"><h3>유행의 모양</h3><span>정점 앞뒤 7일의 관심 변화로 네 가지로 나눠요</span></div>
+      <section class="card sm rail-card wide" id="card-shape" hidden>
+        <div class="card-h"><h3>유행의 모양</h3><span>정점 앞뒤 7일로 네 가지로 나눠요</span></div>
+        <div id="shape-mix"></div>
         <ul class="list" id="shape"></ul>
         <p class="note" id="shape-note"></p>
       </section>
+      <section class="card sm rail-card wide" id="card-flow" hidden>
+        <div class="card-h"><h3>국가 간 전파</h3><span>한 나라에서 뜬 주제가 다른 나라까지 걸린 주 수</span></div>
+        <ul class="list" id="flow"></ul>
+        <p class="note" id="flow-note"></p>
+      </section>
+      <section class="card sm rail-card xl" id="card-ins" hidden>
+        <div class="card-h"><h3>이슈 연결 · 누가 먼저</h3><span>같은 기사로 엮인 묶음과, 먼저 잡은 신호</span></div>
+        <div class="grid2">
+          <div><b>엮인 이슈</b><ul class="ins-groups" id="ins-groups"></ul></div>
+          <div><b id="ins-leads-h">먼저 잡은 신호</b><ul class="ins-leads" id="ins-leads"></ul></div>
+        </div>
+      </section>
     </div>
-    <section class="card" id="card-ins" hidden style="margin-top:14px">
-      <div class="card-h"><h3>이슈 연결 · 누가 먼저</h3><span>같은 기사에 함께 나온 이슈 묶음과, 어떤 신호가 먼저 잡았는지</span></div>
-      <div class="grid2">
-        <div><b>엮인 이슈</b><ul class="ins-groups" id="ins-groups"></ul></div>
-        <div><b id="ins-leads-h">먼저 잡은 신호</b><ul class="ins-leads" id="ins-leads"></ul></div>
-      </div>
-    </section>
   </section>
 </main>
 
@@ -1275,6 +1345,7 @@ function renderRank() {
   $("#more").hidden = src.length <= 20;
   $("#more").textContent = showAll ? "접기" : `더보기 (${src.length}개)`;
   renderSelected();
+  if ($("#c-cats")?.children.length) renderCountryCats();
 }
 function renderSelected() {
   const it = selected == null ? null : rankSource()[selected];
@@ -1307,25 +1378,33 @@ function peersOf(it) {
       why: same && ratio <= 0.35 ? "같은 분야 · 비슷한 점수" : same ? "같은 분야" : ratio <= 0.35 ? "비슷한 점수대" : "근처 순위",
     }));
 }
-function peersHTML(it, inv) {
-  const peers = peersOf(it);
-  if (!peers.length) return "";
-  return `<div class="d-sec"><b>비슷한 관심도</b>
-    <ul class="peers">${peers.map((p) => `<li><button type="button" class="peer" data-peer="${esc(p.key)}"><b>${esc(p.label)}</b>
-      <small>${p.rank}위 · ${esc(p.why)}${p.category && p.category !== "기타" ? ` · ${esc(p.category)}` : ""}</small></button></li>`).join("")}</ul>
-    <span class="dim" style="font-size:12px">같은 분야이거나 점수·순위가 비슷한 이슈예요. 누르면 그 줄로 가요.</span></div>`;
-}
+function peersHTML(it) { return peersPane(it); }
 function openPeer(key) {
   const src = rankSource(), i = src.findIndex((x) => x.key === key || x.members?.some((m) => m.key === key));
   if (i < 0) return;
   selected = i; showAll ||= i >= 20; ccat = ""; renderRank();
   $("#detail")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+function peersPane(it) {
+  const peers = peersOf(it);
+  if (!peers.length) return "";
+  return `<div class="story-pane"><b>비슷한 관심도</b>
+    <ul class="peers">${peers.map((p) => `<li><button type="button" class="peer" data-peer="${esc(p.key)}"><b>${esc(p.label)}</b>
+      <small>${p.rank}위 · ${esc(p.why)}${p.category && p.category !== "기타" ? ` · ${esc(p.category)}` : ""}</small></button></li>`).join("")}</ul>
+    <span class="dim" style="font-size:12px">같은 분야이거나 점수·순위가 비슷한 이슈예요.</span></div>`;
+}
 function renderPeriodDetail(c, pd, n) {
   $("#detail").innerHTML = `${detailHead(n, c.category, c.label, c.key)}
-    <div class="facts"><span>최근 ${PLABEL[cperiod]} 중 ${c.days}일 순위권</span><span>최고 ${c.best_rank}위</span><span>순위권 ${c.hours}시간</span><span>첫 등장 ${md(c.since)}</span></div>
-    <div class="d-sec"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>
-    ${peersHTML(c)}`;
+    <div class="stat-row">
+      <div class="stat"><b>${c.days}일</b><span>최근 ${PLABEL[cperiod]} 중 순위권</span></div>
+      <div class="stat"><b>${c.best_rank}위</b><span>기간 중 최고</span></div>
+      <div class="stat"><b>${c.hours}시간</b><span>순위권에 머문 시간</span></div>
+      <div class="stat"><b>${md(c.since)}</b><span>첫 등장</span></div>
+    </div>
+    <div class="story-rail">
+      <div class="story-pane"><b>날짜별 최고 순위</b>${sparkDays(pd.dates, c.series)}</div>
+      ${peersPane(c)}
+    </div>`;
 }
 function sparkDays(dates, series) {
   if (dates.length < 2) return `<div class="dim">기록이 2일 이상이면 그래프가 나와요</div>`;
@@ -1346,19 +1425,28 @@ async function renderDetail(t, n) {
   const c = t.members?.[0] || t;  // theme -> its strongest member carries the evidence
   const others = (t.members || []).slice(1);
   const wantKey = c.key || t.key, wantRegion = region, wantSig = detailSig;
-  const facts = [];
-  if (c.volume) facts.push(`검색량 ${c.volume.toLocaleString()}+`);
-  if (c.novelty != null) facts.push(c.days_seen ? `지난 30일 중 ${c.days_seen}일 순위권` : "지난 30일 동안 처음 등장");
   const more = [...(c.related || []).slice(1), ...(c.mentions || [])];
+  const stats = [];
+  if (c.volume) stats.push(`<div class="stat"><b>${c.volume.toLocaleString()}+</b><span>검색량</span></div>`);
+  if (c.novelty != null) stats.push(c.days_seen
+    ? `<div class="stat"><b>${c.days_seen}일</b><span>지난 30일 중 순위권</span></div>`
+    : `<div class="stat"><b>NEW</b><span>지난 30일 동안 처음</span></div>`);
+  if (t.status) {
+    const st = { new: "신규", rising: "상승", falling: "하락", steady: "유지" }[t.status] || t.status;
+    stats.push(`<div class="stat"><b>${esc(st)}</b><span>순위 변화${t.rank_change ? ` · ${t.rank_change > 0 ? "+" : ""}${t.rank_change}` : ""}</span></div>`);
+  }
+  if (t.score != null) stats.push(`<div class="stat"><b>${Math.round(t.score)}</b><span>교차 확인 점수</span></div>`);
   $("#detail").innerHTML = `${detailHead(n, t.category || c.category, t.label, wantKey)}
     ${c.related?.[0] ? `<p class="quote" id="d-quote">“${esc(c.related[0])}”</p>` : `<p class="quote" id="d-quote" hidden></p>`}
-    <div id="ins"></div>
-    ${facts.length ? `<div class="facts">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div>` : ""}
+    ${stats.length ? `<div class="stat-row">${stats.join("")}</div>` : ""}
     ${others.length ? `<p class="quote">함께 묶은 이슈: ${others.map((m) => esc(m.label)).join(" · ")}</p>` : ""}
-    <div id="aff"></div>
-    <div class="d-sec"><b>순위 추이</b><div id="spark" class="dim">…</div></div>
-    ${peersHTML(t)}
-    ${more.length ? `<div class="d-sec"><b>함께 나온 제목</b><ul>${more.slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}`;
+    <div class="story-rail" id="story-rail">
+      <div class="story-pane" id="ins-anchor" hidden></div>
+      <div class="story-pane" id="aff"><span class="dim">연령·성별 관심은 한국만 재요</span></div>
+      <div class="story-pane"><b>순위 추이</b><div id="spark" class="dim">…</div></div>
+      ${peersHTML(t)}
+      ${more.length ? `<div class="story-pane"><b>함께 나온 제목</b><ul>${more.slice(0, 6).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    </div>`;
   renderAffinity([t.label, c.label, ...others.map((m) => m.label)]);
   renderInsight([c, ...others], wantRegion, wantSig);
   try {
@@ -1386,38 +1474,50 @@ function originText(o, hours) {
 }
 async function renderInsight(members, wantRegion, sig) {
   const ins = await insightFor(wantRegion);
-  const box = $("#ins");
-  if (!ins || detailSig !== sig || !box) return;
+  const rail = $("#story-rail"), anchor = $("#ins-anchor");
+  if (!ins || detailSig !== sig || !rail || !anchor) return;
   const it = members.map((m) => ins.items?.[m.key]).find(Boolean);
+  $$("#story-rail [data-ins]").forEach((el) => el.remove());
   if (!it) return;
-  const secs = [];
+  const panes = [];
   if (it.why) {
     const q = $("#d-quote");
     if (q) { q.hidden = false; q.textContent = `“${it.why.line}”`; }
-    secs.push(`<div class="d-sec"><b>왜 뜨나</b><span>붙은 제목 ${it.why.titles}개 중 ${it.why.support}개가 같은 이야기${it.why.outlets > 1 ? ` · ${it.why.outlets}가지 경로에서 보도` : ""}</span></div>`);
+    panes.push(`<div class="story-pane" data-ins><b>왜 뜨나</b>
+      <span>붙은 제목 ${it.why.titles}개 중 <b>${it.why.support}</b>개가 같은 이야기${it.why.outlets > 1 ? ` · ${it.why.outlets}가지 경로에서 보도` : ""}</span></div>`);
   }
   if (it.origin) {
     const o = it.origin;
-    secs.push(`<div class="d-sec"><b>어디서 먼저 <small>(최근 ${ins.origin_hours}시간 기록)</small></b>
+    panes.push(`<div class="story-pane" data-ins><b>어디서 먼저 <small>(최근 ${ins.origin_hours}시간)</small></b>
       <ul class="path">${o.path.map((p, i) => `<li class="${i === 0 && o.first ? "first" : ""}">${esc(p.signal)} ${kst(p.at)}</li>`).join("")}</ul>
       <span>${originText(o, ins.origin_hours)}</span></div>`);
   }
   if (it.life) {
-    const l = it.life, f = [`처음 순위권 ${kst(l.first_seen)}`, `최고 ${l.peak_rank}위 (${kst(l.peak_at)})`, `수집 ${l.snapshots}회 · ${l.days}일`];
-    if (l.returns) f.push(`재등장 ${l.returns}번`);
-    secs.push(`<div class="d-sec"><b>이슈의 일생 <small>(최근 30일)</small> <span class="phase">${esc(l.phase)}</span></b>
-      <div class="facts">${f.map((x) => `<span>${esc(x)}</span>`).join("")}</div></div>`);
+    const l = it.life;
+    panes.push(`<div class="story-pane" data-ins><b>이슈의 일생 <small>(30일)</small> <span class="phase">${esc(l.phase)}</span></b>
+      <div class="stat-row">
+        <div class="stat"><b>${l.peak_rank}위</b><span>최고 · ${kst(l.peak_at)}</span></div>
+        <div class="stat"><b>${l.days}일</b><span>수집 ${l.snapshots}회${l.returns ? ` · 재등장 ${l.returns}` : ""}</span></div>
+      </div>
+      <span class="dim" style="font-size:12px">처음 순위권 ${kst(l.first_seen)}</span></div>`);
   }
   if (it.links?.length) {
-    secs.push(`<div class="d-sec"><b>연결된 이슈</b><ul class="peers">${it.links.map((x) => `<li><button type="button" class="peer" data-peer="${esc(x.key)}">
+    panes.push(`<div class="story-pane" data-ins><b>연결된 이슈</b><ul class="peers">${it.links.map((x) => `<li><button type="button" class="peer" data-peer="${esc(x.key)}">
       <b>${esc(x.label)}</b><small>같은 기사 ${x.shared}건 · “${esc(x.title)}”</small></button></li>`).join("")}</ul></div>`);
   }
   if (it.season) {
     const s = it.season;
-    secs.push(`<div class="d-sec"><b>작년 이맘때 <small>(백과 문서 조회수)</small></b><span>${esc(s.label)}</span>
-      <span class="dim" style="font-size:12px">최근 2주 하루 최고 ${s.recent_peak.toLocaleString()}회 · 1년 전 같은 때 ${s.last_year_peak.toLocaleString()}회${s.times_usual ? ` · 평소의 ${s.times_usual}배` : ""}</span></div>`);
+    panes.push(`<div class="story-pane" data-ins><b>작년 이맘때 <small>(백과 조회수)</small></b><span>${esc(s.label)}</span>
+      <div class="stat-row">
+        <div class="stat"><b>${s.recent_peak.toLocaleString()}</b><span>최근 2주 하루 최고</span></div>
+        <div class="stat"><b>${s.last_year_peak.toLocaleString()}</b><span>1년 전 같은 때</span></div>
+      </div>
+      ${s.times_usual ? `<span class="dim" style="font-size:12px">평소의 ${s.times_usual}배</span>` : ""}</div>`);
   }
-  box.innerHTML = secs.join("");
+  if (panes.length) {
+    // display:contents 로 레일 flex 에 바로 끼워, #ins 로 묶인 깊이 읽기를 한 덩어리로 찾게 한다
+    anchor.insertAdjacentHTML("afterend", `<div id="ins" style="display:contents">${panes.join("")}</div>`);
+  }
 }
 async function renderInsightCard() {
   const want = region, ins = await insightFor(want);
@@ -1438,20 +1538,24 @@ function segAffinity(labels) {
   return key ? SEG.affinity[key] : null;
 }
 async function renderAffinity(labels) {
-  if (region !== "KR") return;
+  const box = $("#aff");
+  if (!box) return;
+  if (region !== "KR") {
+    box.innerHTML = `<b>누가 더 찾나</b><span class="dim">연령·성별 관심은 한국 검색 기준이라 한국에서만 나와요.</span>`;
+    return;
+  }
   const sig = detailSig;
   if (!SEG && !SEG_TRIED) {
     SEG_TRIED = true;
     try { SEG = await api(`api/segments?region=KR&top=14`); } catch (_) { /* 전체 연령 탭이 다시 시도한다 */ }
   }
-  const box = $("#aff");
   if (!SEG || detailSig !== sig || !box) return;
   const aff = segAffinity(labels);
   const segs = BASIC_SEGS.filter((g) => aff?.[g] != null);
-  box.innerHTML = `<div class="d-sec">${segs.length
+  box.innerHTML = segs.length
     ? `<b>누가 더 찾나 <small>(100 = 평균${SEG.synthetic ? " · 샘플 데이터" : ""})</small></b>` + segs.map((g) => `<div class="affrow">
         <span>${esc(g)}</span><span class="affbar"><i class="${aff[g] >= 100 ? "hi" : ""}" style="width:${Math.min(100, aff[g] / 2).toFixed(0)}%"></i></span><span>${Math.round(aff[g])}</span></div>`).join("")
-    : `<span class="dim">이 이슈는 연령·성별 관심을 재지 않았어요. 상위 이슈만 재요.</span>`}</div>`;
+    : `<b>누가 더 찾나</b><span class="dim">이 이슈는 연령·성별 관심을 재지 않았어요. 상위 이슈만 재요.</span>`;
 }
 function spark(ranks) {
   const w = 300, hgt = 40, maxR = Math.max(...ranks, 10);
@@ -1462,25 +1566,27 @@ function spark(ranks) {
 }
 function renderContent() {
   // Link targets stay in memory (opened on click) so addresses don't show on hover.
+  // 레일 카드마다 목록을 가득 담아 나라마다 비슷한 깊이로 보이게 한다.
   const apps = REPORT.apps || [];
   $("#card-apps").hidden = !apps.length;
-  // 세 목록은 한 줄에 나란히 놓이므로 같은 개수로 맞춘다
-  $("#apps").innerHTML = apps.slice(0, 8).map((a, i) => `<li><span class="n">${i + 1}</span><a href="#" data-a="${i}">${esc(a.title)}</a></li>`).join("");
-  $("#yt").innerHTML = (REPORT.videos || []).slice(0, 8).map((v, i) => `<li><a href="#" data-v="${i}">${esc(v.title)}</a>
+  $("#apps").innerHTML = apps.slice(0, 12).map((a, i) => `<li><span class="n">${i + 1}</span><a href="#" data-a="${i}">${esc(a.title)}</a></li>`).join("");
+  $("#yt").innerHTML = (REPORT.videos || []).slice(0, 12).map((v, i) => `<li><span class="n">${i + 1}</span><a href="#" data-v="${i}">${esc(v.title)}</a>
     <small>${esc(v.category || "")} ${v.views ? fmtViews(v.views) : ""}</small></li>`).join("") || `<li class="empty">데이터가 없어요</li>`;
-  $("#news").innerHTML = (REPORT.news || []).slice(0, 8).map((n, i) => `<li><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
+  $("#news").innerHTML = (REPORT.news || []).slice(0, 12).map((n, i) => `<li><span class="n">${i + 1}</span><a href="#" data-n="${i}">${esc(n.title)}</a></li>`).join("")
     || `<li class="empty">데이터가 없어요</li>`;
   const local = REPORT.local || [];
   $("#card-local").hidden = !local.length;
   $("#local").innerHTML = local.slice(0, 16).map((it, i) => `<li><span class="n">${i + 1}</span>
     <a href="#" data-l="${i}">${esc(it.title)}</a>
     ${it.category ? `<small>${esc(it.category)}</small>` : ""}</li>`).join("");
+  renderCountryCats();
 }
 function fmtViews(v) { return v >= 1e8 ? (v / 1e8).toFixed(1) + "억회" : v >= 1e4 ? Math.round(v / 1e4) + "만회" : Math.round(v).toLocaleString() + "회"; }
 async function loadCountry(refresh = false) {
   selected = null; detailSig = null;
   $("#detail").hidden = true; $("#detail").innerHTML = "";
   $("#rank").innerHTML = `<li class="empty">불러오는 중…</li>`;
+  $("#pulse-rail").innerHTML = `<section class="card sm rail-card pulse-card"><p class="empty">불러오는 중…</p></section>`;
   for (const b of $$("#cperiod button")) b.setAttribute("aria-pressed", String(b.dataset.p === cperiod));
   renderPaid();  // 리포트와 무관한 표: 리포트를 기다리면 그동안 이전 나라의 순위가 남는다
   try {
@@ -1490,7 +1596,120 @@ async function loadCountry(refresh = false) {
     renderAttention(); renderShapes(); renderFlows(); renderInsightCard();
     setStamp();
     renderRank(); renderContent();
+    renderPulse();
   } catch (e) { $("#rank").innerHTML = `<li class="empty">${esc(e.message)}</li>`; }
+}
+
+/** 분야별 상위 카드 — 나라마다 같은 레일 깊이로 분야를 가로 스크롤 */
+function renderCountryCats() {
+  const src = rankSource(), rail = $("#c-cats"), sec = $("#sec-ccats");
+  if (!rail || !sec) return;
+  const groups = {};
+  for (const it of src) {
+    const c = it.category || "기타";
+    if (c === "기타") continue;
+    (groups[c] ??= []).push(it);
+  }
+  const cats = CATS.filter((c) => groups[c]?.length);
+  sec.hidden = !cats.length;
+  if (!cats.length) { rail.innerHTML = ""; return; }
+  rail.innerHTML = cats.map((c) => {
+    const items = groups[c].slice(0, 4);
+    return `<button type="button" class="ctile" style="--c:${CAT_COLOR[c]}" aria-pressed="${c === ccat}" data-c="${esc(c)}">
+      <h3><span>${esc(c)}</span><span>${groups[c].length}</span></h3>
+      <ol>${items.map((x, i) => `<li>${i + 1}. ${esc(x.label)}</li>`).join("")}</ol>
+    </button>`;
+  }).join("");
+  rail.onclick = (e) => {
+    const b = e.target.closest("[data-c]"); if (!b) return;
+    ccat = ccat === b.dataset.c ? "" : b.dataset.c;
+    selected = null; renderRank(); renderCountryCats();
+    $("#rank")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+}
+
+/** 원형 게이지: value 0–1, 평소(median) 대비 표시 */
+function gaugeSVG(value, median, label) {
+  const v = Math.max(0, Math.min(1, value ?? 0));
+  const m = Math.max(0, Math.min(1, median ?? 0));
+  const R = 28, C = 2 * Math.PI * R;
+  const dash = (v * C).toFixed(1), gap = (C - v * C).toFixed(1);
+  const mx = (36 + R * Math.sin(2 * Math.PI * m)).toFixed(1);
+  const my = (36 - R * Math.cos(2 * Math.PI * m)).toFixed(1);
+  return `<div class="gauge" role="img" aria-label="${esc(label)} ${Math.round(v * 100)}%, 평소 ${Math.round(m * 100)}%">
+    <svg viewBox="0 0 72 72">
+      <circle cx="36" cy="36" r="${R}" fill="none" stroke="var(--track)" stroke-width="8"/>
+      <circle cx="36" cy="36" r="${R}" fill="none" stroke="var(--accent)" stroke-width="8"
+        stroke-dasharray="${dash} ${gap}" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+      <circle cx="${mx}" cy="${my}" r="3.5" fill="var(--ink2)"/>
+      <text x="36" y="40" text-anchor="middle" font-size="14" font-weight="700" font-family="var(--mono)" fill="var(--ink)">${Math.round(v * 100)}</text>
+    </svg>
+    <div class="g-lab"><b>${Math.round(v * 100)}%</b><span>${esc(label)}</span><span>평소 ${Math.round(m * 100)}% · 점 = 평소</span></div>
+  </div>`;
+}
+
+/** 관심 지수 레일: 나라마다 같은 카드 구성(순위 요약·교체·쏠림·유행 모양·분야) */
+function renderPulse() {
+  const rail = $("#pulse-rail");
+  if (!rail || !REPORT) return;
+  const src = rankSource();
+  const pd = periodData();
+  const rising = src.filter((c) => c.status === "rising" || c.status === "new").length;
+  const falling = src.filter((c) => c.status === "falling").length;
+  const cats = {};
+  for (const it of src) {
+    const c = it.category || "기타";
+    if (c !== "기타") cats[c] = (cats[c] || 0) + 1;
+  }
+  const topCats = Object.entries(cats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const catMax = Math.max(...topCats.map(([, n]) => n), 1);
+  const att = ATT[region]?.summary;
+  const shapes = SHAPES[region];
+  const cards = [];
+  cards.push(`<section class="card sm rail-card pulse-card">
+    <div class="card-h"><h3>순위 요약</h3><span>${pd ? `최근 ${PLABEL[cperiod]}` : "실시간 교차 확인"}</span></div>
+    <div class="pulse-v">${src.length}<small>이슈</small></div>
+    <p class="pulse-cmp">${pd
+      ? `기간 기록 ${pd.days_available || pd.days || "?"}일`
+      : `<b>상승·신규 ${rising}</b> · 하락 ${falling}`}</p>
+    ${src[0] ? `<p class="note">1위 · ${esc(src[0].label)}</p>` : ""}
+  </section>`);
+  if (att?.turnover) {
+    const t = att.turnover, rate = t.n ? t.new_of_n / t.n : 0;
+    cards.push(`<section class="card sm rail-card pulse-card">
+      <div class="card-h"><h3>순위 교체</h3><span>${esc(t.label)}</span></div>
+      ${gaugeSVG(rate, t.median, `상위 ${t.n}개 중 어제 없던 문서`)}
+      <p class="pulse-cmp">어제 없던 문서 <b>${t.new_of_n}/${t.n}</b> · 평소 ${Math.round(t.median * t.n)}개</p>
+      ${miniSpark((att.spark || []).filter((v) => v !== null))}
+    </section>`);
+  }
+  if (att?.concentration) {
+    const c = att.concentration;
+    cards.push(`<section class="card sm rail-card pulse-card">
+      <div class="card-h"><h3>관심 쏠림</h3><span>상위 ${c.n}개 문서 조회 비율</span></div>
+      ${gaugeSVG(c.value, c.median, esc(c.label))}
+      <p class="pulse-cmp">평소 ${Math.round(c.median * 100)}% · ${(c.gap_pp > 0 ? "+" : "") + c.gap_pp.toFixed(1)}%p</p>
+    </section>`);
+  }
+  if (shapes?.mix && Object.keys(shapes.mix).length) {
+    const total = Object.values(shapes.mix).reduce((a, b) => a + b, 0) || 1;
+    const ordered = Object.entries(shapes.mix).sort((a, b) => b[1] - a[1]);
+    cards.push(`<section class="card sm rail-card pulse-card wide">
+      <div class="card-h"><h3>유행 모양 비중</h3><span>정점 전후 관심 곡선</span></div>
+      <ul class="mixbars">${ordered.map(([k, v]) => `<li><span>${esc(k)}</span>
+        <span class="mb"><i style="width:${(v / total * 100).toFixed(0)}%"></i></span>
+        <span class="n">${v}</span></li>`).join("")}</ul>
+    </section>`);
+  }
+  if (topCats.length) {
+    cards.push(`<section class="card sm rail-card pulse-card wide">
+      <div class="card-h"><h3>분야 비중</h3><span>순위권 이슈 수</span></div>
+      <ul class="mixbars">${topCats.map(([k, v]) => `<li><span title="${esc(k)}">${esc(k.length > 4 ? k.slice(0, 4) : k)}</span>
+        <span class="mb"><i style="width:${(v / catMax * 100).toFixed(0)}%;background:${CAT_COLOR[k] || "var(--accent)"}"></i></span>
+        <span class="n">${v}</span></li>`).join("")}</ul>
+    </section>`);
+  }
+  rail.innerHTML = cards.join("") || `<section class="card sm rail-card pulse-card"><p class="empty">지수를 모으는 중이에요</p></section>`;
 }
 
 // 관심의 속도: 상위권이 얼마나 빨리 갈리는지(교체율)와 한 곳에 몰리는지(쏠림). 나라마다 평소 수준이
@@ -1508,17 +1727,23 @@ async function renderAttention() {
   const gap = (v) => (v > 0 ? "+" : "") + v.toFixed(1) + "%p";
   const t = s.turnover;
   const rows = [];
-  if (t) rows.push(`<div class="attrow"><b>${t.new_of_n}/${t.n}</b>
-    <span>${esc(t.label)} — 인기 문서 상위 ${t.n}개 중 어제 없던 문서 수 <small>(평소 ${Math.round(t.median * t.n)}개)</small></span>
-    ${miniSpark((s.spark || []).filter((v) => v !== null))}</div>`);
+  if (t) {
+    const rate = t.n ? t.new_of_n / t.n : 0;
+    rows.push(gaugeSVG(rate, t.median, `상위 ${t.n}개 교체율`));
+    rows.push(`<div class="attrow"><b>${t.new_of_n}/${t.n}</b>
+      <span>${esc(t.label)} — 어제 없던 문서 <small>(평소 ${Math.round(t.median * t.n)}개)</small></span>
+      ${miniSpark((s.spark || []).filter((v) => v !== null))}</div>`);
+  }
+  rows.push(gaugeSVG(s.concentration.value, s.concentration.median, `상위 ${s.concentration.n}개 쏠림`));
   rows.push(`<div class="attrow"><b>${Math.round(s.concentration.value * 100)}%</b>
-    <span>${esc(s.concentration.label)} — 상위 ${s.concentration.n}개 문서가 차지한 조회 비율
+    <span>${esc(s.concentration.label)} — 상위 ${s.concentration.n}개 조회 비율
     <small>(평소 ${Math.round(s.concentration.median * 100)}%, ${gap(s.concentration.gap_pp)})</small></span></div>`);
   const pp = a.trend?.change_pp;  // 부호와 낱말이 같은 뜻을 두 번 말하지 않게, 크기만 쓰고 방향은 낱말로
   if (a.trend) rows.push(`<p class="note">${pp ? `1년 전 같은 기간보다 새로 들어온 문서 비율이 ${Math.abs(pp).toFixed(1)}%p ${pp > 0 ? "늘었어요" : "줄었어요"}`
     : "새로 들어온 문서 비율이 1년 전 같은 기간과 같아요"}</p>`);
-  rows.push(`<p class="note">최근 ${a.days}일 기록 기준</p>`);
+  rows.push(`<p class="note">최근 ${a.days}일 기록 기준 · 이 나라 평소와만 비교</p>`);
   box.innerHTML = rows.join("");
+  if (REPORT) renderPulse();
 }
 
 // 국가 간 전파: 같은 개체(언어별 이름을 공개 지식베이스로 이어 붙인)의 나라별 곡선을 전달 함수에 넣는다.
@@ -1569,7 +1794,14 @@ async function renderShapes() {
   const d = SHAPES[code];
   if (!d?.items?.length) { card.hidden = true; return; }
   card.hidden = false;
-  $("#shape").innerHTML = d.items.slice(0, 8).map((i) => `<li>
+  const total = Object.values(d.mix || {}).reduce((a, b) => a + b, 0) || 1;
+  const mixEl = $("#shape-mix");
+  if (mixEl) {
+    mixEl.innerHTML = `<ul class="mixbars">${Object.entries(d.mix).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>
+      <span>${esc(k)}</span><span class="mb"><i style="width:${(v / total * 100).toFixed(0)}%"></i></span>
+      <span class="n">${v}</span></li>`).join("")}</ul>`;
+  }
+  $("#shape").innerHTML = d.items.slice(0, 10).map((i) => `<li>
       <span class="st tag ${SHAPE_TONE[i.shape] || ""}">${esc(i.shape)}</span>
       <a title="${esc(d.classes[i.shape] || "")}">${esc(i.label)}</a>
       <small>정점 ${i.days_since_peak === 0 ? "어제" : `${i.days_since_peak}일 전`}${i.recurring ? " · 해마다 반복" : ""}</small>
@@ -1577,6 +1809,7 @@ async function renderShapes() {
   // 이름표만으로는 뜻을 알 수 없으니, 지금 목록에 있는 모양마다 뜻을 한 줄씩 붙인다
   $("#shape-note").innerHTML = Object.entries(d.mix).sort((a, b) => b[1] - a[1])
     .map(([k, v]) => `<b>${esc(k)}</b> ${v}개 — ${esc(d.classes[k] || "")}`).join("<br>");
+  if (REPORT) renderPulse();
 }
 
 // 유료 앱 판매 순위: 나라를 바꿔도 보던 분야를 그대로 둔다 — 같은 분야를 나라끼리 견주려고 보는 표라서.
