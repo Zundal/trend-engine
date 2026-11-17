@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import alerts as alerts_mod
-from . import appcharts, archive, diffusion, entities, flux, kernel, pageviews, pomdp, youth
+from . import appcharts, archive, consumer, diffusion, entities, flux, kernel, pageviews, pomdp, youth
 from . import insight as insight_mod
 from . import shapes as shapes_mod
 from .config import REGIONS, Settings, export_langs, get_region
@@ -91,6 +91,12 @@ class TrendService:
         if region.upper() not in REGIONS:  # the country code goes into the upstream URL
             raise ValueError(f"unknown region: {region}")
         return await appcharts.top(self.settings, self.store, get_region(region).country)
+
+    async def consumer(self, region: str = "KR") -> dict[str, Any]:
+        """소비 트렌드: this country's best-seller / sales lists, grouped into field cards."""
+        if region.upper() not in REGIONS:
+            raise ValueError(f"unknown region: {region}")
+        return await consumer.collect(self.settings, self.store, get_region(region).country)
 
     async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
         """10·20대 focus view (Korea): discovered youth interests + today's issues vs 30대 이상."""
