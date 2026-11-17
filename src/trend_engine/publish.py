@@ -125,6 +125,22 @@ def public_app_charts(d: dict[str, Any]) -> dict[str, Any]:
             "categories": {c: [a for a in apps if not is_adult(a["name"])] for c, apps in d["categories"].items()}}
 
 
+def public_consumer(d: dict[str, Any]) -> dict[str, Any]:
+    """소비 트렌드: cards keep field · title · basis only — list ids name the shop, so they stay out,
+    and so do errors. Adult names drop out but ranks stay (as in public_app_charts)."""
+    cards = []
+    for c in d.get("cards", []):
+        lists = [{"tab": li["tab"], "at": li.get("at"), "stale": bool(li.get("stale")),
+                  "items": [{k: it.get(k) for k in ("rank", "name", "by", "price", "note", "url")}
+                            for it in li["items"] if not is_adult(it["name"])]}
+                 for li in c["lists"]]
+        if lists := [li for li in lists if li["items"]]:
+            cards.append({"field": c["field"], "title": c["title"], "basis": c["basis"], "period": c.get("period", ""),
+                          "lists": lists})
+    fields = list(dict.fromkeys(c["field"] for c in cards))
+    return {"generated_at": d["generated_at"], "country": d.get("country"), "fields": fields, "cards": cards}
+
+
 def public_attention(a: dict[str, Any]) -> dict[str, Any]:
     """Numbers only — the article titles behind them would name the source."""
     s = {k: v for k, v in a["summary"].items() if k != "top"}

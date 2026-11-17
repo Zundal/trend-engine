@@ -156,6 +156,21 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             lines.append(f"app-charts {code}: FAIL {e}")
             health.warn(f"[{code}] 유료 앱 순위 실패 — {str(e)[:160]}")
 
+        try:  # 소비 트렌드: this country's sales lists (cached per list, last good result if one fails)
+            con = await svc.consumer(code)
+            write(f"consumer-{code}", publish.public_consumer(con))
+            n_lists = sum(len(c["lists"]) for c in con["cards"])
+            n_stale = sum(li["stale"] for c in con["cards"] for li in c["lists"])
+            lines.append(f"consumer {code}: {len(con['cards'])} cards, {n_lists} lists"
+                         + (f", {n_stale} stale" if n_stale else "") + f", {len(con['errors'])} errors")
+            if not con["cards"]:
+                health.warn(f"[{code}] 소비 트렌드: 목록 0개 — {(con['errors'] or ['원인 모름'])[0][:120]}")
+            elif con["errors"]:
+                health.warn(f"[{code}] 소비 트렌드: 일부 실패 {len(con['errors'])}건 — {con['errors'][0][:120]}")
+        except Exception as e:  # noqa: BLE001 — an extra tab must not fail the deploy
+            lines.append(f"consumer {code}: FAIL {e}")
+            health.warn(f"[{code}] 소비 트렌드 실패 — {str(e)[:160]}")
+
         # Korean search data only describes Korean users — skip foreign regions (saves quota).
         if code.startswith("KR"):
             try:

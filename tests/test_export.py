@@ -54,6 +54,7 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert set(files) >= {"meta", "report-KR", "report-US", "history-KR", "history-US", "segments-KR", "shopping",
                           "shopping-month", "period-KR", "period-US", "age-period", "youth", "youth-period", "diffusion", "alerts"}
     assert "segments-US" not in files  # Korean search data isn't published for foreign regions
+    assert {"consumer-KR", "consumer-US"} <= set(files)
     for name, blob in files.items():
         # ciphertext is random base64: it can spell 'naver' by chance, so check the *shape* here and
         # scan the decrypted content below
@@ -65,6 +66,9 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     meta = publish.decrypt(files["meta"], key)
     assert meta["static"] is True and [r["code"] for r in meta["regions"]] == ["KR", "US"]
     assert meta["generated_at"].endswith("+00:00")  # one build time for the page header
+    con = publish.decrypt(files["consumer-KR"], key)
+    assert con["fields"] and con["cards"] and "errors" not in con
+    assert set(con["cards"][0]) == {"field", "title", "basis", "period", "lists"}  # no list id: ids name the shop
     rep = publish.decrypt(files["report-KR"], key)
     assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
     assert rep["apps"] and all(set(a) == {"title", "url"} for a in rep["apps"])  # app chart only: names, no songs

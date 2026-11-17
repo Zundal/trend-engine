@@ -43,6 +43,7 @@ uv run trend-engine --offline serve --port 8765  # UI 확인
 | `src/trend_engine/youth.py` | 10·20대 포커스: 후보 수집 → 연령 측정 → "30대 이상 대비 N배" |
 | `src/trend_engine/shopping.py` | 네이버 쇼핑인사이트: 그룹별 쇼핑 인기 검색어 (키 불필요) |
 | `src/trend_engine/appcharts.py` | 나라 × 25개 분야 유료 앱 판매 순위(아이폰, 키 불필요). 점수에 넣지 않는 별도 표라 `Source` 가 아니다 |
+| `src/trend_engine/consumer/` | 소비 트렌드: 나라 × 분야별 판매·매출·관객·예매 순위(키 불필요). `__init__` 수집 · `base` 목록 정의·도우미 · `common`(6개국 공통) · `kr`/`jp`/`usgb`/`twvn`. 목록(Board)마다 순수 `PARSERS` + 6시간 캐시, 실패 시 3일 안 지난 결과(`stale`), 사이트별 페이싱·사이트 간 동시 수집. 점수에 넣지 않는 별도 표라 `Source` 가 아니다. 픽스처는 `tests/fixtures/consumer/<id>.<ext>`(녹화 때 `TRIMS` 로 축소), 갱신은 `record --consumer`, 출처·막힌 곳은 docs/SOURCES.md |
 | `src/trend_engine/insight.py` | 이슈 깊이 읽기(순수 함수): 왜 뜨나(헤드라인 합의) · 누가 먼저(신호 종류별 첫 등장, 최근 3일 리포트) · 일생(30일 순위) · 연결(같은 기사) · 작년 이맘때(위키 조회수). 공개 뷰는 소스 이름 대신 신호 종류(SNS·포털·검색 급상승·백과 조회·뉴스)만 |
 | `src/trend_engine/safety.py` | 성인물 문서·검색어 필터: 위키 소스·과거 조회수·공개 뷰(`publish.py`) 세 곳에서 거른다. 정상 단어(성교육·자위대 등) 오탐 방지 경계 포함 |
 | `src/trend_engine/service.py` | API·CLI 가 공유하는 단일 파사드 |

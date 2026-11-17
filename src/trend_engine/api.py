@@ -80,6 +80,10 @@ def create_app(service: TrendService | None = None) -> FastAPI:
     async def app_charts(region: str = "KR"):
         return publish.public_app_charts(await guard(svc.app_charts(region)))
 
+    @app.get("/api/consumer")
+    async def consumer(region: str = "KR"):
+        return publish.public_consumer(await guard(svc.consumer(region)))
+
     @app.get("/api/attention")
     async def attention(region: str = "KR"):
         a = await svc.attention(region)

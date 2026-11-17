@@ -188,7 +188,7 @@ def test_all_ages_tab(page, site):
 
 
 def test_no_source_names_leak_and_mobile_fits(page, site):
-    for route in ("", "#youth", "#diffusion", "#country/KR/live", "#age/20대/week"):
+    for route in ("", "#youth", "#diffusion", "#country/KR/live", "#consumer/KR", "#age/20대/week"):
         page.goto(site + route)
         page.wait_for_timeout(600)
         html = page.content()
@@ -198,7 +198,7 @@ def test_no_source_names_leak_and_mobile_fits(page, site):
     wait_rows(page, "#gl-world .card", 2)
     assert page.evaluate("document.documentElement.scrollWidth") <= 391
     for route, ready in (("#youth", "#y-disc li[data-cat]"), ("#diffusion", "#dif-now .dif"), ("#country/KR/live", "#rank li[data-i]"),
-                         ("#age/20대/week", "#heat table")):
+                         ("#consumer/JP", ".con-card li"), ("#age/20대/week", "#heat table")):
         page.goto(site + route)
         page.wait_for_selector(ready)
         page.wait_for_timeout(300)
@@ -354,6 +354,37 @@ def test_paid_app_rank_by_country_and_category(page, site):
     assert page.locator('#paid-cats [data-c="생산성"]').get_attribute("aria-pressed") == "true"
     page.locator('#regions [data-code="US"]').click()
     page.wait_for_function("document.querySelector('#paid')?.textContent.includes('US$')")  # not a bare "$": Taiwan's is NT$
+    assert not page.errors, page.errors
+
+
+def test_consumer_tab_by_country_and_field(page, site):
+    page.goto(site + "#consumer/KR")
+    page.wait_for_selector(".con-card li")
+    assert page.locator(".tab[aria-current=page] b").inner_text() == "소비"
+    assert "대한민국" in page.locator("#con-title").inner_text()
+    fields = page.locator("#con-fields [data-f]").all_inner_texts()
+    assert fields[0].startswith("전체") and len(fields) >= 2
+    assert page.locator("#con-tops .con-top").count() == len(fields) - 1  # one top item per field
+    # 앱 매출: the card's chips switch the list, and the choice survives a country switch
+    card = page.locator('.con-card[aria-label="앱 매출 순위"]')
+    first = card.locator("li a").first.inner_text()
+    card.locator('[data-t="게임"]').click()
+    page.wait_for_selector('.con-card[aria-label="앱 매출 순위"] [data-t="게임"][aria-pressed="true"]')
+    assert page.locator('.con-card[aria-label="앱 매출 순위"] li a').first.inner_text() != first
+    assert page.locator('.con-card[aria-label="앱 매출 순위"] li').count() == 10  # top 10 first …
+    page.locator('.con-card[aria-label="앱 매출 순위"] [data-more]').click()
+    assert page.locator('.con-card[aria-label="앱 매출 순위"] li').count() == 20  # … then all 20
+    # a field chip narrows the cards and lands in the URL
+    page.locator('#con-fields [data-f="앱 결제"]').click()
+    page.wait_for_function("decodeURIComponent(location.hash) === '#consumer/KR/앱 결제'")
+    assert set(page.locator(".con-card h3").all_inner_texts()) == {"앱 매출 순위"}
+    assert page.locator("#sec-con-top").is_hidden()
+    page.locator('#con-regions [data-code="US"]').click()
+    page.wait_for_function("document.querySelector('#con-title').textContent.includes('미국')")
+    assert page.locator('#con-fields [data-f="앱 결제"]').get_attribute("aria-pressed") == "true"
+    page.locator('#con-fields [data-f=""]').click()
+    page.wait_for_function("document.querySelectorAll('.con-field-h').length >= 2")  # US: more than one field
+    assert "KST" in page.locator("#con-note").inner_text()
     assert not page.errors, page.errors
 
 

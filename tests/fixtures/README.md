@@ -22,3 +22,4 @@
 - `dantri/VN.xml` · `thanhnien/VN.xml` — 앞 30개 `<item>` 만 남긴 것. `tuoitre/VN.xml` 은 실응답 그대로.
 - `yahoo_realtime/JP.html` — 트렌드 `<ol>` 목록만 남긴 것.
 - `yahoo_us/US.xml` · `bbc_news/GB.xml` · `kkbox_tw/TW.json` · `yahoo_tw/TW.xml` · `gnn_tw/TW.xml` · `vnexpress/VN.xml` — 실응답 그대로.
+- `consumer/<board id>.<ext>` — 소비 트렌드 목록 실응답. 나라 × 파서마다 하나(`record --consumer all`), 녹화 때 `consumer.TRIMS` 로 상위 20여 개·필요한 마크업만 남긴다(Xbox·아마존은 응답에 섞인 요청자 정보도 걷어낸다). 트림이 파싱 결과를 바꾸지 않는지 `test_fixture_trim_keeps_the_parse` 가 검사.

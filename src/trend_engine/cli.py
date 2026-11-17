@@ -9,7 +9,7 @@ import os
 import sys
 from typing import Any
 
-from .config import EXPORT_REGIONS, Settings
+from .config import EXPORT_REGIONS, Settings, get_region
 
 
 def _print(data: Any, as_json: bool, render) -> None:
@@ -63,6 +63,17 @@ def _render_doctor(rows: list[dict]) -> None:
         print(f"  {icon[r['status']]} {r['check']:<16} {r['status']:<5} {r.get('count', ''):>4} {r.get('detail', '')}")
 
 
+def _render_consumer(d: dict, top: int) -> None:
+    print(f"소비 트렌드 {d['country']} — 카드 {len(d['cards'])}개")
+    for c in d["cards"]:
+        print(f"\n[{c['field']}] {c['title']} — {c['basis']}")
+        for li in c["lists"]:
+            names = ", ".join(it["name"] for it in li["items"][:top])
+            print(f"  {li['tab']}{' (지난 결과)' if li['stale'] else ''}: {names}")
+    for e in d["errors"]:
+        print(f"  ! {e}")
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="trend-engine", description="구글·네이버·유튜브·실시간 검색어 트렌드 엔진")
     p.add_argument("--offline", action="store_true", help="네트워크 대신 tests/fixtures 사용 (데모/테스트)")
@@ -86,15 +97,21 @@ def main(argv: list[str] | None = None) -> int:
     sh.add_argument("--segments", help="예: '20대,20대 여성,60대+'")
     sh.add_argument("--categories", help="예: '패션의류,디지털/가전'")
 
+    cs = sub.add_parser("consumer", help="나라별 소비 트렌드: 분야별 판매·매출·관객 순위 (키 불필요)")
+    cs.add_argument("-r", "--region", default="KR")
+    cs.add_argument("--top", type=int, default=5, help="목록마다 보여 줄 개수")
+
     sv = sub.add_parser("serve", help="API + 대시보드 실행")
     sv.add_argument("--host", default="127.0.0.1")
     sv.add_argument("--port", type=int, default=8000)
 
     d = sub.add_parser("doctor", help="모든 업스트림 라이브 점검 (harness)")
     d.add_argument("-r", "--region", default="KR")
+    d.add_argument("--consumer", action="store_true", help="소비 트렌드 목록만 점검 (목록마다 요청 1회)")
 
     rc = sub.add_parser("record", help="라이브 응답으로 tests/fixtures 갱신 (harness)")
     rc.add_argument("--regions", default="KR,KR-11,US,JP")
+    rc.add_argument("--consumer", help="소비 트렌드 픽스처만: 목록 id (쉼표) 또는 'all' = 나라·파서마다 하나")
 
     ex = sub.add_parser("export", help="GitHub Pages 용 정적 사이트 생성")
     ex.add_argument("--out", default="site")
@@ -131,11 +148,24 @@ def main(argv: list[str] | None = None) -> int:
         print(body if not ok else "health: OK")
         return 0 if ok else 1
     if args.cmd == "doctor":
-        rows = asyncio.run(harness.doctor(settings, args.region))
+        if args.consumer:
+            from . import consumer
+
+            rows = asyncio.run(consumer.doctor(settings, get_region(args.region).country))
+        else:
+            rows = asyncio.run(harness.doctor(settings, args.region))
         _print(rows, args.json, _render_doctor)
         return 1 if any(r["status"] == "fail" for r in rows) else 0
     if args.cmd == "record":
-        for line in asyncio.run(harness.record(settings, split(args.regions) or ["KR"])):
+        if args.consumer:
+            from . import consumer
+
+            only = None if args.consumer == "all" else set(split(args.consumer) or [])
+            countries = list(dict.fromkeys(get_region(c).country for c in split(args.regions) or ["KR"]))
+            lines = asyncio.run(consumer.record(settings, countries, only))
+        else:
+            lines = asyncio.run(harness.record(settings, split(args.regions) or ["KR"]))
+        for line in lines:
             print(line)
         return 0
 
@@ -158,6 +188,9 @@ def main(argv: list[str] | None = None) -> int:
             _print(asyncio.run(svc.report_segments(args.region, args.top, split(args.segments))), args.json, _render_segments)
         elif args.cmd == "keyword":
             _print(asyncio.run(svc.keyword_segments(args.keywords, split(args.segments))), args.json, _render_segments)
+        elif args.cmd == "consumer":
+            d = asyncio.run(svc.consumer(args.region))
+            _print(d, args.json, lambda d: _render_consumer(d, args.top))
         elif args.cmd == "shopping":
             _print(asyncio.run(svc.shopping(split(args.segments), split(args.categories))), args.json, _render_shopping)
     except PermissionError as e:
