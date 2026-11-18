@@ -71,6 +71,10 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     assert set(con["cards"][0]) == {"field", "title", "basis", "period", "lists"}  # no list id: ids name the shop
     assert con["rising"] and con["themes"] and con["segments"]  # the tab reads movement, not just ranks
     assert set(con["world"]["countries"]) == {"KR", "US"} and "price" not in con["cards"][0]["lists"][0]["items"][0]
+    # 지수·도표: Korea's shopping click shares by age · gender, the summary tiles, our own day-by-day record
+    assert con["index"]["groups"][0]["label"] == "전체" and len(con["index"]["weeks"]) == 52
+    assert len(con["summary"]) >= 3 and set(con["history"]) == {"days", "fields"} and con["world"]["mix"]
+    assert publish.decrypt(files["consumer-US"], key)["index"] is None
     rep = publish.decrypt(files["report-KR"], key)
     assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
     assert rep["apps"] and all(set(a) == {"title", "url"} for a in rep["apps"])  # app chart only: names, no songs

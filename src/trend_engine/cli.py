@@ -65,6 +65,10 @@ def _render_doctor(rows: list[dict]) -> None:
 
 def _render_consumer(d: dict, top: int) -> None:
     print(f"소비 트렌드 {d['country']} — 카드 {len(d['cards'])}개")
+    if idx := d.get("index"):  # 한국 쇼핑 클릭 지수: 그룹마다 결론 한 줄
+        print(f"\n어디에 관심이 가나 (포털 쇼핑 클릭 비중, ~{idx['until']})")
+        for g in idx["groups"]:
+            print(f"  {g['headline']}" + (f" — {g['moves']}" if g["label"] == "전체" and g["moves"] else ""))
     for c in d["cards"]:
         print(f"\n[{c['field']}] {c['title']} — {c['basis']}")
         for li in c["lists"]:
