@@ -153,7 +153,7 @@ def test_public_view_names_no_shop_and_drops_adult_titles():
     d = {"generated_at": "2026-11-18T00:00:00+00:00", "country": "JP", "errors": ["jp-shop-x: HTTP 503"],
          "cards": [{"id": "jp-shop-x", "field": "패션", "title": "쇼핑몰 베스트", "basis": "판매량", "period": "일간",
                     "lists": [{"tab": "전체", "at": "2026-11-18T00:00:00+00:00", "stale": False,
-                               "items": [consumer.item(1, "ポルノ DVD"), consumer.item(2, "コート", by="Brand")]},
+                               "items": [consumer.item(1, "ポルノ DVD"), consumer.item(2, "コート", by="Brand", price="¥9,900")]},
                               {"tab": "성인", "at": None, "stale": False, "items": [consumer.item(1, "porn")]}]}]}
     p = publish.public_consumer(d)
     plain = json.dumps(p, ensure_ascii=False)
@@ -161,6 +161,7 @@ def test_public_view_names_no_shop_and_drops_adult_titles():
     assert p["fields"] == ["패션"]
     assert [li["tab"] for li in p["cards"][0]["lists"]] == ["전체"]  # a list left empty by the filter drops out
     assert [it["rank"] for it in p["cards"][0]["lists"][0]["items"]] == [2]  # ranks stay
+    assert '"price"' not in plain  # the tab reads movement, not prices
 
 
 async def test_service_rejects_unknown_region(service):
@@ -217,8 +218,14 @@ async def test_json_post_body_and_bot_wall():
 
 
 def test_korea_lists_split_by_age_and_gender():
-    tabs = [b.tab for b in BOARDS if b.country == "KR" and b.card == "쇼핑 많이 산 상품" and b.field == "종합 쇼핑"]
-    assert {"전체", "10대 여성", "10대 남성", "20대 여성", "20대 남성"} <= set(tabs)
+    # the purchase ranking ignores the age filter upstream: age/gender tabs live on the click ranking + keywords
+    kr = [b for b in BOARDS if b.country == "KR"]
+    assert not any(b.age or b.gender for b in kr if b.card == "쇼핑 많이 산 상품")
+    views = {b.tab: b for b in kr if b.card == "쇼핑 많이 본 상품"}
+    assert {"전체", "10대 여성", "10대 남성", "20대 여성", "20대 남성"} <= set(views)
+    assert (views["20대 여성"].age, views["20대 여성"].gender) == (20, "여성") and "PRODUCT_CLICK" in views["전체"].url
+    kws = {b.tab: b for b in kr if b.card == "쇼핑 인기 키워드"}
+    assert kws["여성"].gender == "여성" and kws["여성"].age == 0 and kws["전체"].kind == "keyword"
     assert any(b.tab == "19세 이하" for b in BOARDS if b.country == "KR" and b.field == "패션")
     assert any(b.field == "공연" for b in BOARDS if b.country == "KR")
 

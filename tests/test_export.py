@@ -69,6 +69,8 @@ async def test_export_is_encrypted_and_source_neutral(service, tmp_path):
     con = publish.decrypt(files["consumer-KR"], key)
     assert con["fields"] and con["cards"] and "errors" not in con
     assert set(con["cards"][0]) == {"field", "title", "basis", "period", "lists"}  # no list id: ids name the shop
+    assert con["rising"] and con["themes"] and con["segments"]  # the tab reads movement, not just ranks
+    assert set(con["world"]["countries"]) == {"KR", "US"} and "price" not in con["cards"][0]["lists"][0]["items"][0]
     rep = publish.decrypt(files["report-KR"], key)
     assert rep["clusters"] and rep["videos"] and rep["news"] and "sources" not in rep["clusters"][0]
     assert rep["apps"] and all(set(a) == {"title", "url"} for a in rep["apps"])  # app chart only: names, no songs

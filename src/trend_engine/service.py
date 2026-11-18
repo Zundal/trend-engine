@@ -93,10 +93,34 @@ class TrendService:
         return await appcharts.top(self.settings, self.store, get_region(region).country)
 
     async def consumer(self, region: str = "KR") -> dict[str, Any]:
-        """소비 트렌드: this country's best-seller / sales lists, grouped into field cards."""
+        """소비 트렌드: this country's lists read as trends (뜨는 것 · 소비 키워드 · 세대·성별 차이) plus how
+        it compares with the other countries. Other countries come from cache only — no fetch storm."""
         if region.upper() not in REGIONS:
             raise ValueError(f"unknown region: {region}")
-        return await consumer.collect(self.settings, self.store, get_region(region).country)
+        country = get_region(region).country
+        here = await consumer.collect(self.settings, self.store, country)
+        others = {c: await consumer.collect(self.settings, self.store, c, fetch=False)
+                  for c in self._consumer_countries() if c != country}
+        return self._with_world(country, {country: here, **others})
+
+    async def consumer_all(self, regions: list[str] | None = None) -> dict[str, dict[str, Any]]:
+        """Every exported country, fetched once each, then compared (static export)."""
+        countries = list(dict.fromkeys(get_region(r).country for r in regions)) if regions else self._consumer_countries()
+        got = {c: await consumer.collect(self.settings, self.store, c) for c in countries}
+        return {c: self._with_world(c, got) for c in countries}
+
+    @staticmethod
+    def _consumer_countries() -> list[str]:
+        from .config import EXPORT_REGIONS
+
+        return list(dict.fromkeys(get_region(r).country for r in EXPORT_REGIONS))
+
+    @staticmethod
+    def _with_world(country: str, by_country: dict[str, dict[str, Any]]) -> dict[str, Any]:
+        w = consumer.world({c: d for c, d in by_country.items() if d.get("cards")})
+        shared = [r for r in w["shared"] if country in r["countries"]][:30]  # what this country shares
+        return by_country[country] | {"world": {"shared": shared, "local": w["local"].get(country, []),
+                                                "countries": sorted(c for c, d in by_country.items() if d.get("cards"))}}
 
     async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:
         """10·20대 focus view (Korea): discovered youth interests + today's issues vs 30대 이상."""

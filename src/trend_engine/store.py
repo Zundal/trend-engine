@@ -157,6 +157,10 @@ class Store:
     def cache_keys(self, prefix: str) -> list[str]:
         return [r[0] for r in self.db.execute("SELECT key FROM cache WHERE key LIKE ? ORDER BY key", (prefix + "%",))]
 
+    def cache_delete(self, key: str) -> None:
+        self.db.execute("DELETE FROM cache WHERE key=?", (key,))
+        self.db.commit()
+
     def cache_set(self, key: str, value: Any) -> None:
         self.db.execute(
             "INSERT OR REPLACE INTO cache(key, created_at, payload) VALUES (?,?,?)",
