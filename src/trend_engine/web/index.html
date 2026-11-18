@@ -1728,6 +1728,11 @@ async function renderInsight(members, wantRegion, sig) {
       </div>
       ${s.times_usual ? `<span class="dim" style="font-size:12px">평소의 ${s.times_usual}배</span>` : ""}</div>`);
   }
+  if (it.subqueries?.length) {
+    panes.push(`<div class="story-pane" data-ins><b>하위 연관 검색어</b>
+      <div class="tags" style="display:flex;flex-wrap:wrap;gap:6px;">${it.subqueries.map((q) => `<span class="cchip" style="font-size:12px;padding:4px 8px;background:var(--soft);border-radius:12px">${esc(q)}</span>`).join("")}</div>
+      <span class="dim" style="font-size:12px">사람들이 이 이슈와 함께 가장 많이 찾아본 하위 검색어예요.</span></div>`);
+  }
   if (panes.length) {
     // display:contents 로 레일 flex 에 바로 끼워, #ins 로 묶인 깊이 읽기를 한 덩어리로 찾게 한다
     anchor.insertAdjacentHTML("afterend", `<div id="ins" style="display:contents">${panes.join("")}</div>`);

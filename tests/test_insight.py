@@ -123,6 +123,13 @@ def test_build_and_public_view_carry_no_source_names():
     assert not any(s in text for s in ("getdaytrends", "yahoo_trending", "bbc_news"))
 
 
+def test_build_includes_subqueries_when_present():
+    rep = {"region": "KR", "generated_at": T3, "clusters": [cl("son", label="손흥민")]}
+    sub_map = {"son": ["손흥민 골", "손흥민 연봉", "손흥민 경기일정"]}
+    out = public_insight(insight.build(rep, [snap(T0, cl("son"))], {}, {}, subqueries=sub_map))
+    assert out["items"]["son"]["subqueries"] == ["손흥민 골", "손흥민 연봉", "손흥민 경기일정"]
+
+
 def test_seasons_do_not_cache_a_pass_cut_short(monkeypatch):
     import asyncio
 

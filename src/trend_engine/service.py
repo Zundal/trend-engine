@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import json
+import urllib.parse
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+import httpx
 
 from . import alerts as alerts_mod
 from . import appcharts, archive, consumer, diffusion, entities, flux, kernel, pageviews, pomdp, youth
@@ -384,7 +388,7 @@ class TrendService:
         return {name: archive.period_segments(self.store, self.archive_root, n) for name, n in archive.PERIODS.items()}
 
     async def insight(self, region: str = "KR", report: dict[str, Any] | None = None) -> dict[str, Any]:
-        """이슈 깊이 읽기 (insight.py): 왜 뜨나 · 누가 먼저 · 일생 · 연결 · 작년 이맘때."""
+        """이슈 깊이 읽기 (insight.py): 왜 뜨나 · 누가 먼저 · 일생 · 연결 · 작년 이맘때 · 하위 연관어."""
         code = get_region(region).code
         report = report or await self.report(code)
         now = datetime.fromisoformat(report["generated_at"])
@@ -394,7 +398,36 @@ class TrendService:
         top = report["clusters"][:40]
         rows = self.store.key_rows(code, [c["key"] for c in top], now - insight_mod.LIFE_WINDOW)
         seasons, errors = await self._seasons(code, top)
-        return insight_mod.build(report, snaps, rows, seasons) | {"errors": errors}
+        subqueries = await self._subqueries(code, top)
+        return insight_mod.build(report, snaps, rows, seasons, subqueries=subqueries) | {"errors": errors}
+
+    async def _subqueries(self, region: str, clusters: list[dict[str, Any]], limit: int = 15,
+                          max_age: timedelta = timedelta(hours=6)) -> dict[str, list[str]]:
+        """하위 연관 검색어: Google Suggest 무키 엔드포인트에서 상위 이슈의 세부 파생 검색어를 수집."""
+        if self.settings.offline:
+            return {}
+        lang = get_region(region).lang
+        results: dict[str, list[str]] = {}
+        for c in clusters[:limit]:
+            key = f"subqueries:v1:{lang}:{c['key']}"
+            if (hit := self.store.cache_get(key, max_age)) is not None:
+                results[c["key"]] = hit
+                continue
+            query = c.get("query") or c["label"]
+            encoded = urllib.parse.quote(query)
+            url = f"https://suggestqueries.google.com/complete/search?client=firefox&q={encoded}&hl={lang}"
+            try:
+                async with httpx.AsyncClient(timeout=4.0) as client:
+                    resp = await client.get(url, headers={"User-Agent": self.settings.user_agent})
+                    if resp.status_code == 200:
+                        data = json.loads(resp.text)
+                        if isinstance(data, list) and len(data) >= 2 and isinstance(data[1], list):
+                            items = [str(x) for x in data[1] if x and str(x) != query][:8]
+                            results[c["key"]] = items
+                            self.store.cache_set(key, items)
+            except Exception:
+                continue
+        return results
 
     async def _seasons(self, region: str, clusters: list[dict[str, Any]], limit: int = SEASON_LIMIT,
                        max_age: timedelta = timedelta(hours=12)) -> tuple[dict[str, dict[str, Any]], list[str]]:

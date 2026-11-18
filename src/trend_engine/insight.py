@@ -268,16 +268,19 @@ def season(series: list[tuple[date, int]], today: date) -> dict[str, Any] | None
 
 # --- 합치기 ---------------------------------------------------------------------------------
 def build(report: dict[str, Any], snapshots: list[dict[str, Any]], rows: dict[str, list[dict[str, Any]]],
-          seasons: dict[str, dict[str, Any]], top: int = 40) -> dict[str, Any]:
+          seasons: dict[str, dict[str, Any]], top: int = 40,
+          subqueries: dict[str, list[str]] | None = None) -> dict[str, Any]:
     clusters = report.get("clusters", [])[:top]
     per_links, groups = links(clusters)
     items: dict[str, dict[str, Any]] = {}
     origins = []
+    subqueries = subqueries or {}
     for c in clusters:
         o = origin(c, snapshots)
         origins.append(o)
         entry = {"why": why(c), "origin": o, "life": life(rows.get(c["key"], []), report["generated_at"]),
-                 "links": per_links.get(c["key"], []), "season": seasons.get(c["key"])}
+                 "links": per_links.get(c["key"], []), "season": seasons.get(c["key"]),
+                 "subqueries": subqueries.get(c["key"], [])}
         items[c["key"]] = {k: v for k, v in entry.items() if v}
     window = (_ts(report["generated_at"]) - _ts(snapshots[0]["generated_at"])).total_seconds() / 3600 if snapshots else 0
     return {"region": report["region"], "generated_at": report["generated_at"], "items": items,
