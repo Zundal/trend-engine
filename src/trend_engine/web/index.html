@@ -405,6 +405,26 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
 .inv .story-pane .path li.first { border-color: var(--inv-accent); color: var(--inv-accent); }
 .inv .story-pane .peers .peer { border-color: var(--inv-line); }
 .inv .story-pane .affbar { background: var(--inv-line); }
+/* 입체 마인드맵 & 2단계 드릴다운 */
+.mm-box { width: 100%; height: 160px; display: flex; align-items: center; justify-content: center; }
+.mm-box svg { width: 100%; height: 100%; max-height: 160px; overflow: visible; }
+.mm-link { stroke: var(--inv-line); stroke-width: 1.5; stroke-dasharray: 2 2; fill: none; transition: stroke 0.2s, stroke-width 0.2s; }
+.mm-link.active { stroke: var(--inv-accent); stroke-width: 2.5; stroke-dasharray: none; }
+.mm-node { cursor: pointer; }
+.mm-node rect { fill: var(--soft); stroke: var(--inv-edge); stroke-width: 1; transition: stroke 0.2s, fill 0.2s; }
+.mm-node text { fill: var(--inv-ink2); transition: fill 0.2s; }
+.mm-node:hover rect { stroke: var(--inv-accent); fill: color-mix(in srgb, var(--inv-accent) 15%, var(--soft)); }
+.mm-node.active rect { fill: var(--inv-accent); stroke: var(--inv-accent); }
+.mm-node.active text { fill: #fff; font-weight: 700; }
+.mm-center circle { fill: color-mix(in srgb, var(--inv-accent) 18%, var(--soft)); stroke: var(--inv-accent); stroke-width: 2; }
+.mm-center text { font-weight: 700; fill: var(--inv-ink); }
+.sub-tag-btn { border: 1px solid var(--inv-line); background: var(--soft); color: var(--inv-ink2); border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.sub-tag-btn:hover { background: color-mix(in srgb, var(--inv-accent) 12%, var(--soft)); }
+.sub-tag-btn.active { background: var(--inv-accent); color: #fff; border-color: var(--inv-accent); font-weight: 600; }
+.drill-details { border-radius: 8px; background: color-mix(in srgb, var(--inv-ink) 3%, transparent); border: 1px solid var(--inv-line); padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.drill-details b { color: var(--inv-accent); }
+.drill-details ul { margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+.drill-details li { color: var(--inv-ink2); }
 .stat-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .stat { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 10px; background: var(--soft); min-width: 0; }
 .stat b { font: 700 22px/1.15 var(--mono); color: var(--accent-ink); }
@@ -1523,6 +1543,7 @@ function rankSource() {
   return REPORT?.themes?.length ? REPORT.themes : (REPORT?.clusters || []);
 }
 let detailSig = null;
+let currentMembers = [];
 let wantKey = null;  // 한눈에에서 고른 이슈: 순위가 그려질 때 그 줄을 연다
 function renderRank() {
   const pd = periodData();
@@ -1686,7 +1707,55 @@ function originText(o, hours) {
   if (o.path[0].at === o.window_start) return `기록(최근 ${hours}시간)이 시작되기 전부터 있던 이슈라 처음 잡은 곳은 알 수 없어요`;
   return `${o.path.filter((p) => p.at === o.path[0].at).map((p) => esc(p.signal)).join("·")}에서 같은 수집 때 함께 잡혔어요`;
 }
+function renderMindmapSVG(centerLabel, subqueries, activeIdx = 0) {
+  const sqs = (subqueries || []).slice(0, 6);
+  if (!sqs.length) return "";
+  const cx = 140, cy = 80, rx = 96, ry = 52;
+  const nodes = sqs.map((sq, i) => {
+    const angle = (2 * Math.PI * i / sqs.length) - Math.PI / 2;
+    const x = Math.round(cx + rx * Math.cos(angle));
+    const y = Math.round(cy + ry * Math.sin(angle));
+    return { sq, i, x, y };
+  });
+  const links = nodes.map((n) => {
+    const isActive = n.i === activeIdx;
+    return `<path d="M ${cx} ${cy} Q ${Math.round((cx + n.x) / 2)} ${Math.round((cy + n.y) / 2)} ${n.x} ${n.y}" class="mm-link ${isActive ? "active" : ""}" data-mmi="${n.i}" />`;
+  }).join("");
+  const leaves = nodes.map((n) => {
+    const isActive = n.i === activeIdx;
+    const shortLabel = n.sq.length > 7 ? n.sq.slice(0, 6) + "…" : n.sq;
+    const w = Math.min(Math.max(shortLabel.length * 11 + 16, 52), 88);
+    return `<g class="mm-node ${isActive ? "active" : ""}" data-subquery="${esc(n.sq)}" data-mmi="${n.i}">
+      <rect x="${n.x - w / 2}" y="${n.y - 11}" width="${w}" height="22" rx="11" />
+      <text x="${n.x}" y="${n.y + 4}" text-anchor="middle" font-size="10">${esc(shortLabel)}</text>
+    </g>`;
+  }).join("");
+  const shortCenter = centerLabel.length > 6 ? centerLabel.slice(0, 5) + "…" : centerLabel;
+  return `<svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+    <g class="mm-links">${links}</g>
+    <g class="mm-center">
+      <circle cx="${cx}" cy="${cy}" r="26" />
+      <text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="11">${esc(shortCenter)}</text>
+    </g>
+    <g class="mm-leaves">${leaves}</g>
+  </svg>`;
+}
+
+function drillHeadlineMatches(subquery, members) {
+  const words = subquery.split(/\s+/).filter((w) => w.length >= 2);
+  const titles = [];
+  for (const m of members || []) {
+    for (const r of m.related || []) { if (!titles.includes(r)) titles.push(r); }
+    for (const ts of Object.values(m.mentions || {})) {
+      for (const t of ts) { if (!titles.includes(t)) titles.push(t); }
+    }
+  }
+  const matched = titles.filter((t) => words.some((w) => t.includes(w))).slice(0, 3);
+  return matched.length ? matched : titles.slice(0, 2);
+}
+
 async function renderInsight(members, wantRegion, sig) {
+  currentMembers = members;
   const ins = await insightFor(wantRegion);
   const rail = $("#story-rail"), anchor = $("#ins-anchor");
   if (!ins || detailSig !== sig || !rail || !anchor) return;
@@ -1729,9 +1798,19 @@ async function renderInsight(members, wantRegion, sig) {
       ${s.times_usual ? `<span class="dim" style="font-size:12px">평소의 ${s.times_usual}배</span>` : ""}</div>`);
   }
   if (it.subqueries?.length) {
-    panes.push(`<div class="story-pane" data-ins><b>하위 연관 검색어</b>
-      <div class="tags" style="display:flex;flex-wrap:wrap;gap:6px;">${it.subqueries.map((q) => `<span class="cchip" style="font-size:12px;padding:4px 8px;background:var(--soft);border-radius:12px">${esc(q)}</span>`).join("")}</div>
-      <span class="dim" style="font-size:12px">사람들이 이 이슈와 함께 가장 많이 찾아본 하위 검색어예요.</span></div>`);
+    const rootLabel = members[0]?.label || it.subqueries[0];
+    const initialMatches = drillHeadlineMatches(it.subqueries[0], members);
+    panes.push(`<div class="story-pane" data-ins><b>입체 마인드맵 <small>(방사형 트리)</small></b>
+      <div class="mm-box">${renderMindmapSVG(rootLabel, it.subqueries, 0)}</div>
+      <span class="dim" style="font-size:11px">노드를 클릭하면 해당 세부 맥락으로 즉시 이동해요.</span></div>`);
+    panes.push(`<div class="story-pane sub-drill-pane" data-ins><b>하위 연관 검색어 & 연속 탐색</b>
+      <div class="sub-drill-tags">${it.subqueries.map((q, i) => `<button type="button" class="sub-tag-btn ${i === 0 ? "active" : ""}" data-subquery="${esc(q)}" data-mmi="${i}">${esc(q)}</button>`).join("")}</div>
+      <div class="drill-details" id="drill-box">
+        <b>“${esc(it.subqueries[0])}” 심층 맥락</b>
+        ${initialMatches.length ? `<ul>${initialMatches.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : `<span class="dim">관련 주요 헤드라인을 집계 중입니다.</span>`}
+        <span class="dim" style="font-size:11px">클릭한 하위 키워드로 2차 연관 보도를 즉시 필터링했습니다.</span>
+      </div>
+    </div>`);
   }
   if (panes.length) {
     // display:contents 로 레일 flex 에 바로 끼워, #ins 로 묶인 깊이 읽기를 한 덩어리로 찾게 한다
@@ -2976,8 +3055,23 @@ function renderTransfer() {
     selected = +li.dataset.i; renderRank();
   };
   $("#detail").onclick = (e) => {
-    const b = e.target.closest("[data-peer]"); if (!b) return;
-    openPeer(b.dataset.peer);
+    const b = e.target.closest("[data-peer]");
+    if (b) { openPeer(b.dataset.peer); return; }
+    const sub = e.target.closest("[data-subquery]");
+    if (sub) {
+      const sq = sub.dataset.subquery;
+      const mmi = sub.dataset.mmi;
+      $$(".sub-tag-btn").forEach((btn) => btn.classList.toggle("active", btn.dataset.subquery === sq));
+      $$(".mm-node").forEach((node) => node.classList.toggle("active", node.dataset.subquery === sq));
+      $$(".mm-link").forEach((link) => link.classList.toggle("active", link.dataset.mmi === mmi));
+      const box = $("#drill-box");
+      if (box && currentMembers) {
+        const matches = drillHeadlineMatches(sq, currentMembers);
+        box.innerHTML = `<b>“${esc(sq)}” 심층 맥락</b>
+          ${matches.length ? `<ul>${matches.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : `<span class="dim">관련 주요 헤드라인을 집계 중입니다.</span>`}
+          <span class="dim" style="font-size:11px">클릭한 하위 키워드로 2차 연관 보도를 즉시 필터링했습니다.</span>`;
+      }
+    }
   };
   $("#card-ins").onclick = (e) => {
     const b = e.target.closest("[data-peer]"); if (!b) return;
