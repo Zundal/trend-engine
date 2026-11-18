@@ -106,6 +106,8 @@ def public_insight(d: dict[str, Any]) -> dict[str, Any]:
         it = dict(it)
         if it.get("links"):
             it["links"] = [x for x in it["links"] if not is_adult(x["label"])]
+        if it.get("subqueries"):
+            it["subqueries"] = [x for x in it["subqueries"] if not is_adult(x)]
         items[k] = it
     groups = [g for g in d.get("groups", []) if not any(is_adult(x) for x in g["labels"])]
     return {"items": items, "leads": d.get("leads", []), "groups": groups, "origin_hours": d.get("origin_hours", 0)}
