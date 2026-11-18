@@ -26,7 +26,7 @@ from ..config import Settings
 from ..engine import make_client
 from ..sources.base import SourceError, TransientError, get_text_retry
 from ..store import Store, utcnow
-from . import common, jp, kr, trends, twvn, usgb
+from . import common, jp, kr, shopindex, trends, twvn, usgb
 from .base import BROWSER_UA, FIELDS, LIMIT, Board, Fetcher, Item, Parser, clean, compact, item, man, money, ranked
 
 __all__ = ["BOARDS", "FIELDS", "LIMIT", "PARSERS", "Board", "Item", "clean", "collect", "compact", "item", "man",
@@ -159,14 +159,19 @@ def _snapshot_before(store: Store, country: str, today: date, lo: int, hi: int) 
 
 async def collect(settings: Settings, store: Store, country: str, fetch: bool = True) -> dict[str, Any]:
     """Every list of this country — fresh from cache/upstream, or last good result (stale) if it failed —
-    and the trend reading of them (뜨는 것 · 소비 키워드 · 세대·성별 차이). fetch=False reads the cache only."""
+    and the trend reading of them (뜨는 것 · 소비 키워드 · 세대·성별 차이). fetch=False reads the cache only.
+    Korea also gets the shopping click index (어디에 관심이 가나 · 1년 추이) and a yearly line per keyword."""
     boards = boards_for(country)
     country = country.upper()
     lists: dict[str, dict] = {}
     errors: list[str] = []
-    if settings.offline:
-        lists = _offline(settings, boards)
-    else:
+    today = _kst_day()
+
+    async def read_lists() -> None:
+        nonlocal lists
+        if settings.offline:
+            lists = _offline(settings, boards)
+            return
         todo: dict[str, list[Board]] = {}
         for b in boards:
             if hit := store.cache_get(_key(b), b.ttl):
@@ -183,17 +188,30 @@ async def collect(settings: Settings, store: Store, country: str, fetch: bool = 
         for b in boards:
             if b.id not in lists and (old := store.cache_get(_key(b), STALE_FOR)):
                 lists[b.id] = old | {"stale": True}
-    today = _kst_day()
+
+    index = base = None
+    if country == "KR":  # the click index runs beside the lists: another site, its own pacing
+        _, (index, base, ierr) = await asyncio.gather(read_lists(), shopindex.collect(settings, store, today, fetch))
+        errors += ierr
+    else:
+        await read_lists()
     prev, prev_days = _snapshot_before(store, country, today, 1, 3)
     week, week_days = _snapshot_before(store, country, today, 6, 10)
     if week is None:
         week, week_days = _snapshot_before(store, country, today, 3, 5)
     themes = trends.themes(boards, lists, (week or {}).get("themes"))
-    out = {"generated_at": utcnow().isoformat(timespec="seconds"), "country": country,
-           "rising": trends.rising(boards, lists, (prev or {}).get("lists")), "themes": themes,
-           "segments": trends.segments(boards, lists), "compare": {"rising": prev_days, "themes": week_days},
-           "cards": cards(boards, lists), "errors": errors}
-    if fetch and not settings.offline and lists:
+    if country == "KR":
+        sparks, kerr = await shopindex.keyword_trends(settings, store, today, themes, base, fetch)
+        errors += kerr
+        for t in themes:
+            t["spark"] = sparks.get(t["term"].replace(",", " "))
+    rising = trends.rising(boards, lists, (prev or {}).get("lists"))
+    fresh = fetch and not settings.offline and bool(lists)
+    out = {"generated_at": utcnow().isoformat(timespec="seconds"), "country": country, "day": today.isoformat(),
+           "rising": rising, "themes": themes, "segments": trends.segments(boards, lists), "index": index,
+           "compare": {"rising": prev_days, "themes": week_days}, "cards": cards(boards, lists), "errors": errors,
+           "record": trends.daily(themes, rising) if fresh else None}
+    if fresh:
         store.cache_set(_snap_key(country, today), trends.snapshot(lists, themes))
         for k in store.cache_keys(f"consumer-snap:{country}:"):
             if date.fromisoformat(k.rsplit(":", 1)[1]) < today - SNAP_KEEP:
@@ -267,4 +285,12 @@ async def record(settings: Settings, countries: list[str], only: set[str] | None
             p.write_text(raw, encoding="utf-8")
             written.append(f"OK   tests/fixtures/consumer/{p.name} ({len(raw) // 1024}KB)")
             await asyncio.sleep(PACE_SECONDS)
+    if "KR" in countries and (only is None or "kr-shopindex" in only):
+        # the click index + the yearly lines of the keywords offline mode shows (read off the recorded lists)
+        offline = Settings(offline=True, fixtures_dir=settings.fixtures_dir)
+        themes = (await collect(offline, Store(":memory:"), "KR"))["themes"]
+        try:
+            written += await shopindex.record(settings, themes)
+        except Exception as e:  # noqa: BLE001
+            written.append(f"FAIL consumer/kr-shopindex: {e}")
     return written

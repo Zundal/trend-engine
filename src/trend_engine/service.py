@@ -98,7 +98,7 @@ class TrendService:
         if region.upper() not in REGIONS:
             raise ValueError(f"unknown region: {region}")
         country = get_region(region).country
-        here = await consumer.collect(self.settings, self.store, country)
+        here = self._with_history(await consumer.collect(self.settings, self.store, country))
         others = {c: await consumer.collect(self.settings, self.store, c, fetch=False)
                   for c in self._consumer_countries() if c != country}
         return self._with_world(country, {country: here, **others})
@@ -106,8 +106,18 @@ class TrendService:
     async def consumer_all(self, regions: list[str] | None = None) -> dict[str, dict[str, Any]]:
         """Every exported country, fetched once each, then compared (static export)."""
         countries = list(dict.fromkeys(get_region(r).country for r in regions)) if regions else self._consumer_countries()
-        got = {c: await consumer.collect(self.settings, self.store, c) for c in countries}
+        got = {c: self._with_history(await consumer.collect(self.settings, self.store, c)) for c in countries}
         return {c: self._with_world(c, got) for c in countries}
+
+    def _with_history(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Keep today's small record (archived to the data branch once the day is over) and read the record back
+        as a day-by-day line: rising things per field, and keyword lines where no click line exists."""
+        if d.get("record"):
+            archive.record_daily(self.store, date.fromisoformat(d["day"]), f"consumer-{d['country']}", d["record"])
+        hist = consumer.trends.history(archive.consumer_history(self.store, self.archive_root, d["country"],
+                                                                today=date.fromisoformat(d["day"])))
+        consumer.trends.attach_history(d["themes"], hist)
+        return d | {"history": {"days": hist["days"], "fields": hist["fields"]}}
 
     @staticmethod
     def _consumer_countries() -> list[str]:
@@ -119,7 +129,7 @@ class TrendService:
     def _with_world(country: str, by_country: dict[str, dict[str, Any]]) -> dict[str, Any]:
         w = consumer.world({c: d for c, d in by_country.items() if d.get("cards")})
         shared = [r for r in w["shared"] if country in r["countries"]][:30]  # what this country shares
-        return by_country[country] | {"world": {"shared": shared, "local": w["local"].get(country, []),
+        return by_country[country] | {"world": {"shared": shared, "local": w["local"].get(country, []), "mix": w["mix"],
                                                 "countries": sorted(c for c, d in by_country.items() if d.get("cards"))}}
 
     async def youth(self, max_age: timedelta = timedelta(hours=3)) -> dict[str, Any]:

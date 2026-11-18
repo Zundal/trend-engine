@@ -364,18 +364,48 @@ def test_consumer_tab_by_country_and_field(page, site):
     assert "대한민국" in page.locator("#con-title").inner_text() and "뜨는 소비" in page.locator("#con-title").inner_text()
     fields = page.locator("#con-fields [data-f]").all_inner_texts()
     assert fields[0].startswith("전체") and len(fields) >= 2
-    # 01 뜨는 것 · 02 소비 키워드 · 03 세대·성별 · 04 나라 간 비교 · 05 근거 순위표
+    # 오늘 요약 → 어디에 관심이 가나 → 1년 추이 → 뜨는 것 → 소비 키워드 → 세대·성별 → 나라 간 비교 → 기록 → 근거 순위표
+    tiles = page.locator("#con-tiles .con-tile .l").all_inner_texts()
+    assert tiles[0] == "가장 늘어난 쇼핑 분야" and len(tiles) == 4
+    assert page.locator("#con-bars li").count() == 11 and page.locator("#con-heat tbody tr").count() == 11
+    assert page.locator("#con-spend-head").inner_text().startswith("쇼핑 클릭의")
+    assert page.locator("#con-bars .tick").count() == 0  # 전체 itself: no reference ticks
+    page.locator('#con-age [data-age="20대"]').click()
+    page.locator('#con-sex [data-sex="여성"]').click()
+    assert page.locator("#con-spend-head").inner_text().startswith("20대 여성은 쇼핑 클릭의")
+    assert page.locator("#con-bars .tick").count() == 11 and "20대 여성" in page.locator("#con-trend-sub").inner_text()
+    page.locator('#con-heat [data-grp="남성"]').click()  # the table's header picks a group too
+    assert page.locator('#con-sex [data-sex="남성"]').get_attribute("aria-pressed") == "true"
+    assert page.locator('#con-age [data-age="전체"]').get_attribute("aria-pressed") == "true"
+    # 1년 추이: 11 lines, 3 in colour; legend toggles; the table carries the numbers; hover reads one week
+    assert page.locator("#con-chart polyline").count() == 11
+    assert page.locator('#con-legend [aria-pressed="true"]').count() == 3
+    assert page.locator("#con-ttable tbody tr").count() == 11
+    first_hi = page.locator('#con-legend [aria-pressed="true"]').first.get_attribute("data-hi")
+    page.locator(f'#con-legend [data-hi="{first_hi}"]').click()
+    assert page.locator('#con-legend [aria-pressed="true"]').count() == 2
+    page.locator('#con-ttable tr[data-c="도서"]').click()
+    assert page.locator('#con-legend [data-hi="도서"]').get_attribute("aria-pressed") == "true"
+    box = page.locator("#con-chart").bounding_box()
+    page.mouse.move(box["x"] + box["width"] * 0.5, box["y"] + box["height"] * 0.5)
+    assert page.locator("#con-chart .tip").is_visible() and "주" in page.locator("#con-chart .tip b").inner_text()
     assert page.locator("#con-rise li").count() == 12 and not page.locator("#con-rise-more").is_hidden()
     page.locator("#con-rise-more").click()
     assert page.locator("#con-rise li").count() > 12
     assert page.locator("#con-themes .con-theme").count() == 12
+    assert page.locator("#con-themes .con-spark svg").count() >= 6  # yearly shopping-click lines
+    assert "1년 쇼핑 클릭" in page.locator("#con-themes .con-spark").first.inner_text()
+    assert page.locator("#con-themes .idx").first.inner_text() == "지수 100"
     page.locator("#con-theme-more").click()
     assert page.locator("#con-themes .con-theme").count() > 12
     seg = page.locator("#con-seg-pick [data-g]").all_inner_texts()
     assert {"10대", "20대"} <= set(seg)
     page.locator('#con-seg-pick [data-g="20대"]').click()
     assert all(t.startswith("20") for t in page.locator("#con-segs .con-seg h3").all_inner_texts())
-    assert page.locator("#con-shared li .tag").count() >= 3  # one item, several countries' ranks
+    assert page.locator("#con-shared tbody tr").count() >= 3  # one item per row, a rank per country
+    assert page.locator("#con-shared thead th").count() >= 4
+    assert page.locator("#con-mix tbody tr").count() >= 3 and "대한민국" in page.locator("#con-mix thead").inner_text()
+    assert page.locator("#con-hist-sub").inner_text()  # our own record: says how many days it holds
     assert "대한민국에서만" in page.locator("#con-local-h").inner_text()
     assert not page.locator(".con-card").first.locator("li > small").count()  # no price column any more
     # 근거 카드: chips switch the list, 10 → 20 rows
@@ -392,14 +422,25 @@ def test_consumer_tab_by_country_and_field(page, site):
     page.wait_for_function("decodeURIComponent(location.hash) === '#consumer/KR/앱 결제'")
     assert set(page.locator(".con-card h3").all_inner_texts()) == {"앱 매출 순위"}
     assert page.locator("#sec-con-seg").is_hidden()  # no age lists for apps
-    assert all("앱 결제" in t for t in page.locator("#con-shared li .nm small").all_inner_texts())
+    assert all("앱 결제" in t for t in page.locator("#con-shared tbody th small").all_inner_texts())
     page.locator('#con-regions [data-code="US"]').click()
     page.wait_for_function("document.querySelector('#con-title').textContent.includes('미국')")
     assert page.locator('#con-fields [data-f="앱 결제"]').get_attribute("aria-pressed") == "true"
     page.locator('#con-fields [data-f=""]').click()
     page.wait_for_function("document.querySelectorAll('.con-field-h').length >= 2")  # US: more than one field
     assert page.locator("#sec-con-seg").is_hidden()  # age/gender lists are Korea's
+    assert page.locator("#sec-con-spend").is_hidden() and page.locator("#sec-con-trend").is_hidden()  # click index: Korea
+    assert page.locator("#con-tiles .con-tile .l").first.inner_text() == "지금 뜨는 것"
     assert "KST" in page.locator("#con-note").inner_text()
+    assert not page.errors, page.errors
+
+
+def test_consumer_charts_fit_a_phone(page, site):
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto(site + "#consumer/KR")
+    page.wait_for_selector("#con-chart polyline")
+    assert page.evaluate("document.documentElement.scrollWidth") <= 391
+    assert page.locator("#con-tiles .con-tile").count() == 4
     assert not page.errors, page.errors
 
 

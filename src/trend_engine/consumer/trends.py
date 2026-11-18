@@ -8,7 +8,9 @@
            목록당 3개까지만 세고, 목록 이름과 같은 단어(노트북 목록의 '노트북')는 세지 않는다. 일주일 전 대비 변화.
 - segments 세대·성별 차이: 같은 카드의 연령·성별 탭끼리 견준다 (10·20대 탭 vs 30대 이상 탭, 여성 vs 남성).
            '순위에 오른 상품' 비교다 — 그 연령 구매자 비율이 아니다.
-- world    나라 간 비교: 앱·게임은 상점 id, 그 밖엔 같은 라틴 문자 이름으로 같은 품목을 잇는다.
+- world    나라 간 비교: 앱·게임은 상점 id, 그 밖엔 같은 라틴 문자 이름으로 같은 품목을 잇는다. 나라별 '뜨는 것'의 분야 구성(mix).
+- daily · history  하루가 남기는 작은 기록(키워드 점수·분야별 뜨는 것 수) → 날짜별 추이. 기록은 archive 가 보관한다.
+- summary  오늘 요약 타일: 도표 위에 놓는 숫자 몇 개.
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ from __future__ import annotations
 import math
 import re
 import unicodedata
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import Any
 
 from ..normalize import norm_key
@@ -419,7 +421,8 @@ def world(by_country: dict[str, dict[str, Any]], min_countries: int = 3, limit: 
         for r in sorted(rows, key=lambda r: r["rank"]):
             uniq.setdefault(r["key"], r)
         local[code] = list(uniq.values())[:limit]
-    return {"shared": [{k: v for k, v in r.items() if k != "_mean"} for r in shared], "local": local}
+    mix = {code: dict(Counter(r["field"] for r in d.get("rising", []) if r.get("field"))) for code, d in by_country.items()}
+    return {"shared": [{k: v for k, v in r.items() if k != "_mean"} for r in shared], "local": local, "mix": mix}
 
 
 # ---- 스냅샷 ------------------------------------------------------------------------------------
@@ -428,3 +431,76 @@ def snapshot(lists: dict[str, dict], terms: list[dict[str, Any]]) -> dict[str, A
     return {"lists": {bid: [[ikey(it)[:32], it["rank"]] for it in got["items"]]
                       for bid, got in lists.items() if got.get("items") and not got.get("stale")},
             "themes": {norm_key(t["term"]): t["score"] for t in terms}}
+
+
+# ---- 기록 · 추이 · 요약 --------------------------------------------------------------------------
+DAY_THEMES = 40
+
+
+def daily(themes: list[dict[str, Any]], rising: list[dict[str, Any]]) -> dict[str, Any]:
+    """What one day leaves for the long record: keyword scores and how many rising things each field had."""
+    return {"themes": {norm_key(t["term"]): [t["term"], t["score"]] for t in themes[:DAY_THEMES]},
+            "fields": dict(Counter(r["field"] for r in rising))}
+
+
+def history(records: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
+    """Daily records (oldest first) → rising things per field per day, and each keyword's score per day."""
+    days = [d for d, _ in records]
+    fields: dict[str, list[int]] = {}
+    terms: dict[str, list[float]] = {}
+    for i, (_, rec) in enumerate(records):
+        for f, n in (rec.get("fields") or {}).items():
+            fields.setdefault(f, [0] * len(days))[i] = n
+        for k, (_, score) in (rec.get("themes") or {}).items():
+            terms.setdefault(k, [0.0] * len(days))[i] = score
+    order = sorted(fields, key=lambda f: FIELDS.index(f) if f in FIELDS else len(FIELDS))
+    return {"days": days, "fields": {f: fields[f] for f in order}, "themes": terms}
+
+
+def attach_history(themes: list[dict[str, Any]], hist: dict[str, Any], min_days: int = 3) -> None:
+    """Keywords without a shopping-click line get one from our own daily record, once it is a few days long."""
+    if len(hist.get("days") or []) < min_days:
+        return
+    for t in themes:
+        s = hist["themes"].get(norm_key(t["term"]))
+        if t.get("spark") or not s or not (top := max(s)):
+            continue
+        t["spark"] = {"unit": "day", "series": [round(100 * v / top) for v in s], "now": round(100 * s[-1] / top),
+                      "change": round(100 * (s[-1] / s[-8] - 1)) if len(s) >= 8 and s[-8] else None, "yoy": None}
+
+
+def lean(g: dict[str, Any]) -> tuple[str, float] | None:
+    """The shopping category a group leans to most against 전체 (categories under 3% of its clicks aside)."""
+    cands = [(c, r) for c, r in g["over"].items() if r and g["share"][c] >= 3]
+    return max(cands, key=lambda x: x[1]) if cands else None
+
+
+def summary(d: dict[str, Any]) -> list[dict[str, Any]]:
+    """Four numbers to read before any chart. `d` is the public view (adult names already gone)."""
+    tiles: list[dict[str, Any]] = []
+    rising, themes = d.get("rising") or [], d.get("themes") or []
+    shared = (d.get("world") or {}).get("shared") or []
+    if idx := d.get("index"):
+        g0 = idx["groups"][0]
+        ch = [(c, v) for c, v in g0["change"].items() if v is not None and v > 0 and g0["share"][c] >= 1]
+        if ch:  # nothing grew: no 'grew most' tile
+            c, v = max(ch, key=lambda x: x[1])
+            tiles.append({"label": "가장 늘어난 쇼핑 분야", "value": c, "delta": v, "sub": "최근 4주 클릭, 그 전 4주 대비"})
+        groups = [g for g in idx["groups"][1:] if g["age"] and g["gender"]] or idx["groups"][1:]  # 나이×성별 first
+        leans = [(g, *lv) for g in groups if (lv := lean(g))]
+        if leans:
+            g, c, r = max(leans, key=lambda x: x[2])
+            tiles.append({"label": "유독 많이 보는 분야", "value": f"{g['label']} · {c}",
+                          "sub": f"쇼핑 클릭 비중이 전체의 {r:.1f}배"})
+    if len(tiles) < 2:
+        tiles.append({"label": "지금 뜨는 것", "value": f"{len(rising)}개", "sub": "새로 순위에 들거나 크게 오른 것"})
+        if cnt := Counter(r["field"] for r in rising):
+            f, n = cnt.most_common(1)[0]
+            tiles.append({"label": "가장 많이 뜨는 분야", "value": f, "sub": f"뜨는 것의 {round(100 * n / len(rising))}% ({n}개)"})
+    if themes:
+        tiles.append({"label": "뜨는 소비 키워드", "value": " · ".join(t["term"] for t in themes[:3]),
+                      "sub": "여러 순위표에 겹쳐 나온 말"})
+    if shared:
+        r = shared[0]
+        tiles.append({"label": "여러 나라에서 동시에", "value": r["name"], "sub": f"{len(r['countries'])}개국 순위 · {r['field']}"})
+    return tiles[:4]

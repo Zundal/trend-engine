@@ -17,6 +17,7 @@ from typing import Any
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+from .consumer import trends as consumer_trends
 from .peers import attach_peers
 from .safety import is_adult
 
@@ -128,7 +129,8 @@ def public_app_charts(d: dict[str, Any]) -> dict[str, Any]:
 def public_consumer(d: dict[str, Any]) -> dict[str, Any]:
     """소비 트렌드: trend views + the lists behind them. No prices (the tab is about what is moving, not
     what it costs), no list ids or item keys (they name the shop), no errors. Adult names drop out —
-    in lists their ranks stay, as in public_app_charts."""
+    in lists their ranks stay, as in public_app_charts. The summary tiles are read off this filtered view.
+    `index` (Korea's shopping click shares, by age · gender) carries category names and numbers only."""
     def keep(it: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
         return {k: it.get(k) for k in keys}
 
@@ -148,12 +150,14 @@ def public_consumer(d: dict[str, Any]) -> dict[str, Any]:
     segs = [g | {"only": [keep(it, ("rank", "name", "by", "url", "note")) for it in g["only"] if ok(it["name"])],
                  "terms": [t for t in g["terms"] if ok(t["term"])]} for g in d.get("segments", [])]
     w = d.get("world") or {}
-    world = {"countries": w.get("countries", []),
+    world = {"countries": w.get("countries", []), "mix": w.get("mix", {}),
              "shared": [keep(r, ("name", "by", "field", "countries", "rising_in")) for r in w.get("shared", []) if ok(r["name"])],
              "local": [keep(r, ("rank", "name", "by", "url", "field", "where")) for r in w.get("local", []) if ok(r["name"])]}
-    return {"generated_at": d["generated_at"], "country": d.get("country"), "fields": fields, "rising": rising,
-            "themes": themes, "segments": [g for g in segs if g["only"] or g["terms"]], "world": world,
-            "compare": d.get("compare") or {}, "cards": cards}
+    out = {"generated_at": d["generated_at"], "country": d.get("country"), "fields": fields, "rising": rising,
+           "themes": themes, "segments": [g for g in segs if g["only"] or g["terms"]], "world": world,
+           "index": d.get("index"), "history": d.get("history") or {"days": [], "fields": {}},
+           "compare": d.get("compare") or {}, "cards": cards}
+    return out | {"summary": consumer_trends.summary(out)}
 
 
 def public_attention(a: dict[str, Any]) -> dict[str, Any]:

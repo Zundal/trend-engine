@@ -10,6 +10,7 @@ to the repo's `data` branch — so history survives cache loss and grows by ~ten
         trends-US.json ...
         segments.json      # 연령·성별 top keywords that day
         shopping.json      # 연령·성별 shopping keywords that day (7-day window as of that day)
+        consumer-KR.json   # 소비 탭: keyword scores + rising things per field (consumer/trends.daily)
 
 Period views merge archived days with today's live (partial) summary from the store.
 """
@@ -101,7 +102,8 @@ def finalize(store: Store, root: Path, regions: list[str], today: date | None = 
             if summary:
                 _write_json(path, summary)
                 written.append(str(path.relative_to(root)))
-    for kind in ("segments", "shopping", "youth", "diffusion"):
+    consumer_kinds = sorted({k.split(":")[1] for k in store.cache_keys("daily:consumer-")})
+    for kind in ("segments", "shopping", "youth", "diffusion", *consumer_kinds):
         for key in store.cache_keys(f"daily:{kind}:"):
             day = date.fromisoformat(key.rsplit(":", 1)[1])
             path = root / day.isoformat() / f"{kind}.json"
@@ -117,6 +119,20 @@ def finalize(store: Store, root: Path, regions: list[str], today: date | None = 
 def _load(root: Path, day: date, name: str) -> dict[str, Any] | None:
     path = root / day.isoformat() / name
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def consumer_history(store: Store, root: Path, country: str, days: int = 60,
+                     today: date | None = None) -> list[tuple[str, dict[str, Any]]]:
+    """(day, record) of the 소비 탭's daily records, oldest first: archived days + the store's recent ones."""
+    today = today or kst_today()
+    out = []
+    for i in range(days - 1, -1, -1):
+        day = today - timedelta(days=i)
+        rec = _load(root, day, f"consumer-{country}.json") or store.cache_get(
+            f"daily:consumer-{country}:{day.isoformat()}", timedelta(days=3650))
+        if rec:
+            out.append((day.isoformat(), {k: v for k, v in rec.items() if k != "date"}))
+    return out
 
 
 def diffusion_sequences(store: Store, root: Path, days: int = 400, today: date | None = None) -> list[list[int]]:
