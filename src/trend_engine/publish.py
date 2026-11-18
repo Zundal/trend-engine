@@ -126,19 +126,34 @@ def public_app_charts(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_consumer(d: dict[str, Any]) -> dict[str, Any]:
-    """소비 트렌드: cards keep field · title · basis only — list ids name the shop, so they stay out,
-    and so do errors. Adult names drop out but ranks stay (as in public_app_charts)."""
+    """소비 트렌드: trend views + the lists behind them. No prices (the tab is about what is moving, not
+    what it costs), no list ids or item keys (they name the shop), no errors. Adult names drop out —
+    in lists their ranks stay, as in public_app_charts."""
+    def keep(it: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
+        return {k: it.get(k) for k in keys}
+
+    ok = lambda name: not is_adult(name or "")  # noqa: E731
     cards = []
     for c in d.get("cards", []):
         lists = [{"tab": li["tab"], "at": li.get("at"), "stale": bool(li.get("stale")),
-                  "items": [{k: it.get(k) for k in ("rank", "name", "by", "price", "note", "url")}
-                            for it in li["items"] if not is_adult(it["name"])]}
+                  "items": [keep(it, ("rank", "name", "by", "note", "url")) for it in li["items"] if ok(it["name"])]}
                  for li in c["lists"]]
         if lists := [li for li in lists if li["items"]]:
             cards.append({"field": c["field"], "title": c["title"], "basis": c["basis"], "period": c.get("period", ""),
                           "lists": lists})
     fields = list(dict.fromkeys(c["field"] for c in cards))
-    return {"generated_at": d["generated_at"], "country": d.get("country"), "fields": fields, "cards": cards}
+    rising = [keep(r, ("name", "by", "url", "field", "where", "signal", "move", "steps", "rank", "kind", "lists"))
+              for r in d.get("rising", []) if ok(r["name"])]
+    themes = [t | {"examples": [e for e in t["examples"] if ok(e)]} for t in d.get("themes", []) if ok(t["term"])]
+    segs = [g | {"only": [keep(it, ("rank", "name", "by", "url", "note")) for it in g["only"] if ok(it["name"])],
+                 "terms": [t for t in g["terms"] if ok(t["term"])]} for g in d.get("segments", [])]
+    w = d.get("world") or {}
+    world = {"countries": w.get("countries", []),
+             "shared": [keep(r, ("name", "by", "field", "countries", "rising_in")) for r in w.get("shared", []) if ok(r["name"])],
+             "local": [keep(r, ("rank", "name", "by", "url", "field", "where")) for r in w.get("local", []) if ok(r["name"])]}
+    return {"generated_at": d["generated_at"], "country": d.get("country"), "fields": fields, "rising": rising,
+            "themes": themes, "segments": [g for g in segs if g["only"] or g["terms"]], "world": world,
+            "compare": d.get("compare") or {}, "cards": cards}
 
 
 def public_attention(a: dict[str, Any]) -> dict[str, Any]:

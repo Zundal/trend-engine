@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from . import archive, publish
-from .config import export_langs
+from .config import export_langs, get_region
 from .health import Health
 from .service import TrendService
 from .store import utcnow
@@ -95,6 +95,7 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
     meta = svc.meta() | {"static": True, "generated_at": utcnow().isoformat(timespec="seconds")}
     meta["regions"] = [r for r in meta["regions"] if r["code"] in regions]
 
+    con_all: dict[str, dict] | None = None
     for code in regions:
         report = (await svc.engine.collect(code)).to_dict()
         write(f"report-{code}", publish.public_report(report))
@@ -157,7 +158,9 @@ async def export_site(svc: TrendService, out: Path, regions: list[str], archive_
             health.warn(f"[{code}] 유료 앱 순위 실패 — {str(e)[:160]}")
 
         try:  # 소비 트렌드: this country's sales lists (cached per list, last good result if one fails)
-            con = await svc.consumer(code)
+            if con_all is None:  # every country once, then compared with each other
+                con_all = await svc.consumer_all(regions)
+            con = con_all[get_region(code).country]
             write(f"consumer-{code}", publish.public_consumer(con))
             n_lists = sum(len(c["lists"]) for c in con["cards"])
             n_stale = sum(li["stale"] for c in con["cards"] for li in c["lists"])

@@ -44,6 +44,9 @@ class Board:
     period: str = ""  # 집계 기간 ("실시간", "일간", "주간" …)
     fetcher: str = ""  # key into FETCHERS for multi-step requests; "" = one plain request
     pace: float = 0.0  # seconds to wait before the next request to this site, if longer than the default
+    kind: str = "item"  # "item" = products/titles, "keyword" = a ranked list of shopping search words
+    age: int = 0  # the shoppers' age band this list is cut to (10, 20, 30 …), 0 = everyone
+    gender: str = ""  # "여성" / "남성" if the list is cut by gender
 
     @property
     def host(self) -> str:

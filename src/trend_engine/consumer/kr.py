@@ -46,8 +46,28 @@ def parse_snx(raw: str) -> list[Item]:
     return ranked(out)
 
 
+def parse_snx_kw(raw: str) -> list[Item]:
+    out = []
+    for k in json.loads(raw) or []:
+        n = int(num(k.get("rankFluctuation")) or 0)
+        note = {"NEW": "새로 진입", "SOAR": f"{n}계단 상승" if n else "급상승", "UP": f"{n}계단 상승" if n else "상승",
+                "DOWN": f"{-n}계단 하락" if n else "하락"}.get(k.get("status"))
+        out.append(item(k["rank"], k.get("title", ""), k.get("catNm2") or k.get("catNm1"), None, note))
+    return ranked(out)
+
+
+SNX_KW = ("https://snxbest.naver.com/api/v1/snxbest/keyword/rank?ageType={a}&categoryId=A"
+          "&sortType=KEYWORD_POPULAR&periodType=DAILY")
+# 구매 순위(PRODUCT_BUY)는 ageType 을 무시한다 (2026-11 확인: 13개 탭이 같은 목록). 연령·성별은 클릭 순위로만 나뉜다.
 SNX = ("https://snxbest.naver.com/api/v1/snxbest/product/rank?ageType={a}&categoryId={c}"
-       "&sortType=PRODUCT_BUY&periodType=DAILY")
+       "&sortType={s}&periodType=DAILY")
+def _age_gender(code: str) -> tuple[int, str]:
+    """'WOMEN_20' -> (20, '여성'), 'MEN_ALL' -> (0, '남성'), 'ALL' -> (0, '')."""
+    g = "여성" if code.startswith("WOMEN") else "남성" if code.startswith("MEN") else ""
+    a = code.rsplit("_", 1)[-1]
+    return (int(a) if a.isdigit() else 0), g
+
+
 SNX_AGES: tuple[tuple[str, str], ...] = (
     ("전체", "ALL"), ("여성", "WOMEN_ALL"), ("남성", "MEN_ALL"), ("10대 여성", "WOMEN_10"), ("10대 남성", "MEN_10"),
     ("20대 여성", "WOMEN_20"), ("20대 남성", "MEN_20"), ("30대 여성", "WOMEN_30"), ("30대 남성", "MEN_30"),
@@ -152,9 +172,10 @@ def parse_musinsa(raw: str) -> list[Item]:
 MUSINSA = ("https://api.musinsa.com/api2/hm/v5/pans/ranking/sections/199?storeCode=musinsa&categoryCode={c}"
            "&contentsId=&gf=A&ageBand={a}&period=DAILY")
 MUSINSA_HEADERS = (("Origin", "https://www.musinsa.com"), ("Referer", "https://www.musinsa.com/"))
-MUSINSA_AGES: tuple[tuple[str, str], ...] = (
-    ("전체", "AGE_BAND_ALL"), ("19세 이하", "AGE_BAND_MINOR"), ("20~24세", "AGE_BAND_20"), ("25~29세", "AGE_BAND_25"),
-    ("30~34세", "AGE_BAND_30"), ("35~39세", "AGE_BAND_35"), ("40세 이상", "AGE_BAND_40"),
+MUSINSA_AGES: tuple[tuple[str, str, int], ...] = (
+    ("전체", "AGE_BAND_ALL", 0), ("19세 이하", "AGE_BAND_MINOR", 10), ("20~24세", "AGE_BAND_20", 20),
+    ("25~29세", "AGE_BAND_25", 20), ("30~34세", "AGE_BAND_30", 30), ("35~39세", "AGE_BAND_35", 30),
+    ("40세 이상", "AGE_BAND_40", 40),
 )
 MUSINSA_CATS: tuple[tuple[str, str, str], ...] = (
     ("패션", "상의", "001"), ("패션", "아우터", "002"), ("패션", "바지", "003"), ("패션", "원피스·스커트", "100"),
@@ -411,14 +432,24 @@ def _cut_json(path: tuple[str, ...], n: int = 24):
 
 
 def _trim_musinsa(raw: str) -> str:
-    d = json.loads(raw)
+    """Only the fields the parsers read: the page modules carry tracking payloads 10x the size."""
     keep, n = [], 0
-    for m in d["data"]["modules"]:
-        if m.get("type") in ("THREECOLUMN", "RANKING_SEARCH") and n < 24:
-            keep.append(m)
-            n += len(m.get("items") or [1])
-    d["data"]["modules"] = keep
-    return json.dumps(d, ensure_ascii=False)
+    for m in json.loads(raw)["data"]["modules"]:
+        if n >= 24:
+            break
+        if m.get("type") == "RANKING_SEARCH":
+            keep.append({k: m.get(k) for k in ("type", "rank", "fluctuation", "title")}
+                        | {"onClick": {"url": (m.get("onClick") or {}).get("url")}})
+            n += 1
+        elif m.get("type") == "THREECOLUMN":
+            items = [{"type": it.get("type"), "id": it.get("id"),
+                      "info": {k: (it.get("info") or {}).get(k) for k in ("brandName", "productName", "finalPrice")},
+                      "image": {"rank": (it.get("image") or {}).get("rank"),
+                                "labels": [{"text": x.get("text")} for x in (it.get("image") or {}).get("labels") or []]}}
+                     for it in m.get("items") or []]
+            keep.append({"type": "THREECOLUMN", "items": items})
+            n += len(items)
+    return json.dumps({"data": {"modules": keep}}, ensure_ascii=False)
 
 
 def _trim_auction(raw: str) -> str:
@@ -450,7 +481,8 @@ def _trim_ridi(raw: str) -> str:
 
 
 TRIMS = {
-    "snx": _cut_json(("products",)), "11st": _cut_html('id="bestPrdList"', '<li id="thisClick_'),
+    "snx": _cut_json(("products",)), "snx_kw": lambda raw: json.dumps(json.loads(raw)[:24], ensure_ascii=False),
+    "11st": _cut_html('id="bestPrdList"', '<li id="thisClick_'),
     "auction": _trim_auction, "gift": _cut_json(("products",)),
     "musinsa": _trim_musinsa, "musinsa_kw": _trim_musinsa, "29cm": _cut_json(("data", "content")),
     "hwahae": _cut_json(("data", "details")), "kurly": _cut_json(("data",)),
@@ -463,13 +495,22 @@ def boards(country: str) -> list[Board]:
     if country != "KR":
         return []
     snx_h = (("Referer", "https://snxbest.naver.com/"),)
-    out = [Board(id=f"kr-shop-{a.lower()}", country="KR", field="종합 쇼핑", card="쇼핑 많이 산 상품", tab=tab,
-                 basis="포털 쇼핑에서 오늘 많이 구매한 상품 (연령·성별)", period="일간",
-                 url=SNX.format(a=a, c="A"), parser="snx", headers=snx_h)
-           for tab, a in SNX_AGES]
+    out = [Board(id="kr-shop-all", country="KR", field="종합 쇼핑", card="쇼핑 많이 산 상품", tab="전체",
+                 basis="포털 쇼핑에서 오늘 많이 구매한 상품", period="일간",
+                 url=SNX.format(a="ALL", c="A", s="PRODUCT_BUY"), parser="snx", headers=snx_h)]
+    out += [Board(id=f"kr-shopview-{a.lower()}", country="KR", field="종합 쇼핑", card="쇼핑 많이 본 상품", tab=tab,
+                  basis="포털 쇼핑에서 오늘 많이 눌러 본 상품 (연령·성별 — 구매 순위는 연령별로 나뉘지 않아요)",
+                  period="일간", url=SNX.format(a=a, c="A", s="PRODUCT_CLICK"), parser="snx", headers=snx_h,
+                  age=_age_gender(a)[0], gender=_age_gender(a)[1])
+            for tab, a in SNX_AGES if not a.endswith("_ALL")]  # 클릭 순위엔 성별 전체 탭이 비어 온다
+    out += [Board(id=f"kr-shopkw-{a.lower()}", country="KR", field="종합 쇼핑", card="쇼핑 인기 키워드", tab=tab,
+                  basis="포털 쇼핑에서 오늘 많이 찾은 쇼핑 키워드 (연령·성별)", period="일간",
+                  url=SNX_KW.format(a=a), parser="snx_kw", headers=snx_h, kind="keyword", age=_age_gender(a)[0],
+                  gender=_age_gender(a)[1])
+            for tab, a in SNX_AGES]
     out += [Board(id=f"kr-shop-{c}", country="KR", field=fld, card="쇼핑 많이 산 상품", tab=tab,
                   basis="포털 쇼핑에서 오늘 많이 구매한 상품", period="일간",
-                  url=SNX.format(a="ALL", c=c), parser="snx", headers=snx_h)
+                  url=SNX.format(a="ALL", c=c, s="PRODUCT_BUY"), parser="snx", headers=snx_h)
             for fld, tab, c in SNX_CATS]
     out += [Board(id=f"kr-open-{n}", country="KR", field=fld, card="오픈마켓 베스트", tab=tab,
                   basis="대형 오픈마켓 베스트 (판매·클릭 반영)", period="실시간",
@@ -487,8 +528,8 @@ def boards(country: str) -> list[Board]:
             for fld, tab, n in GIFT_TABS]
     out += [Board(id=f"kr-fashion-age-{a.lower()}", country="KR", field="패션", card="패션 플랫폼 연령대별 랭킹",
                   tab=tab, basis="패션 플랫폼 오늘 판매·조회 랭킹 (연령대별)", period="일간",
-                  url=MUSINSA.format(c="000", a=a), parser="musinsa", headers=MUSINSA_HEADERS)
-            for tab, a in MUSINSA_AGES]
+                  url=MUSINSA.format(c="000", a=a), parser="musinsa", headers=MUSINSA_HEADERS, age=age)
+            for tab, a, age in MUSINSA_AGES]
     out += [Board(id=f"kr-fashion-{c}", country="KR", field=fld, card="패션 플랫폼 분야별 랭킹", tab=tab,
                   basis="패션 플랫폼 오늘 판매·조회 랭킹", period="일간",
                   url=MUSINSA.format(c=c, a="AGE_BAND_ALL"), parser="musinsa", headers=MUSINSA_HEADERS)
@@ -496,13 +537,14 @@ def boards(country: str) -> list[Board]:
     out += [Board(id="kr-fashion-keywords", country="KR", field="패션", card="패션 인기 검색어", tab="지금",
                   basis="패션 플랫폼에서 많이 찾은 검색어", period="실시간",
                   url="https://api.musinsa.com/api2/hm/v5/pans/ranking?storeCode=musinsa&subPan=keyword",
-                  parser="musinsa_kw", headers=MUSINSA_HEADERS)]
+                  parser="musinsa_kw", headers=MUSINSA_HEADERS, kind="keyword")]
     out += [Board(id=f"kr-select-{c}", country="KR", field=fld, card="디자이너 편집숍 베스트", tab=tab,
                   basis="온라인 편집숍 하루 판매 베스트", period="일간", url=CM29.format(c=c), parser="29cm")
             for fld, tab, c in CM29_CATS]
     out += [Board(id=f"kr-beauty-{d}", country="KR", field="뷰티", card=f"화장품 랭킹 · {grp}", tab=tab,
                   basis="화장품 리뷰 앱 랭킹 (리뷰·조회 반영, " + ("급상승" if grp == "급상승" else "연령대별") + ")",
-                  period="주간", url=HWAHAE.format(d=d), parser="hwahae", ttl=timedelta(hours=12))
+                  period="주간", url=HWAHAE.format(d=d), parser="hwahae", ttl=timedelta(hours=12),
+                  age=int(num(tab) or 0) if grp == "연령대별" else 0)
             for grp, tab, d in HWAHAE_TABS]
     out += [Board(id=f"kr-grocery-{c or 'all'}", country="KR", field="식품", card="새벽배송 장보기 베스트", tab=tab,
                   basis="신선식품 장보기 판매 베스트", period="실시간",
@@ -541,7 +583,7 @@ def boards(country: str) -> list[Board]:
     return out
 
 
-PARSERS = {"snx": parse_snx, "11st": parse_11st, "auction": parse_auction, "gift": parse_gift,
+PARSERS = {"snx": parse_snx, "snx_kw": parse_snx_kw, "11st": parse_11st, "auction": parse_auction, "gift": parse_gift,
            "musinsa": parse_musinsa, "musinsa_kw": parse_musinsa_kw, "29cm": parse_29cm, "hwahae": parse_hwahae,
            "kurly": parse_kurly, "yes24": parse_yes24, "aladin": parse_aladin, "ridi": parse_ridi,
            "kobis": parse_kobis, "tickets": parse_tickets}

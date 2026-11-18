@@ -494,12 +494,35 @@ details.fine ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: v
   #paid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--rows), auto); grid-auto-columns: minmax(0, 1fr); column-gap: 40px; }
 }
 /* 소비: 분야별 1위 타일 + 분야별 순위 카드 */
-.con-tops { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 12px; }
-.con-top { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: var(--panel); border: 0; border-radius: 14px; box-shadow: 0 1px 0 var(--line); text-align: left; cursor: pointer; min-width: 0; }
-.con-top:hover { box-shadow: 0 0 0 1px var(--edge); }
-.con-top .kicker { font: 600 12px var(--mono); color: var(--accent-ink); }
-.con-top b { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; word-break: keep-all; }
-.con-top small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.con-rise { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 0 28px; }
+.con-rise li { display: flex; gap: 12px; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--hair); min-width: 0; }
+.con-rise li { align-items: flex-start; }
+.con-rise .sig { flex: none; width: 60px; display: flex; flex-direction: column; gap: 1px; font: 600 13px var(--mono); color: var(--accent-ink); }
+.con-rise .sig small { font: 500 12px var(--mono); color: var(--muted); }
+.con-rise .sig.new { color: var(--blue-ink); }
+.con-rise .what { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.con-rise .what a, .con-rise .what b { color: var(--ink); text-decoration: none; font-weight: 500; font-size: 15px; word-break: keep-all; overflow-wrap: anywhere; }
+.con-rise .what a:hover { text-decoration: underline; }
+.con-rise .what small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.con-themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+.con-theme { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--panel); border-radius: 14px; box-shadow: 0 1px 0 var(--line); min-width: 0; }
+.con-theme .t { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.con-theme .t b { font-size: 18px; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.con-theme .t i { font-style: normal; font-size: 13px; color: var(--muted); }
+.con-theme .m { font: 500 12px var(--mono); color: var(--muted); }
+.con-theme .bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.con-theme .bar span { display: block; height: 100%; background: var(--accent); }
+.con-theme ul { list-style: none; margin: 0; padding: 0; font-size: 13px; color: var(--ink2); display: flex; flex-direction: column; gap: 2px; }
+.con-theme ul li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trend-up { color: var(--accent-ink); font: 600 12px var(--mono); }
+.trend-down { color: var(--blue-ink); font: 600 12px var(--mono); }
+.trend-new { color: var(--accent-ink); font: 600 12px var(--mono); }
+.con-seg .terms { display: flex; flex-wrap: wrap; gap: 6px; }
+.con-shared li { flex-direction: column; gap: 6px; }
+.con-shared .who { display: flex; flex-wrap: wrap; gap: 4px; }
+.con-shared .who .tag.up { background: var(--accent-tag); color: var(--accent-deep); }
+.con-shared .nm { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.con-shared .nm b { font-weight: 600; overflow-wrap: anywhere; word-break: keep-all; flex: 1; min-width: 0; }
 .con-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); gap: 20px; align-items: start; }
 .con-field-h { grid-column: 1 / -1; margin: 16px 0 -6px; font-size: 17px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
 .con-field-h:first-child { margin-top: 0; }
@@ -573,8 +596,9 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   #con-fields, .con-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }  /* 칩이 순위표를 화면 밖으로 밀지 않게 */
   #con-fields { margin: 0 -16px; padding: 0 16px; }
   #con-fields .cchip, .con-tabs .cchip { flex: none; }
-  .con-tops { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .con-top { padding: 12px 14px; }
+  #con-seg-pick { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+  #con-seg-pick .cchip { flex: none; }
+  .con-themes { grid-template-columns: minmax(0, 1fr); }
   .card, .card.sm { padding: 18px 16px; gap: 12px; }
   .card h3 { font-size: 16px; }
   .gl-brief { padding: 2px 16px; }
@@ -649,7 +673,7 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
       <a class="tab" id="tab-youth" href="#youth" data-view="youth"><b>10·20대</b><span>30대 이상보다 유독 찾는 것</span></a>
       <a class="tab" id="tab-diffusion" href="#diffusion" data-view="diffusion"><b>세대 확산</b><span>윗세대로 번지나</span></a>
       <a class="tab" id="tab-country" href="#country" data-view="country"><b>나라별</b><span>지금 뜨는 이슈</span></a>
-      <a class="tab" id="tab-consumer" href="#consumer" data-view="consumer"><b>소비</b><span>나라별 많이 사는 것</span></a>
+      <a class="tab" id="tab-consumer" href="#consumer" data-view="consumer"><b>소비</b><span>나라별 뜨는 소비</span></a>
       <a class="tab" id="tab-age" href="#age" data-view="age"><b>전체 연령</b><span>연령·성별 비교</span></a>
     </nav>
     <div class="stamp"><i class="dot" aria-hidden="true"></i><span id="gen"></span><button type="button" id="refresh" hidden>새로 수집</button></div>
@@ -968,21 +992,43 @@ table.heat { width: 100%; min-width: 760px; border-collapse: separate; border-sp
   <div class="intro">
     <section class="hero">
       <div class="hero-t">
-        <p class="eyebrow">쇼핑몰 베스트 · 판매량 · 매출 · 관객 순위를 분야별로</p>
-        <h1 id="con-title">지금 많이 사는 것</h1>
+        <p class="eyebrow" id="con-eyebrow">판매·매출·관객 순위의 변화로 읽는 소비 흐름</p>
+        <h1 id="con-title">지금 뜨는 소비</h1>
       </div>
     </section>
     <div class="chips" id="con-regions" role="group" aria-label="나라"></div>
     <div class="cchips" id="con-fields" role="group" aria-label="소비 분야"></div>
   </div>
 
-  <section class="sec" aria-labelledby="con-top-h" id="sec-con-top">
-    <header class="sec-h"><div class="sec-t"><h2 id="con-top-h">분야별 1위</h2><p>분야마다 대표 목록의 1위예요. 누르면 그 분야 순위로 가요</p></div></header>
-    <div class="con-tops" id="con-tops"></div>
+  <section class="sec" aria-labelledby="con-rise-h" id="sec-con-rise">
+    <header class="sec-h"><div class="sec-t"><h2 id="con-rise-h">뜨는 것</h2><p id="con-rise-sub">새로 순위에 들어왔거나 빠르게 오른 것</p></div></header>
+    <ol class="con-rise" id="con-rise"><li class="empty">불러오는 중…</li></ol>
+    <button type="button" class="ghost con-more" id="con-rise-more" hidden></button>
+  </section>
+
+  <section class="sec" aria-labelledby="con-theme-h" id="sec-con-theme">
+    <header class="sec-h"><div class="sec-t"><h2 id="con-theme-h">소비 키워드</h2><p id="con-theme-sub">여러 순위표에 겹쳐 나오는 단어와 쇼핑 인기 키워드</p></div></header>
+    <div class="con-themes" id="con-themes"></div>
+    <button type="button" class="ghost con-more" id="con-theme-more" hidden></button>
+  </section>
+
+  <section class="sec" aria-labelledby="con-seg-h" id="sec-con-seg">
+    <header class="sec-h"><div class="sec-t"><h2 id="con-seg-h">세대·성별로 다른 것</h2><p>같은 순위표의 연령·성별 탭끼리 견줬어요. 윗세대(또는 다른 성별) 순위엔 없는 것만 골랐어요</p></div>
+      <div class="cchips" id="con-seg-pick" role="group" aria-label="연령·성별"></div></header>
+    <div class="con-grid" id="con-segs"></div>
+    <p class="note">순위에 오른 상품끼리 비교한 것이에요. 그 연령이 산 양이나 구매자 비율이 아니에요.</p>
+  </section>
+
+  <section class="sec" aria-labelledby="con-world-h" id="sec-con-world">
+    <header class="sec-h"><div class="sec-t"><h2 id="con-world-h">나라 간 비교</h2><p id="con-world-sub">같은 앱·게임·영화·음반이 여러 나라 순위에 동시에 오른 것과, 이 나라에서만 오른 것</p></div></header>
+    <div class="grid2">
+      <section class="card sm" aria-labelledby="con-shared-h"><div class="card-h"><h3 id="con-shared-h">여러 나라에서 동시에</h3><span>나라별 최고 순위 · 주황은 그 나라에서 오르는 중</span></div><ol class="list con-shared" id="con-shared"></ol></section>
+      <section class="card sm" aria-labelledby="con-local-h"><div class="card-h"><h3 id="con-local-h">이 나라에서만</h3><span id="con-local-sub">다른 나라들의 같은 순위표 10위 안에 없는 것</span></div><ol class="list" id="con-local"></ol></section>
+    </div>
   </section>
 
   <section class="sec" aria-labelledby="con-h">
-    <header class="sec-h"><div class="sec-t"><h2 id="con-h">분야별 순위</h2><p>목록마다 그 나라에서 실제로 팔린 양·매출·관객 수로 줄 세웠어요. 카드 안 칩으로 세부 분야를 바꿔요</p></div></header>
+    <header class="sec-h"><div class="sec-t"><h2 id="con-h">분야별 순위</h2><p>위 흐름을 읽어 낸 원래 순위표예요. 카드 안 칩으로 세부 분야를 바꿔요</p></div></header>
     <div class="con-grid" id="con-cards"><p class="empty">불러오는 중…</p></div>
     <p class="note" id="con-note"></p>
   </section>
@@ -1889,13 +1935,18 @@ async function renderPaid() {
 }
 
 // ---- 소비 트렌드 ----------------------------------------------------------------------
-// 나라를 바꿔도 보던 분야·카드 칩을 그대로 둔다 — 같은 분야를 나라끼리 견주려고 보는 표라서.
+// 순위표를 '변화'로 읽는다: 뜨는 것 · 소비 키워드 · 세대·성별 차이 · 나라 간 비교, 그 아래 근거 순위표.
+// 나라를 바꿔도 보던 분야·칩은 그대로 둔다 — 같은 분야를 나라끼리 견주려고 보는 표라서.
 const CON = {};
 let conField = "";            // "" = 전체 분야
+let conSeg = "";              // 세대·성별 칩 ("10대" · "20대" · "여성" · "남성")
+let conRiseAll = false, conThemeAll = false;
 const CON_TAB = {};           // 카드 제목 → 고른 칩
 const CON_OPEN = new Set();   // 10위 넘게 펼친 카드 제목
-const CON_SHOW = 10;
+const CON_SHOW = 10, RISE_SHOW = 12;
 const conCountry = () => region.split("-")[0];
+const conName = (code) => countries().find((r) => r.code === code)?.name || code;
+const inField = (f) => !conField || f === conField;
 function renderConRegions() {
   const code = conCountry();
   $("#con-regions").innerHTML = countries().filter((r) => !r.code.includes("-"))
@@ -1906,13 +1957,14 @@ async function loadConsumer() {
   renderConRegions();
   setStamp();
   if (!CON[code]) {
-    $("#con-cards").innerHTML = `<p class="empty">불러오는 중…</p>`;
-    $("#con-tops").innerHTML = ""; $("#con-fields").innerHTML = ""; $("#con-note").textContent = "";
+    for (const id of ["#con-cards", "#con-themes", "#con-segs", "#con-shared", "#con-local"]) $(id).innerHTML = "";
+    $("#con-rise").innerHTML = `<li class="empty">불러오는 중…</li>`;
+    $("#con-fields").innerHTML = ""; $("#con-note").textContent = "";
   }
   try {
     CON[code] ??= await api(`api/consumer?region=${code}`);
   } catch (e) {
-    if (code === conCountry()) $("#con-cards").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
+    if (code === conCountry()) $("#con-rise").innerHTML = `<li class="empty">${esc(e.message)}</li>`;
     return;
   }
   if (code === conCountry() && view === "consumer") renderConsumer();
@@ -1926,8 +1978,7 @@ function conCard(c, i) {
   const rows = (open ? li.items : li.items.slice(0, CON_SHOW)).map((it, j) => {
     const sub = [it.by, it.note].filter(Boolean).join(" · ");
     return `<li${it.rank <= 3 ? ' class="podium"' : ""}><span class="n">${it.rank}</span><span class="con-name">${it.url
-      ? `<a href="#" data-u="${j}">${esc(it.name)}</a>` : `<b>${esc(it.name)}</b>`}${sub ? `<small>${esc(sub)}</small>` : ""}</span>${
-      it.price ? `<small>${esc(it.price)}</small>` : ""}</li>`;
+      ? `<a href="#" data-u="${j}">${esc(it.name)}</a>` : `<b>${esc(it.name)}</b>`}${sub ? `<small>${esc(sub)}</small>` : ""}</span></li>`;
   }).join("");
   const more = li.items.length > CON_SHOW
     ? `<button type="button" class="ghost con-more" data-more aria-expanded="${open}">${open ? `${CON_SHOW}위까지만 보기` : `${li.items.length}위까지 보기`}</button>` : "";
@@ -1938,22 +1989,88 @@ function conCard(c, i) {
     <div class="card-h"><h3>${esc(c.title)}</h3><span>${esc([c.basis, c.period].filter(Boolean).join(" · "))}</span></div>
     ${tabs}<ol class="list">${rows}</ol>${more}${foot ? `<p class="note">${foot}</p>` : ""}</section>`;
 }
+const conLink = (name, url, attr) => url ? `<a href="#" ${attr}>${esc(name)}</a>` : `<b>${esc(name)}</b>`;
+function renderConRise(d) {
+  const rows = (d.rising || []).map((r, i) => ({ r, i })).filter(({ r }) => inField(r.field));
+  const shown = conRiseAll ? rows : rows.slice(0, RISE_SHOW);
+  const mark = (r) => r.move === "new" ? "NEW" : r.move === "hot" ? "급상승" : r.steps ? `▲${r.steps}` : "▲";
+  $("#con-rise").innerHTML = shown.map(({ r, i }) => `<li><span class="sig${r.move === "new" ? " new" : ""}" title="${esc(r.signal)}">${mark(r)}<small>${r.rank}위</small></span>
+    <span class="what">${conLink(r.name, r.url, `data-r="${i}"`)}<small>${esc([r.by, r.where, r.lists > 1 ? `목록 ${r.lists}곳` : ""].filter(Boolean).join(" · "))}</small></span></li>`).join("")
+    || `<li class="empty">${conField ? "이 분야는" : "이 나라는"} 지금 새로 들어오거나 크게 오른 것이 없어요</li>`;
+  const more = $("#con-rise-more");
+  more.hidden = rows.length <= RISE_SHOW;
+  more.textContent = conRiseAll ? "접기" : `더보기 (${rows.length}개)`;
+  const days = d.compare?.rising;
+  $("#con-rise-sub").textContent = "새로 순위에 들어왔거나 빠르게 오른 것 · 순위표가 적어 준 변동(지난주 대비 등)" +
+    (days ? ` + ${days === 1 ? "어제" : `${days}일 전`} 같은 순위표 대비` : " · 우리 기록과의 비교는 내일부터 더해져요");
+}
+function trendBadge(t) {
+  if (!t) return "";
+  if (t.move === "new") return `<span class="trend-new">새로</span>`;
+  if (t.move === "up") return `<span class="trend-up">▲ ${t.pct}%</span>`;
+  if (t.move === "down") return `<span class="trend-down">▼ ${Math.abs(t.pct)}%</span>`;
+  return "";
+}
+function renderConThemes(d) {
+  const rows = (d.themes || []).filter((t) => !conField || t.fields.includes(conField));
+  const top = Math.max(...rows.map((t) => t.score), 1);
+  $("#sec-con-theme").hidden = !rows.length;
+  const more = $("#con-theme-more");
+  more.hidden = rows.length <= RISE_SHOW;
+  more.textContent = conThemeAll ? "접기" : `더보기 (${rows.length}개)`;
+  $("#con-themes").innerHTML = (conThemeAll ? rows : rows.slice(0, RISE_SHOW)).map((t) => `<article class="con-theme">
+    <div class="t"><b>${esc(t.term)}</b>${t.also.length ? `<i>${esc(t.also.join(" · "))}</i>` : ""}${trendBadge(t.trend)}</div>
+    <div class="bar" aria-hidden="true"><span style="width:${Math.round(100 * t.score / top)}%"></span></div>
+    <span class="m">${esc([t.keyword ? "쇼핑 검색어" : "", t.items ? `상품 ${t.items}개` : "", `목록 ${t.lists}곳`, t.fields.join("·")].filter(Boolean).join(" · "))}</span>
+    ${t.who?.length ? `<span class="m">찾는 사람 ${esc(t.who.map((w) => `${w.tab} ${w.rank}위`).join(" · "))}</span>` : ""}
+    ${t.examples.length ? `<ul>${t.examples.slice(0, 2).map((e) => `<li title="${esc(e)}">${esc(e)}</li>`).join("")}</ul>` : ""}</article>`).join("");
+  const days = d.compare?.themes;
+  $("#con-theme-sub").textContent = "여러 순위표에 겹쳐 나오는 단어와 쇼핑 인기 키워드 · 막대는 위 순위에 많이 나올수록 길어요" +
+    (days ? ` · 변화는 ${days}일 전 대비` : " · 변화는 일주일 기록이 쌓이면 보여요");
+}
+const segGroup = (g) => g.age ? `${g.age}대` : g.gender;
+function renderConSegs(d) {
+  const segs = (d.segments || []).map((g, i) => ({ g, i })).filter(({ g }) => inField(g.field));
+  const groups = [...new Set(segs.map(({ g }) => segGroup(g)))];
+  $("#sec-con-seg").hidden = !groups.length;
+  if (!groups.length) return;
+  if (!groups.includes(conSeg)) conSeg = groups[0];
+  $("#con-seg-pick").innerHTML = groups.map((k) => `<button type="button" class="cchip" aria-pressed="${k === conSeg}" data-g="${esc(k)}">${esc(k)}</button>`).join("");
+  $("#con-segs").innerHTML = segs.filter(({ g }) => segGroup(g) === conSeg).map(({ g, i }) => `
+    <section class="card sm con-seg" aria-label="${esc(g.label)} ${esc(g.list)}">
+      <div class="card-h"><h3>${esc(g.label)}</h3><span>${esc(g.list)} · ${esc(g.vs)} 순위엔 없는 것</span></div>
+      ${g.terms.length ? `<div class="terms">${g.terms.map((t) => `<span class="tag" title="${t.older === "없음" ? `${esc(g.vs)} 목록엔 없는 단어` : `${esc(g.vs)} 목록보다 훨씬 많이 나오는 단어`}">${esc(t.term)} ${t.items}</span>`).join("")}</div>` : ""}
+      <ol class="list">${g.only.slice(0, 8).map((it, j) => `<li><span class="n">${it.rank}</span><span class="con-name">${conLink(it.name, it.url, `data-s="${i}" data-j="${j}"`)}${it.by ? `<small>${esc(it.by)}</small>` : ""}</span></li>`).join("")
+        || `<li class="empty">윗세대와 거의 같은 것을 보고 있어요</li>`}</ol>
+    </section>`).join("");
+}
+function renderConWorld(d) {
+  const w = d.world || { shared: [], local: [], countries: [] };
+  const code = conCountry();
+  const shared = (w.shared || []).filter((r) => inField(r.field) && r.countries[code]);
+  const order = [code, ...(w.countries || []).filter((c) => c !== code)];
+  $("#con-shared").innerHTML = shared.slice(0, 12).map((r) => `<li><span class="nm"><b>${esc(r.name)}</b><small>${esc(r.field)}</small></span>
+    <span class="who">${order.filter((c) => r.countries[c]).map((c) =>
+      `<span class="tag${r.rising_in.includes(c) ? " up" : ""}" title="${esc(r.countries[c].where)}">${esc(conName(c))} ${r.countries[c].rank}위</span>`).join("")}</span></li>`).join("")
+    || `<li class="empty">${(w.countries || []).length < 3 ? "다른 나라 순위가 아직 모이지 않았어요" : "이 나라 순위와 겹치는 것이 없어요"}</li>`;
+  const local = (w.local || []).map((r, i) => ({ r, i })).filter(({ r }) => inField(r.field));
+  $("#con-local").innerHTML = local.slice(0, 12).map(({ r, i }) => `<li><span class="n">${r.rank}</span><span class="con-name">${conLink(r.name, r.url, `data-l="${i}"`)}<small>${esc(r.where)}</small></span></li>`).join("")
+    || `<li class="empty">같은 순위표를 가진 다른 나라가 적어 견줄 게 없어요</li>`;
+  $("#con-local-h").textContent = `${conName(code)}에서만`;
+  $("#sec-con-world").hidden = !shared.length && !local.length;
+}
 function renderConsumer() {
   const code = conCountry(), d = CON[code];
   if (!d) return;
-  const name = countries().find((r) => r.code === code)?.name || code;
-  $("#con-title").innerHTML = `<em>${esc(name)}</em>에서 지금 많이 사는 것`;
+  $("#con-title").innerHTML = `<em>${esc(conName(code))}</em>에서 지금 뜨는 소비`;
   const fields = d.fields || [];
   if (conField && !fields.includes(conField)) conField = "";
   writeHash();
   const count = (f) => d.cards.filter((c) => !f || c.field === f).reduce((n, c) => n + c.lists.length, 0);
   $("#con-fields").innerHTML = (fields.length ? ["", ...fields] : []).map((f) =>
     `<button type="button" class="cchip" aria-pressed="${f === conField}" data-f="${esc(f)}">${esc(f || "전체")}<span class="k">${count(f)}</span></button>`).join("");
-  // 분야별 1위: 분야의 첫 카드 · 첫 목록 1위 (카드 순서 = 그 분야를 가장 넓게 보는 목록 먼저)
-  const tops = fields.map((f) => { const c = d.cards.find((x) => x.field === f); return { f, c, it: c.lists[0].items[0] }; });
-  $("#con-tops").innerHTML = tops.map(({ f, c, it }) => `<button type="button" class="con-top" data-f="${esc(f)}">
-    <span class="kicker">${esc(f)}</span><b>${esc(it.name)}</b><small>${esc([it.by, c.title].filter(Boolean).join(" · "))}</small></button>`).join("");
-  $("#sec-con-top").hidden = !!conField || !tops.length;
+  $("#con-eyebrow").textContent = `판매·매출·관객 순위표 ${count("")}개에서 읽은 흐름 — 무엇이 새로 들어오고, 오르고, 누가 찾는지`;
+  renderConRise(d); renderConThemes(d); renderConSegs(d); renderConWorld(d);
   let html = "", last = "";
   d.cards.forEach((c, i) => {
     if (conField && c.field !== conField) return;
@@ -2568,15 +2685,31 @@ function renderTransfer() {
   $("#con-regions").onclick = (e) => {
     const b = e.target.closest("[data-code]"); if (!b) return;
     region = b.dataset.code; try { localStorage.setItem("te.region", region); } catch (_) {}
-    renderRegions(); writeHash(); showAll = false; ccat = ""; loadConsumer();
+    renderRegions(); writeHash(); showAll = false; ccat = ""; conRiseAll = false; loadConsumer();
   };
-  const pickField = (e) => {
+  $("#con-fields").onclick = (e) => {
     const b = e.target.closest("[data-f]"); if (!b) return;
-    conField = b.dataset.f; writeHash(); renderConsumer();
-    if (b.classList.contains("con-top")) $("#con-h").scrollIntoView({ behavior: "smooth", block: "start" });
+    conField = b.dataset.f; conRiseAll = conThemeAll = false; writeHash(); renderConsumer();
   };
-  $("#con-fields").onclick = pickField;
-  $("#con-tops").onclick = pickField;
+  const conOpen = (url) => { if (url) window.open(url, "_blank", "noopener"); };
+  $("#con-rise").onclick = (e) => {
+    const a = e.target.closest("[data-r]"); if (!a) return;
+    e.preventDefault(); conOpen(CON[conCountry()]?.rising[+a.dataset.r]?.url);
+  };
+  $("#con-rise-more").onclick = () => { conRiseAll = !conRiseAll; renderConRise(CON[conCountry()]); };
+  $("#con-theme-more").onclick = () => { conThemeAll = !conThemeAll; renderConThemes(CON[conCountry()]); };
+  $("#con-seg-pick").onclick = (e) => {
+    const b = e.target.closest("[data-g]"); if (!b) return;
+    conSeg = b.dataset.g; renderConSegs(CON[conCountry()]);
+  };
+  $("#con-segs").onclick = (e) => {
+    const a = e.target.closest("[data-s]"); if (!a) return;
+    e.preventDefault(); conOpen(CON[conCountry()]?.segments[+a.dataset.s]?.only[+a.dataset.j]?.url);
+  };
+  $("#con-local").onclick = (e) => {
+    const a = e.target.closest("[data-l]"); if (!a) return;
+    e.preventDefault(); conOpen(CON[conCountry()]?.world?.local[+a.dataset.l]?.url);
+  };
   $("#con-cards").onclick = (e) => {
     const card = e.target.closest("[data-ci]"); if (!card) return;
     const c = CON[conCountry()]?.cards[+card.dataset.ci]; if (!c) return;

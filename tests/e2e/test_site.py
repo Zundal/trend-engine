@@ -359,13 +359,26 @@ def test_paid_app_rank_by_country_and_category(page, site):
 
 def test_consumer_tab_by_country_and_field(page, site):
     page.goto(site + "#consumer/KR")
-    page.wait_for_selector(".con-card li")
+    page.wait_for_selector("#con-rise li .sig")
     assert page.locator(".tab[aria-current=page] b").inner_text() == "소비"
-    assert "대한민국" in page.locator("#con-title").inner_text()
+    assert "대한민국" in page.locator("#con-title").inner_text() and "뜨는 소비" in page.locator("#con-title").inner_text()
     fields = page.locator("#con-fields [data-f]").all_inner_texts()
     assert fields[0].startswith("전체") and len(fields) >= 2
-    assert page.locator("#con-tops .con-top").count() == len(fields) - 1  # one top item per field
-    # 앱 매출: the card's chips switch the list, and the choice survives a country switch
+    # 01 뜨는 것 · 02 소비 키워드 · 03 세대·성별 · 04 나라 간 비교 · 05 근거 순위표
+    assert page.locator("#con-rise li").count() == 12 and not page.locator("#con-rise-more").is_hidden()
+    page.locator("#con-rise-more").click()
+    assert page.locator("#con-rise li").count() > 12
+    assert page.locator("#con-themes .con-theme").count() == 12
+    page.locator("#con-theme-more").click()
+    assert page.locator("#con-themes .con-theme").count() > 12
+    seg = page.locator("#con-seg-pick [data-g]").all_inner_texts()
+    assert {"10대", "20대"} <= set(seg)
+    page.locator('#con-seg-pick [data-g="20대"]').click()
+    assert all(t.startswith("20") for t in page.locator("#con-segs .con-seg h3").all_inner_texts())
+    assert page.locator("#con-shared li .tag").count() >= 3  # one item, several countries' ranks
+    assert "대한민국에서만" in page.locator("#con-local-h").inner_text()
+    assert not page.locator(".con-card").first.locator("li > small").count()  # no price column any more
+    # 근거 카드: chips switch the list, 10 → 20 rows
     card = page.locator('.con-card[aria-label="앱 매출 순위"]')
     first = card.locator("li a").first.inner_text()
     card.locator('[data-t="게임"]').click()
@@ -374,16 +387,18 @@ def test_consumer_tab_by_country_and_field(page, site):
     assert page.locator('.con-card[aria-label="앱 매출 순위"] li').count() == 10  # top 10 first …
     page.locator('.con-card[aria-label="앱 매출 순위"] [data-more]').click()
     assert page.locator('.con-card[aria-label="앱 매출 순위"] li').count() == 20  # … then all 20
-    # a field chip narrows the cards and lands in the URL
+    # a field chip narrows every section and lands in the URL
     page.locator('#con-fields [data-f="앱 결제"]').click()
     page.wait_for_function("decodeURIComponent(location.hash) === '#consumer/KR/앱 결제'")
     assert set(page.locator(".con-card h3").all_inner_texts()) == {"앱 매출 순위"}
-    assert page.locator("#sec-con-top").is_hidden()
+    assert page.locator("#sec-con-seg").is_hidden()  # no age lists for apps
+    assert all("앱 결제" in t for t in page.locator("#con-shared li .nm small").all_inner_texts())
     page.locator('#con-regions [data-code="US"]').click()
     page.wait_for_function("document.querySelector('#con-title').textContent.includes('미국')")
     assert page.locator('#con-fields [data-f="앱 결제"]').get_attribute("aria-pressed") == "true"
     page.locator('#con-fields [data-f=""]').click()
     page.wait_for_function("document.querySelectorAll('.con-field-h').length >= 2")  # US: more than one field
+    assert page.locator("#sec-con-seg").is_hidden()  # age/gender lists are Korea's
     assert "KST" in page.locator("#con-note").inner_text()
     assert not page.errors, page.errors
 

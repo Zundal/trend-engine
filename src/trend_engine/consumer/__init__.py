@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -26,11 +26,11 @@ from ..config import Settings
 from ..engine import make_client
 from ..sources.base import SourceError, TransientError, get_text_retry
 from ..store import Store, utcnow
-from . import common, jp, kr, twvn, usgb
+from . import common, jp, kr, trends, twvn, usgb
 from .base import BROWSER_UA, FIELDS, LIMIT, Board, Fetcher, Item, Parser, clean, compact, item, man, money, ranked
 
 __all__ = ["BOARDS", "FIELDS", "LIMIT", "PARSERS", "Board", "Item", "clean", "collect", "compact", "item", "man",
-           "money", "ranked", "boards_for", "doctor", "record"]
+           "money", "ranked", "boards_for", "doctor", "record", "world"]
 
 PACE_SECONDS = 0.7  # between requests to the same site
 STALE_FOR = timedelta(days=3)  # a failed list shows its last good result this long, marked stale
@@ -138,9 +138,30 @@ def _offline(settings: Settings, boards: list[Board]) -> dict[str, dict]:
     return out
 
 
-async def collect(settings: Settings, store: Store, country: str) -> dict[str, Any]:
-    """Every list of this country: fresh from cache/upstream, or last good result (stale) if it failed."""
+SNAP_KEEP = timedelta(days=14)
+
+
+def _kst_day() -> date:
+    return (utcnow() + timedelta(hours=9)).date()
+
+
+def _snap_key(country: str, day: date) -> str:
+    return f"consumer-snap:{country}:{day.isoformat()}"
+
+
+def _snapshot_before(store: Store, country: str, today: date, lo: int, hi: int) -> tuple[dict | None, int | None]:
+    """The most recent snapshot between `lo` and `hi` days before today."""
+    for d in range(lo, hi + 1):
+        if snap := store.cache_get(_snap_key(country, today - timedelta(days=d)), SNAP_KEEP + timedelta(days=1)):
+            return snap, d
+    return None, None
+
+
+async def collect(settings: Settings, store: Store, country: str, fetch: bool = True) -> dict[str, Any]:
+    """Every list of this country — fresh from cache/upstream, or last good result (stale) if it failed —
+    and the trend reading of them (뜨는 것 · 소비 키워드 · 세대·성별 차이). fetch=False reads the cache only."""
     boards = boards_for(country)
+    country = country.upper()
     lists: dict[str, dict] = {}
     errors: list[str] = []
     if settings.offline:
@@ -150,6 +171,8 @@ async def collect(settings: Settings, store: Store, country: str) -> dict[str, A
         for b in boards:
             if hit := store.cache_get(_key(b), b.ttl):
                 lists[b.id] = hit
+            elif not fetch:
+                continue
             elif store.cache_get(_block_key(b.host), BLOCK_REST) is not None:
                 errors.append(f"{b.id}: resting (site blocked recently)")
             else:
@@ -160,8 +183,26 @@ async def collect(settings: Settings, store: Store, country: str) -> dict[str, A
         for b in boards:
             if b.id not in lists and (old := store.cache_get(_key(b), STALE_FOR)):
                 lists[b.id] = old | {"stale": True}
-    return {"generated_at": utcnow().isoformat(timespec="seconds"), "country": country.upper(),
-            "cards": cards(boards, lists), "errors": errors}
+    today = _kst_day()
+    prev, prev_days = _snapshot_before(store, country, today, 1, 3)
+    week, week_days = _snapshot_before(store, country, today, 6, 10)
+    if week is None:
+        week, week_days = _snapshot_before(store, country, today, 3, 5)
+    themes = trends.themes(boards, lists, (week or {}).get("themes"))
+    out = {"generated_at": utcnow().isoformat(timespec="seconds"), "country": country,
+           "rising": trends.rising(boards, lists, (prev or {}).get("lists")), "themes": themes,
+           "segments": trends.segments(boards, lists), "compare": {"rising": prev_days, "themes": week_days},
+           "cards": cards(boards, lists), "errors": errors}
+    if fetch and not settings.offline and lists:
+        store.cache_set(_snap_key(country, today), trends.snapshot(lists, themes))
+        for k in store.cache_keys(f"consumer-snap:{country}:"):
+            if date.fromisoformat(k.rsplit(":", 1)[1]) < today - SNAP_KEEP:
+                store.cache_delete(k)
+    return out
+
+
+def world(by_country: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    return trends.world(by_country)
 
 
 def cards(boards: list[Board], lists: dict[str, dict]) -> list[dict[str, Any]]:
